@@ -1,0 +1,25 @@
+SECRET_KEY: 'BaSeQuie'
+
+# 数据库信息
+db:
+  host: ''
+  port: 3306
+  user: ''
+  password: ''
+  database: ''
+
+# token超时时间，单位为秒
+token_time_out: 36000
+
+# 分页信息
+page_info:
+  page: 1
+  pageSize: 20
+
+# 测试报告前端地址
+report_addr: 'http://xxx.xxx.xxx.xx/#/apiTest/report'
+
+# 即时达推送 的 系统错误通道
+error_push:
+  url: 'http://push.ijingniu.cn/send'
+  key: ''
