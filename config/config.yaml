@@ -1,4 +1,4 @@
-SECRET_KEY: 'BaSeQuie'
+SECRET_KEY: '123qwe'  # 任意字符串
 
 # 数据库信息
 db:
@@ -12,12 +12,15 @@ db:
 token_time_out: 36000
 
 # 分页信息
-page_info:
-  page: 1
+page:
+  pageNum: 1
   pageSize: 20
 
+# 企业群消息机器人地址，用于接收报告
+webhook: ''
+
 # 测试报告前端地址
-report_addr: 'http://xxx.xxx.xxx.xx/#/apiTest/report'
+report_addr: 'http://xx.xx.xx.xx/#/apiTest/report'
 
 # 即时达推送 的 系统错误通道
 error_push:

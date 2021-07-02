@@ -41,7 +41,7 @@ class Qeury(BaseQuery):
 
     def paginate(self, page=1, per_page=20, error_out=True, max_per_page=None):
         """ 重写分页器，把页码和页数强制转成int，解决服务器吧int识别为str导致分页报错的问题"""
-        page, per_page = int(page) or conf['page_info']['page'], int(per_page) or conf['page_info']['pageSize']
+        page, per_page = int(page) or conf['page']['pageNum'], int(per_page) or conf['page']['pageSize']
         if max_per_page is not None:
             per_page = min(per_page, max_per_page)
         items = self.limit(per_page).offset((page - 1) * per_page).all()
