@@ -2,7 +2,7 @@
 
 ## 线上预览：http://139.196.100.202/#/login  账号：tester、密码：123456
 
-## 前端传送门：https://github.com/zhongyehai/api-test-api
+## 前端传送门：https://github.com/zhongyehai/api-test-front
 
 ## Python版本：python => 3.6+
 
