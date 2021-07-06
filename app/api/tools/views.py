@@ -19,6 +19,7 @@ from flask import request, jsonify
 from .. import api
 from ...utils import restful
 from ...utils.globalVariable import CALL_BACK_ADDRESS
+from ...baseView import BaseMethodView
 from ..config.models import Config
 
 fake = Faker('zh_CN')
