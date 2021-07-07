@@ -20,8 +20,9 @@ from ...baseModel import db
 from ..apiMsg.models import ApiMsg
 from ..step.models import Step
 from ..module.models import Module
+from ..config.models import Config
 from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
-from config.config import assert_mapping_list, method_mapping
+from config.config import assert_mapping_list
 
 
 @api.route('/apiMsg/assertMapping', methods=['GET'])
@@ -34,8 +35,10 @@ def assert_mapping():
 @api.route('/apiMsg/methods', methods=['GET'])
 @login_required
 def methods_mapping():
-    """ 请求方法 """
-    return restful.success('获取成功', data=method_mapping)
+    """ 获取配置的请求方法列表 """
+    return restful.success(
+        '获取成功',
+        data=[{'value': method} for method in Config.get_first(name='http_methods').value.split(',')])
 
 
 @api.route('/apiMsg/list', methods=['GET'])

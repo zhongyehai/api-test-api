@@ -61,10 +61,6 @@ class AddApiForm(BaseForm):
         if ApiMsg.get_first(name=field.data, module_id=self.module_id.data):
             raise ValidationError(f'当前模块下，名为 {field.data} 的接口已存在')
 
-    def validate_method(self, field):
-        if field.data.lower() not in ['get', 'post', 'put', 'delete']:
-            raise ValidationError('目前支持的方式仅 get、post、put、delete')
-
     def validate_addr(self, field):
         """ 接口地址校验 """
         addr = field.data.split('?')[0]
