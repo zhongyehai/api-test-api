@@ -19,7 +19,7 @@ class AddModelForm(BaseForm):
     project_id = IntegerField(validators=[DataRequired('项目id必传')])
     name = StringField(validators=[DataRequired('模块名必传'), Length(0, 64, message='模块名称为0~64位')])
     id = StringField()
-    num = IntegerField()
+    num = IntegerField(validators=[DataRequired('模块序号必传')])
 
     def validate_project_id(self, field):
         """ 项目id合法 """
