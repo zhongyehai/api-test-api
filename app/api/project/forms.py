@@ -73,8 +73,6 @@ class DeleteProjectForm(GetProjectByIdForm):
                 raise ValidationError('请先去 接口管理 删除项目下的接口模块')
             if project.case_sets.all():
                 raise ValidationError('请先去 用例管理 删除项目下的用例集')
-            if project.configs.all():
-                raise ValidationError('请先删除项目下的业务配置')
         setattr(self, 'pro_data', project)
 
 
