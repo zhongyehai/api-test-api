@@ -119,8 +119,8 @@ def count_task():
             len(Task.get_all(is_send=3)),
             # 接收形式
             len(Task.get_all(send_type='all')),
-            len(Task.get_all(is_send='webhook')),
-            len(Task.get_all(is_send='email'))
+            len(Task.get_all(send_type='webhook')),
+            len(Task.get_all(send_type='email'))
         ]
     })
 
