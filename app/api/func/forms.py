@@ -92,6 +92,6 @@ class DeleteFuncForm(BaseForm):
             if case:
                 raise ValidationError(f'用例【{case.name}】已引用此函数文件，请先解除依赖再删除')
             # 用户是管理员或者创建者
-            if self.is_not_admin() and func.is_not_create_user(current_user.id):
+            if self.is_not_admin() and not func.is_create_user(current_user.id):
                 raise ValidationError('函数文件仅【管理员】或【当前函数文件的创建者】可删除')
         setattr(self, 'func', func)
