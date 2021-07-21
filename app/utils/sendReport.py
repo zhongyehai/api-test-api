@@ -42,7 +42,7 @@ def by_webhook(content, webhook):
         }
     }
     try:
-        print(f'运行结果发送企业微信：{requests.post(webhook, json=data).json()}')
+        print(f'运行结果发送企业微信：{requests.post(webhook, json=data, verify=False).json()}')
     except Exception as error:
         print(f'向企业微信发送测试报告失败，错误信息：\n{error}')
 
