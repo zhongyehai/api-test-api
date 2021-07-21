@@ -69,14 +69,22 @@ class AddApiForm(BaseForm):
 
     def validate_extracts(self, field):
         """ 校验提取数据表达式 """
-        can = '可用属性：http状态码=>status_code、url=>url、cookie=>cookies、头部信息=>headers、响应体=>content、text、json  或者正确的正则表达式'
+        can = '可用属性：' \
+              'http状态码=>status_code、' \
+              'http响应耗时=>elapsed、' \
+              'url=>url、' \
+              'cookie=>cookies、' \
+              '头部信息=>headers、' \
+              '响应体=>content、text、json  ' \
+              '或者正确的正则表达式'
         for index, extract in enumerate(field.data):
             key, value = extract.get('key'), extract.get('value')
             # 变量名和表达式需同时存在
             if (key and not value) or (not key and value):
                 raise ValidationError(f'数据提取，第 {index + 1} 行错误，变量名和表达式需同时存在')
             if value:
-                if not value.startswith(('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url')) and \
+                if not value.startswith(
+                        ('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', 'elapsed')) and \
                         not re.compile(r".*\(.*\).*").match(value):
                     raise ValidationError(f'数据提取，第 {index + 1} 行表达式 【{value}】 错误，{can}')
 
@@ -90,7 +98,8 @@ class AddApiForm(BaseForm):
                 raise ValidationError(f'断言，第 {index + 1} 行错误，预期结果和实际结果表达式需同时存在')
             # 实际结果
             if key:
-                if not key.startswith(('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', '$')) and \
+                if not key.startswith(
+                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', '$')) and \
                         not re.compile(r".*\(.*\).*").match(key):
                     raise ValidationError(f'断言，第 {index + 1} 行表达式 【{key}】 错误，{can}')
             # 断言类型
