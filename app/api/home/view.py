@@ -62,7 +62,7 @@ def count_module():
 @api.route('/count/api', methods=['GET'])
 @login_required
 def count_api():
-    data = db.execute("""
+    data = db.execute_query_sql("""
         select methods, count(*) as totle
             from (select case
                      when method = 'GET' then 'GET'
@@ -104,7 +104,7 @@ def count_set():
 @api.route('/count/case', methods=['GET'])
 @login_required
 def count_case():
-    data = db.execute("""
+    data = db.execute_query_sql("""
         select is_run, count(*) as totle
             from (select IF(is_run = 0, 'not_run', 'is_run') as is_run from `case`) as t
             group by is_run;
@@ -119,13 +119,13 @@ def count_case():
 @api.route('/count/task', methods=['GET'])
 @login_required
 def count_task():
-    status = db.execute("""
+    status = db.execute_query_sql("""
         select status, count(*) as totle
             from (select IF(status = '启用中', 'enable', 'disable') as status from `tasks` ) as t
             group by status
         """)
 
-    is_send = db.execute("""
+    is_send = db.execute_query_sql("""
         select is_send, count(*) as totle
             from (select case
                      when is_send = 1 then 'is_send1'
@@ -136,7 +136,7 @@ def count_task():
             group by is_send
         """)
 
-    send_type = db.execute("""
+    send_type = db.execute_query_sql("""
         select send_type, count(*) as totle
             from (select case
                      when send_type = 'all' then 'all'
@@ -165,13 +165,13 @@ def count_task():
 @api.route('/count/report', methods=['GET'])
 @login_required
 def count_report():
-    status = db.execute("""
+    status = db.execute_query_sql("""
         select status, count(*) as totle
             from (select IF(status = '已读', 'is_read', 'not_read') as status from `report` ) as t
             group by status
         """)
 
-    is_passed = db.execute("""
+    is_passed = db.execute_query_sql("""
         select is_passed, count(*) as totle
             from (select IF(is_passed = 1, 'is_passed', 'not_passed') as is_passed from `report`) as t
             group by is_passed

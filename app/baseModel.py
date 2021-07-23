@@ -30,9 +30,9 @@ class SQLAlchemy(_SQLAlchemy):
             db.session.rollback()  # 事务如果发生异常，执行回滚
             raise error
 
-    def execute(self, sql):
-        """ 执行原生sql，并返回字典 """
-        res = self.session.execute(sql).all()
+    def execute_query_sql(self, sql):
+        """ 执行原生查询sql，并返回字典 """
+        res = self.session.execute(sql).fetchall()
         return dict(res) if res else {}
 
 
