@@ -9,6 +9,7 @@
 import os
 
 from .. import api
+from ...baseModel import db
 from ..project.models import Project
 from ..module.models import Module
 from ..apiMsg.models import ApiMsg
@@ -61,10 +62,22 @@ def count_module():
 @api.route('/count/api', methods=['GET'])
 @login_required
 def count_api():
+    data = db.execute("""
+        select methods, count(*) as totle
+            from (select case
+                     when method = 'GET' then 'GET'
+                     when method = 'POST' then 'POST'
+                     when method = 'PUT' then 'PUT'
+                     when method = 'DELETE' then 'DELETE'
+                     else 'Other' end as methods
+                  from `apis`
+                 ) as t
+            group by methods
+        """)
     return restful.success(data={
         'title': '接口',
-        'options': ['总数'],
-        'data': [len(ApiMsg.get_all())],
+        'options': ['总数', 'GET请求', 'POST请求', 'PUT请求', 'DELETE请求'],
+        'data': [sum(data.values()), data.get('GET', 0), data.get('POST', 0), data.get('PUT', 0), data.get('DELETE', 0)]
     })
 
 
@@ -91,16 +104,48 @@ def count_set():
 @api.route('/count/case', methods=['GET'])
 @login_required
 def count_case():
+    data = db.execute("""
+        select is_run, count(*) as totle
+            from (select IF(is_run = 0, 'not_run', 'is_run') as is_run from `case`) as t
+            group by is_run;
+        """)
     return restful.success('获取成功', data={
         'title': '用例',
-        'options': ['总数'],
-        'data': [len(Case.get_all())],
+        'options': ['总数', '要执行的用例', '不执行的用例'],
+        'data': [sum(data.values()), data.get('is_run', 0), data.get('not_run', 0)],
     })
 
 
 @api.route('/count/task', methods=['GET'])
 @login_required
 def count_task():
+    status = db.execute("""
+        select status, count(*) as totle
+            from (select IF(status = '启用中', 'enable', 'disable') as status from `tasks` ) as t
+            group by status
+        """)
+
+    is_send = db.execute("""
+        select is_send, count(*) as totle
+            from (select case
+                     when is_send = 1 then 'is_send1'
+                     when is_send = 2 then 'is_send2'
+                     else 'is_send3' end as is_send
+                  from `tasks`
+                 ) as t
+            group by is_send
+        """)
+
+    send_type = db.execute("""
+        select send_type, count(*) as totle
+            from (select case
+                     when send_type = 'all' then 'all'
+                     when send_type = 'webhook' then 'webhook'
+                     else 'email' end as send_type
+                  from `tasks`
+                 ) as t
+            group by send_type
+        """)
     return restful.success('获取成功', data={
         'title': '定时任务',
         'options': [
@@ -109,18 +154,10 @@ def count_task():
             '都接收报告', '仅工作群接收报告', '仅邮件接收报告',
         ],
         'data': [
-            len(Task.get_all()),
-            # 任务状态
-            len(Task.get_all(status='启用中')),
-            len(Task.get_all(status='禁用中')),
-            # 测试报告接收状态
-            len(Task.get_all(is_send=2)),
-            len(Task.get_all(is_send=1)),
-            len(Task.get_all(is_send=3)),
-            # 接收形式
-            len(Task.get_all(send_type='all')),
-            len(Task.get_all(send_type='webhook')),
-            len(Task.get_all(send_type='email'))
+            sum(status.values()),
+            status.get('enable', 0), status.get('disable', 0),
+            is_send.get('is_send2', 0), is_send.get('is_send1', 0), is_send.get('is_send3', 0),
+            send_type.get('all', 0), send_type.get('webhook', 0), send_type.get('email', 0),
         ]
     })
 
@@ -128,14 +165,24 @@ def count_task():
 @api.route('/count/report', methods=['GET'])
 @login_required
 def count_report():
+    status = db.execute("""
+        select status, count(*) as totle
+            from (select IF(status = '已读', 'is_read', 'not_read') as status from `report` ) as t
+            group by status
+        """)
+
+    is_passed = db.execute("""
+        select is_passed, count(*) as totle
+            from (select IF(is_passed = 1, 'is_passed', 'not_passed') as is_passed from `report`) as t
+            group by is_passed
+        """)
+
     return restful.success('获取成功', data={
         'title': '测试报告',
         'options': ['总数', '已读', '未读', '通过数', '失败数'],
         'data': [
-            len(Report.get_all()),
-            len(Report.get_all(status='已读')),
-            len(Report.get_all(status='待阅')),
-            len(Report.get_all(is_passed=1)),
-            len(Report.get_all(is_passed=0)),
+            sum(status.values()),
+            status.get('is_read', 0), status.get('not_read', 0),
+            is_passed.get('is_passed', 0), is_passed.get('not_passed', 0)
         ]
     })
