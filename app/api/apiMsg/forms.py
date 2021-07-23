@@ -84,7 +84,7 @@ class AddApiForm(BaseForm):
                 raise ValidationError(f'数据提取，第 {index + 1} 行错误，变量名和表达式需同时存在')
             if value:
                 if not value.startswith(
-                        ('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', 'elapsed')) and \
+                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url')) and \
                         not re.compile(r".*\(.*\).*").match(value):
                     raise ValidationError(f'数据提取，第 {index + 1} 行表达式 【{value}】 错误，{can}')
 

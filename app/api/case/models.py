@@ -15,7 +15,7 @@ class Case(BaseModel):
     num = db.Column(db.Integer(), nullable=True, comment='用例序号')
     name = db.Column(db.String(128), nullable=True, comment='用例名称')
     desc = db.Column(db.String(256), comment='用例描述')
-    is_run = db.Column(db.Boolean(), default=True, comment='是否执行此步骤，True执行，False不执行，默认执行')
+    is_run = db.Column(db.Boolean(), default=True, comment='是否执行此用例，True执行，False不执行，默认执行')
     run_times = db.Column(db.Integer(), default=1, comment='执行次数，默认执行1次')
 
     func_files = db.Column(db.String(256), comment='用例需要引用的函数list')

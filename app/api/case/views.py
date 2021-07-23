@@ -62,7 +62,7 @@ def run_case():
     """ 运行测试用例，并生成报告 """
     form = RunCaseForm()
     if form.validate():
-        runner = RunCase(form.projectId.data, case_id_list=form.caseIds.data)
+        runner = RunCase(project_id=form.projectId.data, case_id_list=form.caseIds.data)
         json_result = runner.run_case()
         runner.build_report(json_result, User.get_first(id=current_user.id), form.caseName.data, 'case')
         return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})

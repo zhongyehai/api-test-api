@@ -57,7 +57,7 @@ def run_api_msg():
     """ 跑接口信息 """
     form = RunApiMsgForm()
     if form.validate():
-        json_result = RunApi(form.projectId.data, api_ids=form.apis.data).run_case()
+        json_result = RunApi(project_id=form.projectId.data, api_ids=form.apis.data).run_case()
         return restful.success(msg='测试完成', data={'data': json.loads(json_result)})
     return restful.fail(form.get_error())
 

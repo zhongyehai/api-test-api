@@ -29,7 +29,7 @@ from .forms import RunTaskForm, AddTaskForm, EditTaskForm, HasTaskIdForm, Delete
 
 def aps_test(case_ids, task, performer=None):
     """ 运行定时任务, 并发送测试报告 """
-    runner = RunCase(task.project_id, task.name, case_ids)
+    runner = RunCase(project_id=task.project_id,  task_name=task.name, case_id_list=case_ids)
     jump_res = runner.run_case()
     runner.build_report(jump_res, performer, task.name, 'task')
     res = json.loads(jump_res)

@@ -33,9 +33,10 @@ from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, Ste
 
 class BaseParse:
 
-    def __init__(self, project_id=None):
+    def __init__(self, project_id=None, task_name=None):
 
         self.project_id = project_id
+        self.task_name = task_name
         self.parsed_project_dict = {}
 
         Func.create_func_file(FUNC_ADDRESS)
@@ -47,7 +48,7 @@ class BaseParse:
 
         # httpRunner需要的数据格式
         self.DataTemplate = {
-            'project': self.get_formated_project(self.project_id).name,
+            'project': self.task_name or self.get_formated_project(self.project_id).name,
             'project_mapping': {
                 'functions': self.parse_functions(),
                 'variables': {}
@@ -139,8 +140,8 @@ class BaseParse:
 class RunApi(BaseParse):
     """ 接口调试 """
 
-    def __init__(self, project_id=None, api_ids=None):
-        super().__init__(project_id)
+    def __init__(self, project_id=None, task_name=None, api_ids=None):
+        super().__init__(project_id, task_name)
 
         # 解析当前项目信息
         self.project = self.get_formated_project(self.project_id)
@@ -185,7 +186,7 @@ class RunCase(BaseParse):
     """ 运行测试用例 """
 
     def __init__(self, project_id=None, task_name=None, case_id_list=[]):
-        super().__init__(project_id)
+        super().__init__(project_id, task_name)
 
         # 接口对应的项目字典，在需要解析项目时，先到这里面查，没有则去数据库取出来解析
         self.projects_dict = {}
@@ -233,7 +234,7 @@ class RunCase(BaseParse):
                 'headers': headers,  # 接口头部信息
                 'params': step.params,  # 接口查询字符串参数
                 'json': step.data_json,
-                'data':  step.data_form.get('string', {}),
+                'data': step.data_form.get('string', {}),
                 'files': step.data_form.get('files', {}),
             }
         }

@@ -83,7 +83,7 @@ class AddStepForm(BaseForm):
 
             if value:
                 if not value.startswith(
-                        ('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', 'elapsed')) and \
+                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url')) and \
                         not re.compile(r".*\(.*\).*").match(value):
                     raise ValidationError(f'数据提取第 {extract_index + 1} 行表达式【{value}】错误，{can}')
 
@@ -99,7 +99,7 @@ class AddStepForm(BaseForm):
             # 实际结果
             if key:
                 if not key.startswith(
-                        ('status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', 'elapsed', '$')) and \
+                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', '$')) and \
                         not re.compile(r".*\(.*\).*").match(key):
                     raise ValidationError(f'断言第 {validate_index + 1} 行表达式【{key}】错误，{can}')
 
