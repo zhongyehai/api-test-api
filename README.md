@@ -6,7 +6,7 @@
 
 ## 系统操作手册：[gitee](https://gitee.com/Xiang-Qian-Zou/api-test-api/blob/master/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md) ，[github](https://github.com/zhongyehai/api-test-api/blob/main/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
 
-## Python版本：python => 3.6+
+## Python版本：python => 3.9+
 
 ### 1.安装依赖包：sudo pip install -i https://pypi.douban.com/simple/ -r requirements.txt
 
