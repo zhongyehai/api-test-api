@@ -40,13 +40,13 @@ def debug_func():
     """ 函数调试 """
     form = DebuggerFuncForm()
     if form.validate():
-        func_file_name, debug_data = form.func.func_file_name, form.debug_data.data
+        name, debug_data = form.func.name, form.debug_data.data
         # 把自定义函数脚本内容写入到python脚本中
-        with open(os.path.join(FUNC_ADDRESS, f'{func_file_name}.py'), 'w', encoding='utf8') as file:
+        with open(os.path.join(FUNC_ADDRESS, f'{name}.py'), 'w', encoding='utf8') as file:
             file.write(form.func.func_data)
         # 动态导入脚本
         try:
-            import_path = f'func_list.{func_file_name}'
+            import_path = f'func_list.{name}'
             func_list = importlib.reload(importlib.import_module(import_path))
             module_functions_dict = {name: item for name, item in vars(func_list).items() if
                                      isinstance(item, types.FunctionType)}
@@ -74,17 +74,17 @@ class FuncView(BaseMethodView):
         form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
-                func = Func(func_file_name=form.func_file_name.data, create_user=current_user.id)
+                func = Func(name=form.name.data, create_user=current_user.id)
                 db.session.add(func)
-            return restful.success(f'函数文件 {form.func_file_name.data} 创建成功')
+            return restful.success(f'函数文件 {form.name.data} 创建成功')
         return restful.fail(form.get_error())
 
     def put(self):
         form = SaveFuncForm()
         if form.validate():
             with db.auto_commit():
-                form.func.func_file_name, form.func.func_data = form.func_file_name.data, form.func_data.data
-            return restful.success(f'函数文件 {form.func_file_name.data} 修改成功', data=form.func.to_dict())
+                form.func.name, form.func.func_data = form.name.data, form.func_data.data
+            return restful.success(f'函数文件 {form.name.data} 修改成功', data=form.func.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
@@ -92,7 +92,7 @@ class FuncView(BaseMethodView):
         if form.validate():
             with db.auto_commit():
                 db.session.delete(form.func)
-            return restful.success(f'函数文件 {form.func_file_name.data} 删除成功')
+            return restful.success(f'函数文件 {form.name.data} 删除成功')
         return restful.fail(form.get_error())
 
 

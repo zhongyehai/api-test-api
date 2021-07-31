@@ -39,11 +39,11 @@ class HasFuncForm(BaseForm):
 class SaveFuncForm(HasFuncForm):
     """ 修改自定义函数文件 """
     func_data = StringField()
-    func_file_name = StringField(validators=[DataRequired('请输入函数文件名')])
+    name = StringField(validators=[DataRequired('请输入函数文件名')])
 
-    def validate_func_file_name(self, field):
+    def validate_name(self, field):
         """ 校验自定义函数文件名不重复 """
-        func = Func.get_first(func_file_name=field.data)
+        func = Func.get_first(name=field.data)
 
         if func and func.id != self.id.data:
             raise ValidationError(f'函数文件名 {field.data} 已存在')
@@ -51,11 +51,11 @@ class SaveFuncForm(HasFuncForm):
 
 class CreatFuncForm(BaseForm):
     """ 创建自定义函数文件 """
-    func_file_name = StringField(validators=[DataRequired('请输入函数文件名')])
+    name = StringField(validators=[DataRequired('请输入函数文件名')])
 
-    def validate_func_file_name(self, field):
+    def validate_name(self, field):
         """ 校验Python函数文件 """
-        if Func.get_first(func_file_name=field.data):
+        if Func.get_first(name=field.data):
             raise ValidationError(f'函数文件【{field.data}】已经存在')
 
 
@@ -71,15 +71,15 @@ class DebuggerFuncForm(HasFuncForm):
 class DeleteFuncForm(BaseForm):
     """ 删除form """
 
-    func_file_name = StringField(validators=[DataRequired('函数文件必传')])
+    name = StringField(validators=[DataRequired('函数文件必传')])
 
-    def validate_func_file_name(self, field):
+    def validate_name(self, field):
         """
         1.校验自定义函数文件需存在
         2.校验是否有引用
         3.校验当前用户是否为管理员或者创建者
         """
-        func = Func.get_first(func_file_name=field.data)
+        func = Func.get_first(name=field.data)
         if not func:
             raise ValidationError(f'函数文件【{field.data}】不存在')
         else:

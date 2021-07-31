@@ -76,7 +76,7 @@ class BaseParse:
         """ 获取自定义函数 """
         func_file_dict = {}
         for func_file in self.func_file_list:
-            func_file_data = importlib.reload(importlib.import_module('func_list.{}'.format(func_file.func_file_name)))
+            func_file_data = importlib.reload(importlib.import_module('func_list.{}'.format(func_file.name)))
             func_file_dict.update({
                 name: item for name, item in vars(func_file_data).items() if isinstance(item, types.FunctionType)
             })

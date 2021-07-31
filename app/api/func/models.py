@@ -16,14 +16,14 @@ class Func(BaseModel):
     """ 自定义函数 """
     __tablename__ = 'func'
 
-    func_file_name = db.Column(db.String(63), nullable=True, unique=True, comment='脚本名称')
+    name = db.Column(db.String(50), nullable=True, unique=True, comment='脚本名称')
     func_data = db.Column(LONGTEXT, default='', comment='脚本代码')
 
     @classmethod
     def create_func_file(cls, addr):
         """ 创建所有自定义函数 py 文件 """
         for func in cls.get_all():
-            with open(os.path.join(addr, f'{func.func_file_name}.py'), 'w', encoding='utf8') as file:
+            with open(os.path.join(addr, f'{func.name}.py'), 'w', encoding='utf8') as file:
                 file.write(func.func_data)
 
     def to_dict(self):
