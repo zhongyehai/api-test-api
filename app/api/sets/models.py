@@ -13,7 +13,7 @@ class Set(BaseModel):
     """ 用例集表 """
     __tablename__ = 'set'
     num = db.Column(db.Integer(), nullable=True, comment='用例集合序号')
-    name = db.Column(db.String(256), nullable=True, comment='用例集名称')
+    name = db.Column(db.String(50), nullable=True, comment='用例集名称')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     cases = db.relationship('Case', order_by='Case.num.asc()', lazy='dynamic')
 

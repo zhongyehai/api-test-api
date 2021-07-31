@@ -13,17 +13,17 @@ class ApiMsg(BaseModel):
     """ 接口表 """
     __tablename__ = 'apis'
     num = db.Column(db.Integer(), nullable=True, comment='接口序号')
-    name = db.Column(db.String(128), nullable=True, comment='接口名称')
-    desc = db.Column(db.String(256), nullable=True, comment='接口描述')
+    name = db.Column(db.String(50), nullable=True, comment='接口名称')
+    desc = db.Column(db.String(50), nullable=True, comment='接口描述')
     up_func = db.Column(db.String(128), comment='接口执行前的函数')
     down_func = db.Column(db.String(128), comment='接口执行后的函数')
 
-    method = db.Column(db.String(32), nullable=True, comment='请求方式')
+    method = db.Column(db.String(10), nullable=True, comment='请求方式')
     host_index = db.Column(db.Integer, nullable=True, comment='从项目选择的host索引')
     addr = db.Column(db.Text(), nullable=True, comment='接口地址')
     headers = db.Column(db.String(2048), comment='头部信息')
     params = db.Column(db.Text(), comment='url参数')
-    data_type = db.Column(db.String(32), nullable=True, default='json', comment='参数类型')
+    data_type = db.Column(db.String(10), nullable=True, default='json', comment='参数类型')
     data_form = db.Column(db.Text(), comment='form-data参数')
     data_json = db.Column(db.Text(), comment='json参数')
     extracts = db.Column(db.String(2048), comment='提取信息')

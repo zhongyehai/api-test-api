@@ -10,7 +10,7 @@ import ast
 import re
 
 from wtforms import StringField, IntegerField
-from wtforms.validators import ValidationError, DataRequired
+from wtforms.validators import ValidationError, DataRequired, Length
 
 from ..apiMsg.models import ApiMsg
 from ..case.models import Case
@@ -55,7 +55,7 @@ class AddStepForm(BaseForm):
     """ 添加步骤校验 """
 
     num = StringField()
-    name = StringField(validators=[DataRequired('步骤名称不能为空')])
+    name = StringField(validators=[DataRequired('步骤名称不能为空'), Length(1, 50, message='步骤名长度为1~50位')])
     up_func = StringField()
     down_func = StringField()
     is_run = IntegerField()

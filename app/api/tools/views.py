@@ -139,16 +139,16 @@ def return_mock_data():
     return jsonify(datas)
 
 
-@api.route('/tobaccoCallBack', methods=['GET', 'POST'])
-def yan_shang_call_back():
-    """ 烟商数据回调 """
+@api.route('/callBack', methods=['GET', 'POST'])
+def call_back():
+    """ 回调接口 """
     params, json_data, form_data = request.args.to_dict(), request.get_json(silent=True), request.form.to_dict()
 
     # 存回调数据
-    name = f'tobaccoCallBack{datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.json'
+    name = f'callBack{datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.json'
     with io.open(os.path.join(CALL_BACK_ADDRESS, name), 'w', encoding='utf-8') as call_back_file:
         json.dump(json_data, call_back_file, ensure_ascii=False)
-    send_msg_by_webhook('烟商回调结果', f'已收到烟商回调数据，详细数据登录服务器查看文件：{name}')
+    send_msg_by_webhook('回调结果', f'已收到回调数据，详细数据登录服务器查看文件：{name}')
 
     return jsonify({
         "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),

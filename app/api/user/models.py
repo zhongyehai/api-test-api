@@ -41,9 +41,9 @@ class Permission(BaseModel):
 class User(UserMixin, BaseModel):
     """ 用户表 """
     __tablename__ = 'users'
-    account = db.Column(db.String(64), unique=True, index=True, comment='账号')
+    account = db.Column(db.String(12), unique=True, index=True, comment='账号')
     password_hash = db.Column(db.String(128), comment='密码')
-    name = db.Column(db.String(64), comment='姓名')
+    name = db.Column(db.String(12), comment='姓名')
     status = db.Column(db.Integer, default=1, comment='状态，1为启用，2为冻结')
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'), comment='所属的角色id')
     role = db.relationship('Role', back_populates='users')

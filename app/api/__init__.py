@@ -27,7 +27,7 @@ from app.api.config import views
 def before_request():
     """ 前置钩子函数， 每个请求进来先经过此函数"""
     name = current_user.name if hasattr(current_user, 'name') else ''
-    current_app.logger.info(f'[{request.remote_addr}] [{name}] [{request.method}] [{request.url}]: \n{request.json}')
+    current_app.logger.info(f'[{request.remote_addr}] [{name}] [{request.method}] [{request.url}]: \n请求参数：{request.json}')
 
 
 @api.after_request

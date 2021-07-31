@@ -14,8 +14,8 @@ class ConfigType(BaseModel):
 
     __tablename__ = 'config_type'
 
-    name = db.Column(db.String(32), nullable=True, unique=True, comment='字段名')
-    desc = db.Column(db.String(32), comment='描述')
+    name = db.Column(db.String(50), nullable=True, unique=True, comment='字段名')
+    desc = db.Column(db.String(50), comment='描述')
 
     def to_dict(self):
         """ 返回字典 """
@@ -38,9 +38,9 @@ class Config(BaseModel):
 
     __tablename__ = 'config'
 
-    name = db.Column(db.String(128), nullable=True, unique=True, comment='字段名')
+    name = db.Column(db.String(50), nullable=True, unique=True, comment='字段名')
     value = db.Column(db.Text(), nullable=True, comment='字段值')
-    type = db.Column(db.String(32), nullable=True, comment='配置类型')
+    type = db.Column(db.String(50), nullable=True, comment='配置类型')
     desc = db.Column(db.String(2048), comment='描述')
 
     def to_dict(self):

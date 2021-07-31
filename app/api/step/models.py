@@ -16,7 +16,7 @@ class Step(BaseModel):
     is_run = db.Column(db.Boolean(), default=True, comment='是否执行此步骤，True执行，False不执行，默认执行')
     run_times = db.Column(db.Integer(), default=1, comment='执行次数，默认执行1次')
 
-    name = db.Column(db.String(128), comment='步骤名称')
+    name = db.Column(db.String(50), comment='步骤名称')
     up_func = db.Column(db.String(128), comment='步骤执行前的函数')
     down_func = db.Column(db.String(128), comment='步骤执行后的函数')
     headers = db.Column(db.Text(), comment='头部信息')

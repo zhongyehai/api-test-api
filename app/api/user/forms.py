@@ -16,9 +16,9 @@ from .models import User, Role
 
 class CreateUserForm(BaseForm):
     """ 创建用户的验证 """
-    name = StringField(validators=[DataRequired('请设置用户名'), Length(1, 64, message='用户名长度为1~64位')])
-    account = StringField(validators=[DataRequired('请设置账号')])
-    password = StringField(validators=[DataRequired('请设置密码'), Length(1, 128, message='密码长度长度为1~128位')])
+    name = StringField(validators=[DataRequired('请设置用户名'), Length(6, 12, message='用户名长度为6~12位')])
+    account = StringField(validators=[DataRequired('请设置账号'), Length(6, 12, message='用户名长度为6~12位')])
+    password = StringField(validators=[DataRequired('请设置密码'), Length(6, 18, message='密码长度长度为6~18位')])
     role_id = IntegerField(validators=[DataRequired('请选择角色')])
 
     def validate_name(self, field):
@@ -39,9 +39,9 @@ class CreateUserForm(BaseForm):
 
 class ChangePasswordForm(BaseForm):
     """ 修改密码的校验 """
-    oldPassword = StringField(validators=[Length(1, 128, message='密码长度长度为1~128位')])
-    newPassword = StringField(validators=[Length(1, 128, message='密码长度长度为1~128位')])
-    surePassword = StringField(validators=[Length(1, 128, message='密码长度长度为1~128位')])
+    oldPassword = StringField(validators=[Length(6, 18, message='密码长度长度为6~18位')])
+    newPassword = StringField(validators=[Length(6, 18, message='密码长度长度为6~18位')])
+    surePassword = StringField(validators=[Length(6, 18, message='密码长度长度为6~18位')])
 
     def validate_oldPassword(self, field):
         """ 校验旧密码是否正确 """
@@ -56,8 +56,8 @@ class ChangePasswordForm(BaseForm):
 
 class LoginForm(BaseForm):
     """ 登录校验 """
-    account = StringField(validators=[DataRequired('账号必填'), Length(1, 64, message='账号长度为1~64位')])
-    password = StringField(validators=[DataRequired('密码必填'), Length(1, 128, message='密码长度长度为1~128位')])
+    account = StringField(validators=[DataRequired('账号必填')])
+    password = StringField(validators=[DataRequired('密码必填')])
 
     def validate_account(self, field):
         """ 校验账号 """

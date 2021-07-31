@@ -18,7 +18,7 @@ from .models import Set
 class AddCaseSetForm(BaseForm):
     """ 添加用例集的校验 """
     project_id = StringField(validators=[DataRequired('请先选择首页项目')])
-    name = StringField(validators=[DataRequired('用例集名称不能为空'), Length(0, 128, message='接口名长度为0~128位')])
+    name = StringField(validators=[DataRequired('用例集名称不能为空'), Length(1, 50, message='用例集名长度为1~50位')])
     num = StringField(validators=[DataRequired('用例集序号必传')])
 
     def validate_project_id(self, field):

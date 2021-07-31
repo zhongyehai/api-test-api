@@ -12,7 +12,7 @@ from ...baseModel import BaseModel, db
 class Module(BaseModel):
     """ 模块表 """
     __tablename__ = 'module'
-    name = db.Column(db.String(64), nullable=True, comment='接口模块')
+    name = db.Column(db.String(50), nullable=True, comment='接口模块')
     num = db.Column(db.Integer(), nullable=True, comment='模块在对应项目下的序号')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     api_msg = db.relationship('ApiMsg', order_by='ApiMsg.num.asc()', lazy='dynamic')
