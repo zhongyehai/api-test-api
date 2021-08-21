@@ -103,9 +103,12 @@ class ProjectFormatModel(Base):
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.manager = kwargs.get('manager')
-        self.hosts = kwargs.get('hosts')
-        self.headers = self.parse_headers(kwargs.get('headers')) if kwargs.get('headers') else {}
-        self.variables = self.parse_variables(kwargs.get('variables')) if kwargs.get('variables') else {}
+        self.dev = kwargs.get('dev')
+        self.test = kwargs.get('test')
+        self.uat = kwargs.get('uat')
+        self.production = kwargs.get('production')
+        self.headers = self.parse_headers(kwargs.get('headers', {}))
+        self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.func_files = kwargs.get('func_files')
         self.create_user = kwargs.get('create_user')
 
@@ -121,16 +124,16 @@ class ApiFormatModel(Base):
 
         self.up_func = kwargs.get('up_func')
         self.down_func = kwargs.get('down_func')
-        self.host_index = kwargs.get('host_index')
+        self.choice_host = kwargs.get('choice_host')
         self.method = kwargs.get('method')
         self.addr = kwargs.get('addr')
-        self.headers = self.parse_headers(kwargs.get('headers')) if kwargs.get('headers') else {}
+        self.headers = self.parse_headers(kwargs.get('headers', {}))
         self.data_type = kwargs.get('data_type', 'json')
-        self.params = self.parse_params(kwargs.get('params')) if self.method.upper() == 'GET' else {}
+        self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json') if self.data_type.upper() == 'JSON' else {}
         self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type.upper() == 'DATA' else {}
-        self.extracts = self.parse_extracts(kwargs.get('extracts')) if kwargs.get('extracts') else []
-        self.validates = self.parse_validates(kwargs.get('validates')) if kwargs.get('validates') else []
+        self.extracts = self.parse_extracts(kwargs.get('extracts', {}))
+        self.validates = self.parse_validates(kwargs.get('validates', {}))
 
         self.module_id = kwargs.get('module_id')
         self.project_id = kwargs.get('project_id')
@@ -145,9 +148,10 @@ class CaseFormatModel(Base):
         self.num = kwargs.get('num')
         self.name = kwargs.get('name')
         self.desc = kwargs.get('desc')
+        self.choice_host = kwargs.get('choice_host')
         self.func_files = kwargs.get('func_files')
-        self.headers = self.parse_headers(kwargs.get('headers')) if kwargs.get('headers') else {}
-        self.variables = self.parse_variables(kwargs.get('variables')) if kwargs.get('variables') else {}
+        self.headers = self.parse_headers(kwargs.get('headers', {}))
+        self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.is_run = kwargs.get('is_run')
         self.run_times = kwargs.get('run_times')
         self.project_id = kwargs.get('project_id')
@@ -167,12 +171,12 @@ class StepFormatModel(Base):
         self.down_func = kwargs.get('down_func')
         self.is_run = kwargs.get('is_run')
 
-        self.headers = self.parse_headers(kwargs.get('headers')) if kwargs.get('headers') else {}
-        self.params = self.parse_params(kwargs.get('params')) if kwargs.get('params') else {}
-        self.data_json = kwargs.get('data_json') or {}
-        self.data_form = self.parse_form_data(kwargs.get('data_form')) if kwargs.get('data_form') else {}
-        self.extracts = self.parse_extracts(kwargs.get('extracts')) if kwargs.get('extracts') else {}
-        self.validates = self.parse_validates(kwargs.get('validates')) if kwargs.get('validates') else {}
+        self.headers = self.parse_headers(kwargs.get('headers', {}))
+        self.params = self.parse_params(kwargs.get('params', {}))
+        self.data_json = kwargs.get('data_json', {})
+        self.data_form = self.parse_form_data(kwargs.get('data_form', {}))
+        self.extracts = self.parse_extracts(kwargs.get('extracts', {}))
+        self.validates = self.parse_validates(kwargs.get('validates', {}))
 
         self.case_id = kwargs.get('case_id')
         self.api_id = kwargs.get('api_id')

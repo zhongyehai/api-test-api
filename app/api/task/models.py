@@ -17,6 +17,7 @@ class Task(BaseModel):
     cron = db.Column(db.String(50), nullable=True, comment='cron表达式')
     set_id = db.Column(db.String(2048), comment='用例集id')
     case_id = db.Column(db.String(2048), comment='用例id')
+    choice_host = db.Column(db.String(10), default='test', comment='运行环境')
     is_send = db.Column(db.String(10), comment='是否发送报告，1.不发送、2.始终发送、3.仅用例不通过时发送')
     send_type = db.Column(db.String(10), default='webhook', comment='测试报告发送类型，webhook，email，all')
     webhook = db.Column(db.String(2048), comment='企业微信或钉钉webhook地址')

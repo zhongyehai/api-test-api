@@ -19,7 +19,7 @@ class ApiMsg(BaseModel):
     down_func = db.Column(db.String(128), comment='接口执行后的函数')
 
     method = db.Column(db.String(10), nullable=True, comment='请求方式')
-    host_index = db.Column(db.Integer, nullable=True, comment='从项目选择的host索引')
+    choice_host = db.Column(db.String(10), default='test', comment='选择的环境')
     addr = db.Column(db.Text(), nullable=True, comment='接口地址')
     headers = db.Column(db.String(2048), comment='头部信息')
     params = db.Column(db.Text(), comment='url参数')

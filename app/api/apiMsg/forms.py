@@ -28,7 +28,7 @@ class AddApiForm(BaseForm):
     up_func = StringField()  # 前置条件
     down_func = StringField()  # 后置条件
     method = StringField(validators=[DataRequired('请求方法必传'), Length(1, 10, message='请求方法长度为1~10位')])
-    host_index = IntegerField()
+    choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
     addr = StringField(validators=[DataRequired('接口地址必传')])
     headers = StringField()
     params = StringField()
@@ -50,11 +50,6 @@ class AddApiForm(BaseForm):
         """ 校验模块id """
         if not Module.get_first(id=field.data):
             raise ValidationError(f'id为 {field.data} 的模块不存在')
-
-    def validate_host_index(self, field):
-        """ 选择的运行环境，InputRequired对于0无法校验，放在这里校验 """
-        if field.data is None:
-            raise ValidationError('请选择要运行的host')
 
     def validate_name(self, field):
         """ 校验同一模块下接口名不重复 """

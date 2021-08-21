@@ -17,11 +17,13 @@ class Project(BaseModel):
 
     name = db.Column(db.String(50), nullable=True, unique=True, comment='项目名称')
     manager = db.Column(db.Integer(), nullable=True, comment='项目管理员id')
-    hosts = db.Column(db.Text(), nullable=True, comment='环境地址，可多个')
     variables = db.Column(db.Text(), comment='项目的公共变量')
     headers = db.Column(db.Text(), comment='项目的公共头部信息')
     func_files = db.Column(db.String(256), nullable=True, comment='引用的函数文件')
-
+    dev = db.Column(db.String(50), comment='开发环境域名')
+    test = db.Column(db.String(50), comment='测试环境域名')
+    uat = db.Column(db.String(50), comment='uat环境域名')
+    production = db.Column(db.String(50), comment='生产环境域名')
     modules = db.relationship('Module', order_by='Module.num.asc()', lazy='dynamic')
     case_sets = db.relationship('Set', order_by='Set.num.asc()', lazy='dynamic')
 

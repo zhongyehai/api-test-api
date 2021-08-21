@@ -18,15 +18,13 @@ class AddProjectForm(BaseForm):
     """ 添加项目参数校验 """
     name = StringField(validators=[DataRequired('项目名称不能为空'), Length(1, 64, message='项目名长度为1~64位')])
     manager = StringField(validators=[DataRequired('请选择负责人')])
-    hosts = StringField()
+    dev = StringField()
+    test = StringField(validators=[DataRequired('测试环境域名必填'), Length(1, 50, message='开发环境域名长度为1~50位')])
+    uat = StringField()
+    production = StringField()
     variables = StringField()
     headers = StringField()
     func_files = StringField()
-
-    def validate_hosts(self, field):
-        """ 校验项目名不重复 """
-        if not field.data or len(field.data) < 1:
-            raise ValidationError(f'host不可为空')
 
     def validate_name(self, field):
         """ 校验项目名不重复 """

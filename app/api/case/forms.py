@@ -25,6 +25,7 @@ class AddCaseForm(BaseForm):
     num = StringField()
     name = StringField(validators=[DataRequired('用例名称不能为空')])
     desc = StringField()
+    choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
     func_files = StringField()
     variables = StringField()
     headers = StringField()

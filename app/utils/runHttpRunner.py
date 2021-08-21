@@ -35,6 +35,7 @@ class BaseParse:
 
     def __init__(self, project_id=None, task_name=None):
 
+        self.environment = None
         self.project_id = project_id
         self.task_name = task_name
         self.parsed_project_dict = {}
@@ -64,13 +65,13 @@ class BaseParse:
             })
         return self.parsed_project_dict[project_id]
 
-    def get_formated_api(self, project, api_id):
+    def get_formated_api(self, project, api):
         """ 从已解析的接口字典中取指定id的接口，如果没有，则取出来解析后放进去 """
-        if api_id not in self.parsed_api_dict:
+        if api.id not in self.parsed_api_dict:
             self.parsed_api_dict.update({
-                api_id: self.parse_api(project, ApiFormatModel(**ApiMsg.get_first(id=api_id).to_dict()))
+                api.id: self.parse_api(project, ApiFormatModel(**api.to_dict()))
             })
-        return self.parsed_api_dict[api_id]
+        return self.parsed_api_dict[api.id]
 
     def parse_functions(self):
         """ 获取自定义函数 """
@@ -94,7 +95,7 @@ class BaseParse:
             'times': 1,  # 运行次数
             'extract': api.extracts,  # 接口要提取的信息
             'validate': api.validates,  # 接口断言信息
-            'base_url': project.hosts[api.host_index],
+            'base_url': getattr(project, self.environment),
             'request': {
                 'method': api.method,
                 'url': api.addr,
@@ -165,17 +166,18 @@ class RunApi(BaseParse):
         }
 
         # 解析api
-        for api_id in self.api_ids:
-            api = self.get_formated_api(self.project, api_id)
+        api_obj = ApiMsg.get_first(id=self.api_ids)
+        self.environment = api_obj.choice_host
+        api = self.get_formated_api(self.project, api_obj)
 
-            # 合并头部信息
-            headers = {}
-            headers.update(self.project.headers)
-            headers.update(api['request']['headers'])
-            api['request']['headers'] = headers
+        # 合并头部信息
+        headers = {}
+        headers.update(self.project.headers)
+        headers.update(api['request']['headers'])
+        api['request']['headers'] = headers
 
-            # 把api加入到步骤
-            test_case_template['teststeps'].append(api)
+        # 把api加入到步骤
+        test_case_template['teststeps'].append(api)
 
         # 更新公共变量
         test_case_template['config']['variables'].update(self.project.variables)
@@ -185,9 +187,10 @@ class RunApi(BaseParse):
 class RunCase(BaseParse):
     """ 运行测试用例 """
 
-    def __init__(self, project_id=None, task_name=None, case_id_list=[]):
+    def __init__(self, project_id=None, task_name=None, case_id_list=[], task=None):
         super().__init__(project_id, task_name)
-
+        self.task = task
+        self.environment = task.choice_host if task else None
         # 接口对应的项目字典，在需要解析项目时，先到这里面查，没有则去数据库取出来解析
         self.projects_dict = {}
 
@@ -227,7 +230,7 @@ class RunCase(BaseParse):
             'times': step.run_times,  # 运行次数
             'extract': step.extracts,  # 接口要提取的信息
             'validate': step.validates,  # 接口断言信息
-            'base_url': api['base_url'],
+            'base_url': getattr(project, self.environment),
             'request': {
                 'method': api['request']['method'],
                 'url': api['request']['url'],
@@ -246,6 +249,8 @@ class RunCase(BaseParse):
         for case_id in self.case_id_list:
             case = Case.get_first(id=case_id, is_run=True)
             if case:  # 可能有用例设置为不运行的情况
+                if not self.task:
+                    self.environment = case.choice_host
                 case = CaseFormatModel(**Case.get_first(id=case_id, is_run=True).to_dict())
                 # 用例格式模板
                 case_template = {
@@ -264,7 +269,7 @@ class RunCase(BaseParse):
                 for step in steps:
                     step = StepFormatModel(**step.to_dict())
                     project = self.get_formated_project(step.project_id)
-                    api = self.get_formated_api(project, step.api_id)
+                    api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
                     case_template['teststeps'].append(self.parse_step(project, case, api, step))
 
                     # 把项目的自定义变量留下来
