@@ -147,14 +147,14 @@ def call_back():
     # 存回调数据
     name = f'callBack{datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.json'
     with io.open(os.path.join(CALL_BACK_ADDRESS, name), 'w', encoding='utf-8') as call_back_file:
-        json.dump(json_data, call_back_file, ensure_ascii=False)
-    send_msg_by_webhook('回调结果', f'已收到回调数据，详细数据登录服务器查看文件：{name}')
+        json.dump(json_data or form_data or params, call_back_file, ensure_ascii=False)
+    send_msg_by_webhook('回调结果', f'已收到回调数据，保存文件名：{name}')
 
     return jsonify({
         "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
         "status": 200,
         "message": "请求成功",
-        "data": None})
+        "data": name})
 
 
 @api.route('/examination', methods=['GET'])

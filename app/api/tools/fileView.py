@@ -14,7 +14,7 @@ from flask import request, send_from_directory
 from config.config import conf
 from .. import api
 from ...utils import restful
-from ...utils.globalVariable import FILE_ADDRESS
+from ...utils.globalVariable import FILE_ADDRESS, CALL_BACK_ADDRESS
 from ...baseView import BaseMethodView
 from ...utils.required import login_required
 
@@ -37,14 +37,15 @@ def get_file_list():
     """ 文件列表 """
     pag_size = request.args.get('pageSize') or conf['page']['pageSize']
     page_num = request.args.get('pageNum') or conf['page']['pageNum']
-    file_list = os.listdir(FILE_ADDRESS)
+    addr = FILE_ADDRESS if request.args.get('fileType') == 'case' else CALL_BACK_ADDRESS
+    file_list = os.listdir(addr)
 
     # 分页
     filter_list = make_pagination(file_list, int(pag_size), int(page_num))
 
     parsed_file_list = []
     for file_name in filter_list:
-        file_info = os.stat(os.path.join(FILE_ADDRESS, file_name))
+        file_info = os.stat(os.path.join(addr, file_name))
         parsed_file_list.append({
             'name': file_name,  # 文件名
             'size': file_info.st_size,  # 文件文件大小
@@ -67,7 +68,8 @@ def check_file():
 @login_required
 def download_file():
     """ 下载文件 """
-    return send_from_directory(FILE_ADDRESS, request.args.to_dict().get('name'), as_attachment=True)
+    addr = FILE_ADDRESS if request.args.get('fileType') == 'case' else CALL_BACK_ADDRESS
+    return send_from_directory(addr, request.args.to_dict().get('name'), as_attachment=True)
 
 
 @api.route('/upload', methods=['POST'], strict_slashes=False)
@@ -101,8 +103,10 @@ class FileManage(BaseMethodView):
 
     def delete(self):
         """ 删除文件 """
-        name = request.get_json(silent=True).get('name')
-        path = os.path.join(FILE_ADDRESS, name)
+        request_json = request.get_json(silent=True)
+        name, file_type = request_json.get('name'), request_json.get('fileType')
+        addr = FILE_ADDRESS if file_type == 'case' else CALL_BACK_ADDRESS
+        path = os.path.join(addr, name)
         if os.path.exists(path):
             os.remove(path)
         return restful.success('删除成功', data={'name': name})
