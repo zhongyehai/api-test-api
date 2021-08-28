@@ -17,7 +17,7 @@ from faker import Faker
 from flask import request, jsonify
 
 from .. import api
-from ...utils import restful
+from ...utils import restful, tools
 from ...utils.globalVariable import CALL_BACK_ADDRESS
 from ...baseView import BaseMethodView
 from ..config.models import Config
@@ -176,12 +176,12 @@ def make_user_info():
     count, options, all_data = int(args.get('count')), json.loads(args.get('options')), []
     for option in options:
         temp_data = []
-        if hasattr(fake, option):
+        if hasattr(fake, option) or option == 'credit_code':
             i = 0
             while True:
                 if i >= count:
                     break
-                data = getattr(fake, option)()
+                data = tools.get_credit_code() if option == 'credit_code' else getattr(fake, option)()
                 if data not in temp_data:
                     temp_data.append(data)
                     i += 1

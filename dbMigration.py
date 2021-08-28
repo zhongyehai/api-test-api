@@ -99,6 +99,7 @@ def init_config():
     print(f'{"=" * 15} 开始创建配置 {"=" * 15}')
     conf_list = [
         {'name': 'QQ邮箱', 'value': 'smtp.qq.com', 'type': '邮箱', 'desc': 'QQ邮箱服务器'},
+        {'name': 'http_methods', 'value': 'GET,POST,PUT,DELETE', 'type': '系统配置', 'desc': 'http请求方式，以英文的 "," 隔开'},
         {'name': 'make_user_info_mapping', 'value': json.dumps({
             "姓名": "name",
             "身份证号": "ssn",
@@ -106,6 +107,7 @@ def init_config():
             "银行卡": "credit_card_number",
             "地址": "address",
             "公司名": "company",
+            "统一社会信用代码": "credit_code",
             "邮箱": "company_email",
             "工作": "job",
             "ipv4": "ipv4",
