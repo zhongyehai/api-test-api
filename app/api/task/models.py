@@ -14,23 +14,25 @@ class Task(BaseModel):
     __tablename__ = 'tasks'
     num = db.Column(db.Integer(), comment='任务序号')
     name = db.Column(db.String(50), comment='任务名称')
-    cron = db.Column(db.String(50), nullable=True, comment='cron表达式')
-    set_id = db.Column(db.String(2048), comment='用例集id')
-    case_id = db.Column(db.String(2048), comment='用例id')
     choice_host = db.Column(db.String(10), default='test', comment='运行环境')
+    case_id = db.Column(db.String(2048), comment='用例id')
+    task_type = db.Column(db.String(10), default='cron', comment='定时类型')
+    cron = db.Column(db.String(50), nullable=True, comment='cron表达式')
     is_send = db.Column(db.String(10), comment='是否发送报告，1.不发送、2.始终发送、3.仅用例不通过时发送')
     send_type = db.Column(db.String(10), default='webhook', comment='测试报告发送类型，webhook，email，all')
     webhook = db.Column(db.String(2048), comment='企业微信或钉钉webhook地址')
-    task_type = db.Column(db.String(10), default='cron', comment='定时类型')
     email_server = db.Column(db.String(50), comment='发件邮箱服务器')
-    email_to = db.Column(db.Text(), comment='收件人邮箱')
     email_from = db.Column(db.String(50), comment='发件人邮箱')
     email_pwd = db.Column(db.String(256), comment='发件人邮箱密码')
+    email_to = db.Column(db.Text(), comment='收件人邮箱')
     status = db.Column(db.String(10), default=u'禁用中', comment='任务的运行状态，默认是禁用中')
-    project_id = db.Column(db.Integer(), nullable=True, comment='项目id，不为空')
+    module_id = db.Column(db.String(2048), comment='模块id')
+
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
+    project = db.relationship('Project', backref='tasks')
 
     def to_dict(self):
-        return self.base_to_dict(json_to_dict_list=['set_id', 'case_id'])
+        return self.base_to_dict(json_to_dict_list=['module_id', 'case_id'])
 
     @classmethod
     def make_pagination(cls, form):

@@ -10,7 +10,6 @@ from . import (errors)
 from app.api.user import views
 from app.api.project import views
 from app.api.module import views
-from app.api.sets import views
 from app.api.func import views
 from app.api.report import views
 from app.api.task import views

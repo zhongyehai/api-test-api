@@ -9,13 +9,12 @@
 import os
 
 from .. import api
+from ..step.models import Step
 from ...baseModel import db
 from ..project.models import Project
 from ..module.models import Module
 from ..apiMsg.models import ApiMsg
-from ..sets.models import Set
 from ..case.models import Case
-from ..step.models import Step
 from ..task.models import Task
 from ..report.models import Report
 from ...utils import restful
@@ -31,9 +30,8 @@ def count_title():
         'module': len(Module.get_all()),
         'api': len(ApiMsg.get_all()),
         'file': len(os.listdir(FILE_ADDRESS)),
-        'set': len(Set.get_all()),
         'case': len(Case.get_all()),
-        # 'step': len(Step.get_all()),
+        'step': len(Step.get_all()),
         'task': len(Task.get_all()),
         'report': len(Report.get_all())
     })
@@ -91,16 +89,6 @@ def count_file():
     })
 
 
-@api.route('/count/set', methods=['GET'])
-@login_required
-def count_set():
-    return restful.success('获取成功', data={
-        'title': '用例集',
-        'options': ['总数'],
-        'data': [len(Set.get_all())],
-    })
-
-
 @api.route('/count/case', methods=['GET'])
 @login_required
 def count_case():
@@ -112,6 +100,21 @@ def count_case():
     return restful.success('获取成功', data={
         'title': '用例',
         'options': ['总数', '要执行的用例', '不执行的用例'],
+        'data': [sum(data.values()), data.get('is_run', 0), data.get('not_run', 0)],
+    })
+
+
+@api.route('/count/step', methods=['GET'])
+@login_required
+def count_step():
+    data = db.execute_query_sql("""
+        select is_run, count(*) as totle
+            from (select IF(is_run = 0, 'not_run', 'is_run') as is_run from `step`) as t
+            group by is_run;
+        """)
+    return restful.success('获取成功', data={
+        'title': '测试步骤',
+        'options': ['总数', '要执行的步骤', '不执行的步骤'],
         'data': [sum(data.values()), data.get('is_run', 0), data.get('not_run', 0)],
     })
 

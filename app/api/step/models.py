@@ -27,9 +27,12 @@ class Step(BaseModel):
     validates = db.Column(db.Text(), comment='断言信息')
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    case_id = db.Column(db.Integer, db.ForeignKey('case.id'))
-    api_id = db.Column(db.Integer, db.ForeignKey('apis.id'))
+    project = db.relationship('Project', backref='steps')
 
+    case_id = db.Column(db.Integer, db.ForeignKey('case.id'))
+
+    api_id = db.Column(db.Integer, db.ForeignKey('apis.id'))
+    api = db.relationship('ApiMsg', backref='apis')
 
     @classmethod
     def sort_num_by_list(cls, step_list):

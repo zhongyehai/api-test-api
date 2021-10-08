@@ -12,10 +12,9 @@ import re
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 
+from ..module.models import Module
 from ...utils.parse import extract_variables, convert
 from ...baseForm import BaseForm
-from ..sets.models import Set
-from ..project.models import Project
 from ..task.models import Task
 from .models import Case
 
@@ -30,8 +29,7 @@ class AddCaseForm(BaseForm):
     variables = StringField()
     headers = StringField()
     run_times = IntegerField()
-    project_id = IntegerField(validators=[DataRequired('请选择项目')])
-    case_set_id = IntegerField(validators=[DataRequired('请选择用例集')])
+    module_id = IntegerField(validators=[DataRequired('请选择用例集')])
     steps = StringField()
 
     # TODO 校验头部参数，与变量校验方式一致
@@ -53,19 +51,14 @@ class AddCaseForm(BaseForm):
         if temp_check:
             raise ValidationError('参数引用${}在业务变量和项目公用变量均没找到'.format(',$'.join(temp_check)))
 
-    def validate_project_id(self, field):
-        """ 校验项目id """
-        if not Project.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
-
-    def validate_case_set_id(self, field):
-        """ 校验用例集存在 """
-        if not Set.get_first(id=field.data):
+    def validate_module_id(self, field):
+        """ 校验模块存在 """
+        if not Module.get_first(id=field.data):
             raise ValidationError(f'id为 {field.data} 的用例集不存在')
 
     def validate_name(self, field):
         """ 用例名不重复 """
-        if Case.get_first(name=field.data, project_id=self.project_id.data, case_set_id=self.case_set_id.data):
+        if Case.get_first(name=field.data, module_id=self.module_id.data):
             raise ValidationError(f'用例名 {field.data} 已存在')
 
 
@@ -81,23 +74,23 @@ class EditCaseForm(AddCaseForm):
         setattr(self, 'old_data', old_data)
 
     def validate_name(self, field):
-        """ 用例名不重复 """
-        old_data = Case.get_first(name=field.data, project_id=self.project_id.data, case_set_id=self.case_set_id.data)
+        """ 同一模块下用例名不重复 """
+        old_data = Case.get_first(name=field.data, module_id=self.module_id.data)
         if old_data and old_data.id != self.id.data:
             raise ValidationError(f'用例名 {field.data} 已存在')
 
 
 class FindCaseForm(BaseForm):
-    """ 根据用例集查找用例 """
+    """ 根据模块查找用例 """
     name = StringField()
-    caseSetId = IntegerField(validators=[DataRequired('请选择用例集')])
+    moduleId = IntegerField(validators=[DataRequired('请选择模块')])
     pageNum = IntegerField()
     pageSize = IntegerField()
 
     def validate_name(self, field):
         if field.data:
             case = Case.query.filter_by(
-                case_set_id=self.caseSetId.data).filter(Case.name.like('%{}%'.format(field.data)))
+                module_id=self.moduleId.data).filter(Case.name.like('%{}%'.format(field.data)))
             setattr(self, 'case', case)
 
 
@@ -110,8 +103,8 @@ class DeleteCaseForm(BaseForm):
         if not case:
             raise ValidationError(f'没有该用例')
 
-        if not self.is_can_delete(case.project_id, case):
-            raise ValidationError(f'不能删除别人项目下的用例')
+        if not self.is_can_delete(Module.get_first(id=case.module_id).project_id, case):
+            raise ValidationError(f'不能删除别人的用例')
 
         # 校验是否有定时任务已引用此用例
         for task in Task.query.filter(Task.case_id.like(f'%{field.data}%')).all():
@@ -134,17 +127,11 @@ class GetCaseForm(BaseForm):
 
 class RunCaseForm(BaseForm):
     """ 运行用例 """
-    caseIds = StringField(validators=[DataRequired('请选择用例')])
-    caseName = StringField()
-    projectId = IntegerField(validators=[DataRequired('请选择项目')])
+    caseId = StringField(validators=[DataRequired('请选择用例')])
 
-    def validate_caseIds(self, field):
-        """ 校验用例集id """
-        for case_id in field.data:
-            if not Case.get_first(id=case_id):
-                raise ValidationError(f'用例集中 id为 {case_id} 的用例不存在')
-
-    def validate_projectId(self, field):
-        """ 校验项目id """
-        if not Project.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
+    def validate_caseId(self, field):
+        """ 校验用例id存在 """
+        case = Case.get_first(id=field.data)
+        if not case:
+            raise ValidationError(f'id为 {field.data} 的用例不存在')
+        setattr(self, 'case', case)

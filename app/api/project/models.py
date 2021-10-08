@@ -24,8 +24,6 @@ class Project(BaseModel):
     test = db.Column(db.String(100), comment='测试环境域名')
     uat = db.Column(db.String(100), comment='uat环境域名')
     production = db.Column(db.String(100), comment='生产环境域名')
-    modules = db.relationship('Module', order_by='Module.num.asc()', lazy='dynamic')
-    case_sets = db.relationship('Set', order_by='Set.num.asc()', lazy='dynamic')
 
     @property
     def headers_boj(self):

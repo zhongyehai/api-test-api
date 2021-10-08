@@ -19,7 +19,6 @@ from ...baseView import BaseMethodView
 from ...baseModel import db
 from ..apiMsg.models import ApiMsg
 from ..step.models import Step
-from ..module.models import Module
 from ..config.models import Config
 from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
 from config.config import assert_mapping_list
@@ -43,7 +42,7 @@ def methods_mapping():
 
 @api.route('/apiMsg/list', methods=['GET'])
 @login_required
-def api_list():
+def get_api_list():
     """ 根据模块查接口list """
     form = ApiListForm()
     if form.validate():
@@ -85,8 +84,8 @@ class ApiMsgView(BaseMethodView):
     def put(self):
         form = EditApiForm()
         if form.validate():
-            old, list_data, new_num = form.old, Module.get_first(id=form.module_id.data).api_msg.all(), form.new_num()
-            num_sort(new_num, old.num, list_data, old)
+            old, api_list, new_num = form.old, ApiMsg.get_all(module_id=form.module_id.data), form.new_num()
+            num_sort(new_num, old.num, api_list, old)
             with db.auto_commit():
                 old.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
             return restful.success(f'接口 {form.name.data} 修改成功', old.to_dict())

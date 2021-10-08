@@ -154,8 +154,7 @@ class CaseFormatModel(Base):
         self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.is_run = kwargs.get('is_run')
         self.run_times = kwargs.get('run_times')
-        self.project_id = kwargs.get('project_id')
-        self.case_set_id = kwargs.get('case_set_id')
+        self.module_id = kwargs.get('module_id')
         self.create_user = kwargs.get('create_user')
 
 

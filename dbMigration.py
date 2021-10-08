@@ -15,7 +15,6 @@ from app.baseModel import db
 from app.api.apiMsg.models import ApiMsg
 from app.api.case.models import Case
 from app.api.step.models import Step
-from app.api.sets.models import Set
 from app.api.func.models import Func
 from app.api.module.models import Module
 from app.api.project.models import Project

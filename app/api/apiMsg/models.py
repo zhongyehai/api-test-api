@@ -5,6 +5,7 @@
 # @Site :
 # @File : models.py
 # @Software: PyCharm
+from sqlalchemy.orm import backref
 
 from ...baseModel import BaseModel, db
 
@@ -31,6 +32,8 @@ class ApiMsg(BaseModel):
 
     module_id = db.Column(db.Integer, db.ForeignKey('module.id'), comment='所属的接口模块id')
     project_id = db.Column(db.Integer, nullable=True, comment='所属的项目id')
+
+    module = db.relationship('Module', backref='apis')
 
     def to_dict(self):
         """ 转为字典 """

@@ -10,6 +10,7 @@ import json
 from flask import request
 from flask_login import current_user
 
+from ..module.models import Module
 from ..user.models import User
 from ...utils import restful
 from ...utils.required import login_required
@@ -17,7 +18,6 @@ from ...utils.changSort import num_sort
 from .. import api
 from ...baseView import BaseMethodView
 from ...baseModel import db
-from ..sets.models import Set
 from ..case.models import Case
 from ..step.models import Step
 from .forms import AddCaseForm, EditCaseForm, FindCaseForm, DeleteCaseForm, GetCaseForm, RunCaseForm
@@ -49,7 +49,7 @@ def create_step(index, case_id, step):
 @api.route('/case/list', methods=['get'])
 @login_required
 def get_case_list():
-    """ 根据用例集查找用例list """
+    """ 根据模块查找用例list """
     form = FindCaseForm()
     if form.validate():
         return restful.success(data=Case.make_pagination(form))
@@ -62,9 +62,9 @@ def run_case():
     """ 运行测试用例，并生成报告 """
     form = RunCaseForm()
     if form.validate():
-        runner = RunCase(project_id=form.projectId.data, case_id_list=form.caseIds.data)
+        runner = RunCase(project_id=Module.get_first(id=form.case.module_id).project_id, case_id=form.caseId.data)
         json_result = runner.run_case()
-        runner.build_report(json_result, User.get_first(id=current_user.id), form.caseName.data, 'case')
+        runner.build_report(json_result, User.get_first(id=current_user.id), form.case.name, 'case')
         return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
     return restful.fail(form.get_error())
 
@@ -88,7 +88,8 @@ def copy_case():
         new_case = Case()
         new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers')
         new_case.name = old_case.name + '_01'
-        new_case.num = Case.get_new_num(None, case_set_id=old_case.case_set_id)
+        new_case.create_user = current_user.id
+        new_case.num = Case.get_new_num(None, module_id=old_case.module_id)
         db.session.add(new_case)
 
     # 复制步骤
@@ -113,7 +114,7 @@ class CaseView(BaseMethodView):
         form = AddCaseForm()
         if form.validate():
             form.create_user.data = current_user.id
-            num = Case.get_new_num(form.num.data, project_id=form.project_id.data, case_set_id=form.case_set_id.data)
+            num = Case.get_new_num(form.num.data, module_id=form.module_id.data)
 
             # 保存用例
             with db.auto_commit():
@@ -130,8 +131,8 @@ class CaseView(BaseMethodView):
     def put(self):
         form = EditCaseForm()
         if form.validate():
-            num = Case.get_new_num(form.num.data, project_id=form.project_id.data, case_set_id=form.case_set_id.data)
-            case, case_list = form.old_data, Set.get_first(id=form.case_set_id.data).cases.all()
+            num = Case.get_new_num(form.num.data, module_id=form.module_id.data)
+            case, case_list = form.old_data, Case.get_all(module_id=form.module_id.data)
 
             # 修改用例
             with db.auto_commit():

@@ -187,7 +187,7 @@ class RunApi(BaseParse):
 class RunCase(BaseParse):
     """ 运行测试用例 """
 
-    def __init__(self, project_id=None, task_name=None, case_id_list=[], task=None):
+    def __init__(self, project_id=None, task_name=None, case_id=[], task=None):
         super().__init__(project_id, task_name)
         self.task = task
         self.environment = task.choice_host if task else None
@@ -201,7 +201,7 @@ class RunCase(BaseParse):
         self.task_name = task_name
 
         # 要执行的用例id_list
-        self.case_id_list = case_id_list
+        self.case_id_list = case_id
 
         self.parse_all_case()
 

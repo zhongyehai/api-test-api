@@ -14,8 +14,11 @@ class Module(BaseModel):
     __tablename__ = 'module'
     name = db.Column(db.String(50), nullable=True, comment='接口模块')
     num = db.Column(db.Integer(), nullable=True, comment='模块在对应项目下的序号')
+    level = db.Column(db.Integer(), nullable=True, comment='模块级数')
+    up_module = db.Column(db.Integer(), nullable=True, comment='上一级模块id')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
-    api_msg = db.relationship('ApiMsg', order_by='ApiMsg.num.asc()', lazy='dynamic')
+
+    project = db.relationship('Project', backref='modules')  # 一对多
 
     def to_dict(self):
         """ 转字典 """

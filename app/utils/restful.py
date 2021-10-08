@@ -16,7 +16,7 @@ class HttpCode:
     fail = {'code': 400, 'message': '处理失败'}
     forbidden = {'code': 403, 'message': '权限不足'}
     not_find = {'code': 404, 'message': 'url不存在'}
-    error = {'code': 500, 'message': '系统错误'}
+    error = {'code': 500, 'message': '系统出错了，请联系开发人员查看'}
 
 
 def restful_result(code, message, data, **kwargs):
@@ -27,6 +27,11 @@ def restful_result(code, message, data, **kwargs):
 def success(msg=HttpCode.success['message'], data=None, **kwargs):
     """ 业务处理成功的响应 """
     return restful_result(code=HttpCode.success['code'], message=msg, data=data, **kwargs)
+
+
+def get_success(data=None, **kwargs):
+    """ 数据获取成功的响应 """
+    return success(msg='获取成功', data=data, **kwargs)
 
 
 def fail(msg=HttpCode.fail['message'], data=None, **kwargs):

@@ -6,6 +6,7 @@
 # @File : views.py
 # @Software: PyCharm
 
+from flask import request
 from flask_login import current_user
 
 from ...utils import restful
@@ -21,12 +22,24 @@ from .forms import AddModelForm, EditModelForm, FindModelForm, DeleteModelForm, 
 
 @api.route('/module/list', methods=['GET'])
 @login_required
-def module_list():
+def get_module_list():
     """ 模块列表 """
     form = FindModelForm()
     if form.validate():
-        return restful.success(data=Module.make_pagination(form))
+        return restful.get_success(data=Module.make_pagination(form))
     return restful.fail(form.get_error())
+
+
+@api.route('/module/tree', methods=['GET'])
+@login_required
+def module_tree():
+    """ 获取当前项目下的模块树 """
+    project_id = int(request.args.get('project_id'))
+    module_list = [
+        module.to_dict() for module in Module.query.filter_by(
+            project_id=project_id).order_by(Module.up_module.asc()).all()
+    ]
+    return restful.success(data=module_list)
 
 
 @api.route('/module/stick', methods=['PUT'])
@@ -50,7 +63,7 @@ class ModuleView(BaseMethodView):
     def get(self):
         form = GetModelForm()
         if form.validate():
-            return restful.success(data=form.module.to_dict())
+            return restful.get_success(data=form.module.to_dict())
         return restful.fail(form.get_error())
 
     def post(self):
@@ -61,6 +74,7 @@ class ModuleView(BaseMethodView):
                 new_model, form.num.data = Module(), form.new_num()
                 new_model.create(form.data)
                 db.session.add(new_model)
+            setattr(new_model, 'children', [])
             return restful.success(f'名为 {form.name.data} 的模块创建成功', new_model.to_dict())
         return restful.fail(form.get_error())
 
@@ -68,7 +82,7 @@ class ModuleView(BaseMethodView):
         form = EditModelForm()
         if form.validate():
             with db.auto_commit():
-                module_list_of_project, old_module = form.project.modules.all(), form.old_module
+                module_list_of_project, old_module = Module.get_all(project_id=form.project.id), form.old_module
                 num_sort(form.new_num(), old_module.num, module_list_of_project, old_module)
                 old_module.name, old_module.project_id = form.name.data, form.project_id.data
             return restful.success(f'模块 {form.name.data} 修改成功', old_module.to_dict())
