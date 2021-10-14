@@ -19,7 +19,7 @@ class AddModelForm(BaseForm):
     project_id = IntegerField(validators=[DataRequired('项目id必传')])
     name = StringField(validators=[DataRequired('模块名必传'), Length(1, 50, message='模块名称为1~50位')])
     level = StringField()
-    up_module = StringField()
+    parent = StringField()
     id = StringField()
     num = StringField()
 
@@ -32,7 +32,7 @@ class AddModelForm(BaseForm):
 
     def validate_name(self, field):
         """ 模块名不重复 """
-        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, up_module=self.up_module.data)
+        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data)
         if old_module:
             raise ValidationError(f'当前项目中已存在名为 {field.data} 的模块')
 
@@ -81,7 +81,7 @@ class DeleteModelForm(ModuleIdForm):
             raise ValidationError('不能删除别人项目下的模块')
         if module.apis:
             raise ValidationError('请先删除模块下的接口')
-        if Module.get_first(up_module=module.id):
+        if Module.get_first(parent=module.id):
             raise ValidationError('请先删除当前模块下的子模块')
 
         setattr(self, 'module', module)
@@ -99,7 +99,7 @@ class EditModelForm(ModuleIdForm, AddModelForm):
 
     def validate_name(self, field):
         """ 同一个项目下，模块名不重复 """
-        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, up_module=self.up_module.data)
+        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data)
         if old_module and old_module.id != self.id.data:
             raise ValidationError(f'id为 {self.project_id.data} 的项目下已存在名为 {field.data} 的模块')
 

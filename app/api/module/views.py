@@ -37,7 +37,7 @@ def module_tree():
     project_id = int(request.args.get('project_id'))
     module_list = [
         module.to_dict() for module in Module.query.filter_by(
-            project_id=project_id).order_by(Module.up_module.asc()).all()
+            project_id=project_id).order_by(Module.parent.asc()).all()
     ]
     return restful.success(data=module_list)
 
