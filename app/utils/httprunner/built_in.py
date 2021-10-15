@@ -54,6 +54,11 @@ def _01equals(check_value, expect_value):
     assert check_value == expect_value
 
 
+def _02json_equals(check_value, expect_value):
+    """ json相等 """
+    assert check_value == json.loads(expect_value)
+
+
 def _02not_equals(check_value, expect_value):
     """ 不相等 """
     assert check_value != expect_value
