@@ -52,14 +52,20 @@ class Base(JsonUtil):
         """
         return {param['key']: param['value'].replace('%', '&') for param in params_list if param.get('key')}
 
-    def parse_extracts(self, extracts_list):
+    def parse_extracts(self, extracts_list, extract_key_list):
         """ 解析要提取的参数
         extracts_list:
             [{"key": "project_id", "value": "content.data.id", "remark": "项目id"}]
         return:
             [{"project_id": "content.data.id"}]
         """
-        return [{extract['key']: extract['value']} for extract in extracts_list if extract.get('key')]
+        # return [{extract['key']: extract['value']} for extract in extracts_list if extract.get('key')]
+        extracts = []
+        for extract in extracts_list:
+            if extract.get('key'):
+                extract_key_list.append(extract.get('key'))
+                extracts.append({extract['key']: extract['value']})
+        return extracts
 
     def parse_validates(self, validates_list):
         """ 解析断言
@@ -132,7 +138,7 @@ class ApiFormatModel(Base):
         self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json') if self.data_type.upper() == 'JSON' else {}
         self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type.upper() == 'DATA' else {}
-        self.extracts = self.parse_extracts(kwargs.get('extracts', {}))
+        self.extracts = self.parse_extracts(kwargs.get('extracts', {}), extract_key_list=kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
 
         self.module_id = kwargs.get('module_id')
@@ -174,7 +180,7 @@ class StepFormatModel(Base):
         self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json', {})
         self.data_form = self.parse_form_data(kwargs.get('data_form', {}))
-        self.extracts = self.parse_extracts(kwargs.get('extracts', {}))
+        self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
 
         self.case_id = kwargs.get('case_id')
