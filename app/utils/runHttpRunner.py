@@ -203,9 +203,6 @@ class RunCase(BaseParse):
         # 要执行的用例id_list
         self.case_id_list = case_id
 
-        # 要提取的变量的key
-        self.extract_key_list = []
-
         self.parse_all_case()
 
     def parse_step(self, project, case, api, step):
@@ -250,7 +247,7 @@ class RunCase(BaseParse):
 
         # 遍历用例
         for case_id in self.case_id_list:
-            case = Case.get_first(id=case_id, is_run=True)
+            case, extract_key_list = Case.get_first(id=case_id, is_run=True), []  # extract_key_list：步骤中要提取的变量的key
             if case:  # 可能有用例设置为不运行的情况
                 if not self.task:
                     self.environment = case.choice_host
@@ -270,7 +267,7 @@ class RunCase(BaseParse):
                 # 遍历解析用例对应的步骤list, 根据num排序
                 steps = Step.query.filter_by(case_id=case_id, is_run=True).order_by(Step.num.asc()).all()
                 for step in steps:
-                    step = StepFormatModel(**step.to_dict(), extract_list=self.extract_key_list)
+                    step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
                     project = self.get_formated_project(step.project_id)
                     api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
                     case_template['teststeps'].append(self.parse_step(project, case, api, step))
@@ -281,7 +278,7 @@ class RunCase(BaseParse):
                 # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
                 all_variables.update(case.variables)
                 # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
-                for extract_key in self.extract_key_list:
+                for extract_key in extract_key_list:
                     if extract_key in all_variables:
                         del all_variables[extract_key]
 
