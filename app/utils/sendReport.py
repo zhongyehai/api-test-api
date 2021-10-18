@@ -16,21 +16,9 @@ from app.utils.report.report import render_html_report
 from config.config import conf
 
 
-def by_webhook(content, webhook):
-    """ 通过企业微信机器人发送测试报告
-    content
-    {
-      "stat": {
-        "testcases": {
-          "project": 'atom',
-          "total": 1,
-          "success": 1,
-          "fail": 0
-        }
-      }
-    }
-    """
-    data = {
+def by_we_chat(content, webhook):
+    """ 通过企业微信器人发送测试报告 """
+    msg = {
         "msgtype": "markdown",
         "markdown": {
             "content": f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n'
@@ -42,9 +30,29 @@ def by_webhook(content, webhook):
         }
     }
     try:
-        print(f'运行结果发送企业微信：{requests.post(webhook, json=data, verify=False).json()}')
+        print(f'测试结果通过企业微信机器人发送：{requests.post(webhook, json=msg, verify=False).json()}')
     except Exception as error:
         print(f'向企业微信发送测试报告失败，错误信息：\n{error}')
+
+
+def by_ding_ding(content, webhook):
+    """ 通过钉钉机器人发送测试报告 """
+    msg = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": "测试报告",
+            "text": f'## 测试报告 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} \n> '
+                    f'### 任务名：{content["stat"]["testcases"]["project"]} \n> '
+                    f'#### 执行用例:<font color=#3498DB> {content["stat"]["testcases"]["total"]} </font>条 \n> '
+                    f'#### 成功:<font color=#27AE60> {content["stat"]["testcases"]["success"]} </font>条 \n> '
+                    f'#### 失败:<font color=#E74C3C> {content["stat"]["testcases"]["fail"]} </font>条 \n> '
+                    f'#### 详情请登录[测试平台]({conf["report_addr"]})查看\n'
+        }
+    }
+    try:
+        print(f'测试结果通过钉钉机器人发送：{requests.post(webhook, json=msg, verify=False).json()}')
+    except Exception as error:
+        print(f'向钉钉机器人发送测试报告失败，错误信息：\n{error}')
 
 
 def by_email(email_server, email_from, email_pwd, email_to, content):
@@ -56,13 +64,16 @@ def send_report(**kwargs):
     """ 封装发送测试报告提供给多线程使用 """
     is_send, send_type, content = kwargs.get('is_send'), kwargs.get('send_type'), kwargs.get('content')
     if is_send == '2' or (is_send == '3' and content['success'] is False):
-        if send_type == 'webhook':
-            by_webhook(content, kwargs.get('webhook'))
+        if send_type == 'we_chat':
+            by_we_chat(content, kwargs.get('we_chat'))
+        elif send_type == 'ding_ding':
+            by_ding_ding(content, kwargs.get('ding_ding'))
         elif send_type == 'email':
             by_email(kwargs.get('email_server'), kwargs.get('email_from'), kwargs.get('email_pwd'),
                      kwargs.get('email_to'), content)
         elif send_type == 'all':
-            by_webhook(content, kwargs.get('webhook'))
+            by_we_chat(content, kwargs.get('we_chat'))
+            by_ding_ding(content, kwargs.get('ding_ding'))
             by_email(kwargs.get('email_server'), kwargs.get('email_from'), kwargs.get('email_pwd'),
                      kwargs.get('email_to'), content)
 

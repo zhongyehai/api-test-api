@@ -36,12 +36,13 @@ def validate_email(email_server, email_from, email_pwd, email_to):
             raise ValidationError(f'收件人邮箱 {mail} 格式错误')
 
 
-def validate_webhook(webhook):
+def validate_webhook(we_chat=None, ding_ding=None):
     """ 校验webhook地址是否合法 """
-    if not webhook:
-        raise ValidationError(f'选择了要微信群接收，则webhook地址必填')
-    if not webhook.startswith('https://'):
-        raise ValidationError(f'webhook地址错误: {webhook}')
+    if not we_chat and not ding_ding:
+        raise ValidationError(f'选择了要通过机器人发送报告，则webhook地址必填')
+
+    if (we_chat and not we_chat.startswith('https://')) or (ding_ding and not ding_ding.startswith('https://')):
+        raise ValidationError(f'webhook地址错误: {we_chat or ding_ding}')
 
 
 class AddTaskForm(BaseForm):
@@ -51,7 +52,8 @@ class AddTaskForm(BaseForm):
     case_id = StringField()
     choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
     name = StringField(validators=[DataRequired('任务名不能为空')])
-    webhook = StringField()
+    we_chat = StringField()
+    ding_ding = StringField()
     is_send = StringField(validators=[DataRequired('请选择是否发送报告')])
     send_type = StringField()
     email_server = StringField()
@@ -64,15 +66,14 @@ class AddTaskForm(BaseForm):
     def validate_is_send(self, field):
         """ 发送报告类型 1.不发送、2.始终发送、3.仅用例不通过时发送 """
         if field.data in ['2', '3']:
-
-            # 接收地址验证：webhook，email，all
-            # 仅微信群
-            if self.send_type.data == 'webhook':
-                validate_webhook(self.webhook.data)
+            if self.send_type.data == 'we_chat':
+                validate_webhook(self.we_chat.data)
+            elif self.send_type.data == 'ding_ding':
+                validate_webhook(ding_ding=self.ding_ding.data)
             elif self.send_type.data == 'email':
                 validate_email(self.email_server.data, self.email_from.data, self.email_pwd.data, self.email_to.data)
             elif self.send_type.data == 'all':
-                validate_webhook(self.webhook.data)
+                validate_webhook(self.we_chat.data, self.ding_ding.data)
                 validate_email(self.email_server.data, self.email_from.data, self.email_pwd.data, self.email_to.data)
 
     def validate_cron(self, field):
