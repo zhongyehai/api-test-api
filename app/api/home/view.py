@@ -143,7 +143,8 @@ def count_task():
         select send_type, count(*) as totle
             from (select case
                      when send_type = 'all' then 'all'
-                     when send_type = 'webhook' then 'webhook'
+                     when send_type = 'we_chat' then 'we_chat'
+                     when send_type = 'ding_ding' then 'ding_ding'
                      else 'email' end as send_type
                   from `tasks`
                  ) as t
@@ -154,13 +155,14 @@ def count_task():
         'options': [
             '总数', '启用中', '禁用中',
             '始终发送报告的任务', '不发送报告的任务', '失败时发送报告的任务',
-            '都接收报告', '仅工作群接收报告', '仅邮件接收报告',
+            '都接收报告', '仅企业微信群接收报告', '仅钉钉群接收报告', '仅邮件接收报告',
         ],
         'data': [
             sum(status.values()),
             status.get('enable', 0), status.get('disable', 0),
             is_send.get('is_send2', 0), is_send.get('is_send1', 0), is_send.get('is_send3', 0),
-            send_type.get('all', 0), send_type.get('webhook', 0), send_type.get('email', 0),
+            send_type.get('all', 0), send_type.get('we_chat', 0), send_type.get('ding_ding', 0),
+            send_type.get('email', 0)
         ]
     })
 
