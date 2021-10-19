@@ -59,8 +59,8 @@ def get_case_id(project_id: int, module_id: list, case_id: list):
         module_ids = module_id
     else:
         module_ids = [module.id for module in Module.query.filter_by(project_id=project_id).order_by(Module.num.asc()).all()]
-    case_ids = [case_data.id for module_id in module_ids for case_data in Case.query.filter_by(
-        module_id=module_id).order_by(Case.num.asc()).all()]
+    case_ids = [case.id for module_id in module_ids for case in Case.query.filter_by(
+        module_id=module_id).order_by(Case.num.asc()).all() if case.is_run]
     return case_ids
 
 

@@ -182,6 +182,7 @@ class StepFormatModel(Base):
         self.data_form = self.parse_form_data(kwargs.get('data_form', {}))
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
+        self.data_driver = kwargs.get('data_driver', {})
 
         self.case_id = kwargs.get('case_id')
         self.api_id = kwargs.get('api_id')

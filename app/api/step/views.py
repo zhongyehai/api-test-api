@@ -56,7 +56,8 @@ class StepMethodView(BaseMethodView):
             with db.auto_commit():
                 step = Step()
                 form.set_attr(num=Step.get_new_num(form.num.data, case_id=form.case_id.data))
-                step.create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
+                step.create(
+                    form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
                 db.session.add(step)
             return restful.success('步骤新建成功', data=step.to_dict())
         return restful.error(form.get_error())
@@ -69,7 +70,8 @@ class StepMethodView(BaseMethodView):
             step, step_list = form.step, Step.get_all(case_id=form.case_id.data)
             with db.auto_commit():
                 num_sort(num, step.num, step_list, step)
-                step.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
+                step.update(
+                    form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
             return restful.success(msg='修改成功', data=form.step.to_dict())
         return restful.fail(form.get_error())
 

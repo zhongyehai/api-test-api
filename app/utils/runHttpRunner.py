@@ -270,7 +270,16 @@ class RunCase(BaseParse):
                     step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
                     project = self.get_formated_project(step.project_id)
                     api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
-                    case_template['teststeps'].append(self.parse_step(project, case, api, step))
+                    if step.data_driver:  # 如果有step.data_driver，则说明是数据驱动
+                        method = api.get('request', {}).get('method', {})
+                        for data in step.data_driver:
+                            if method == 'GET':
+                                step.params = data
+                            else:
+                                step.data_json = step.data_form = data
+                            case_template['teststeps'].append(self.parse_step(project, case, api, step))
+                    else:
+                        case_template['teststeps'].append(self.parse_step(project, case, api, step))
 
                     # 把项目的自定义变量留下来
                     all_variables.update(project.variables)
