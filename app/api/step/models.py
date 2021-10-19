@@ -25,7 +25,7 @@ class Step(BaseModel):
     data_json = db.Column(db.Text(), comment='json参数')
     extracts = db.Column(db.Text(), comment='提取信息')
     validates = db.Column(db.Text(), comment='断言信息')
-    data_driver = db.Column(db.Text(), default='{}', comment='数据驱动，若此字段有值，则走数据驱动的解析')
+    data_driver = db.Column(db.Text(), default='[]', comment='数据驱动，若此字段有值，则走数据驱动的解析')
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     project = db.relationship('Project', backref='steps')
