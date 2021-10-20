@@ -1,4 +1,4 @@
-from . import exceptions, logger, parser, utils
+from . import exceptions, logger, parser, utils, built_in
 
 
 class SessionContext(object):
@@ -134,54 +134,41 @@ class SessionContext(object):
         check_value = validator_dict["check_value"]
         expect_value = validator_dict["expect"]
 
-        if (check_value is None or expect_value is None) \
-            and comparator not in ["is", "eq", "equals", "=="]:
+        if (check_value is None or expect_value is None) and comparator not in ["is", "eq", "equals", "=="]:
             raise exceptions.ParamsError("Null value can only be compared with comparator: eq/equals/==")
-
-        validate_msg = "validate: {} {} {}({})".format(
-            check_item,
-            comparator,
-            expect_value,
-            type(expect_value).__name__
-        )
-
         try:
             validator_dict["check_result"] = "pass"
             validate_func(check_value, expect_value)
-            validate_msg += "\t==> pass"
-            logger.log_debug(validate_msg)
-        except (AssertionError, TypeError):
-            validate_msg += "\t==> fail"
-            validate_msg += "\n{}({}) {} {}({})".format(
-                check_value,
-                type(check_value).__name__,
-                comparator,
-                expect_value,
-                type(expect_value).__name__
-            )
-            logger.log_error(validate_msg)
+            logger.log_debug(f"断言: "
+                             f"{check_item} "
+                             f"{getattr(built_in, comparator).__doc__} "
+                             f"{expect_value}({type(expect_value).__name__}) "
+                             f"==> pass")
+        except (AssertionError, TypeError) as error:
+            error_msg = f"""
+            断言不通过
+            断言方式: {getattr(built_in, comparator).__doc__}
+            预期结果: {expect_value}({type(expect_value).__name__})
+            实际结果: {check_value}({type(check_value).__name__})
+            断言结果: {error}
+            """
             validator_dict["check_result"] = "fail"
-            raise exceptions.ValidationFailure(validate_msg)
+            raise exceptions.ValidationFailure(error_msg)
 
     def validate(self, validators, resp_obj):
-        """ make validations
-        """
+        """ 执行断言 """
         self.validation_results = []
         if not validators:
             return
 
-        logger.log_debug("start to validate.")
+        logger.log_debug("开始断言")
 
         validate_pass = True
         failures = []
 
         for validator in validators:
             # evaluate validators with context variable mapping.
-            evaluated_validator = self.__eval_check_item(
-                parser.parse_validator(validator),
-                resp_obj
-            )
-
+            evaluated_validator = self.__eval_check_item(parser.parse_validator(validator), resp_obj)
             try:
                 self._do_validation(evaluated_validator)
             except exceptions.ValidationFailure as ex:
@@ -190,6 +177,6 @@ class SessionContext(object):
 
             self.validation_results.append(evaluated_validator)
 
-        if not validate_pass:
+        if not validate_pass:  # 断言未通过
             failures_string = "\n".join([failure for failure in failures])
             raise exceptions.ValidationFailure(failures_string)
