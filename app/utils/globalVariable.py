@@ -710,6 +710,7 @@ FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/files/'))
 TEST_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/test_files/'))
 MOCK_DATA_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/mock_data/'))
 CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/'))
+TEMPLATE_ADDRESS = os.path.abspath(os.path.join(basedir, r'template'))
 
 
 def _check_file_path(paths):

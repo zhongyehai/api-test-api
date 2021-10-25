@@ -325,7 +325,7 @@ def get_mapping_variable(variable_name, variables_mapping):
     try:
         return variables_mapping[variable_name]
     except KeyError:
-        raise exceptions.VariableNotFound(f"变量 {variable_name} 没有找到")
+        raise exceptions.VariableNotFound(f"引用的变量 {variable_name} 没有找到")
 
 
 def get_mapping_function(function_name, functions_mapping):
@@ -362,7 +362,7 @@ def get_mapping_function(function_name, functions_mapping):
             return item_func
     except (NameError, TypeError):
         # is not builtin function
-        raise exceptions.FunctionNotFound("{} is not found.".format(function_name))
+        raise exceptions.FunctionNotFound(f"自定义函数 {function_name} 没有找到")
 
 
 def parse_string_functions(content, variables_mapping, functions_mapping):
@@ -417,7 +417,7 @@ def parse_string_functions(content, variables_mapping, functions_mapping):
 
 
 def parse_string_variables(content, variables_mapping, functions_mapping):
-    """ parse string content with variables mapping.
+    """ 从字符串中，解析引用变量
 
     Args:
         content (str): string content to be parsed.

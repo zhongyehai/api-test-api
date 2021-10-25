@@ -26,6 +26,7 @@ class Step(BaseModel):
     extracts = db.Column(db.Text(), comment='提取信息')
     validates = db.Column(db.Text(), comment='断言信息')
     data_driver = db.Column(db.Text(), default='[]', comment='数据驱动，若此字段有值，则走数据驱动的解析')
+    # step_type = db.Column(db.Integer(), default=1, comment='步骤类型，1：api，2：用例')
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     project = db.relationship('Project', backref='steps')

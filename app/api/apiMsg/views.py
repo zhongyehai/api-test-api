@@ -8,9 +8,13 @@
 
 import json
 
+from flask import request, send_from_directory
 from flask_login import current_user
 
+from ..module.models import Module
 from ...utils import restful
+from ...utils.globalVariable import FILE_ADDRESS, TEMPLATE_ADDRESS
+from ...utils.parseExcel import parse_file_content
 from ...utils.required import login_required
 from ...utils.runHttpRunner import RunApi
 from ...utils.changSort import num_sort
@@ -21,7 +25,7 @@ from ..apiMsg.models import ApiMsg
 from ..step.models import Step
 from ..config.models import Config
 from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
-from config.config import assert_mapping_list
+from config.config import assert_mapping_list, basedir
 
 
 @api.route('/apiMsg/assertMapping', methods=['GET'])
@@ -47,7 +51,49 @@ def get_api_list():
     form = ApiListForm()
     if form.validate():
         return restful.success(data=ApiMsg.make_pagination(form))
-    return restful.fail(form.get_error())
+
+
+@api.route('/apiMsg/upload', methods=['POST'])
+@login_required
+def api_upload():
+    """ 从excel中导入接口 """
+    file, module, user_id = request.files.get('file'), Module.get_first(id=request.form.get('id')), current_user.id
+    if not module:
+        return restful.fail('模块不存在')
+    if file and file.filename.endswith('xls'):
+        excel_data = parse_file_content(file.read())  # [{'请求类型': 'get', '接口名称': 'xx接口', 'url': '/api/v1/xxx'}]
+        with db.auto_commit():
+            for api_data in excel_data:
+                new_api = ApiMsg()
+                new_api.headers = api_data.get('headers', '[{"key": null, "remark": null, "value": null}]')
+                new_api.params = api_data.get('params', '[{"key": null, "value": null}]')
+                new_api.data_form = api_data.get('data_form',
+                                                 '[{"data_type": null, "key": null, "remark": null, "value": null}]')
+                new_api.data_json = api_data.get('data_json', '{}')
+                new_api.extracts = api_data.get('extracts', '[{"key": "", "remark": null, "value": null}]')
+                new_api.validates = api_data.get('validates',
+                                                 '[{"key": null, "remark": null, "validate_type": null, "value": null}]')
+                new_api.name = api_data.get('name', '')
+                new_api.method = api_data.get('method', 'post').upper()
+                new_api.addr = api_data.get('url', '')
+                new_api.num = new_api.get_new_num(None)
+                new_api.desc = api_data.get('desc', '')
+                new_api.up_func = api_data.get('up_func', '')
+                new_api.down_func = api_data.get('down_func', '')
+                new_api.choice_host = api_data.get('choice_host', 'test')
+                new_api.data_type = api_data.get('data_type', 'json')
+                new_api.project_id = module.project_id
+                new_api.module_id = module.id
+                new_api.create_user = user_id
+                db.session.add(new_api)
+        return restful.success('接口导入成功')
+    return restful.fail('请上传后缀为xls的Excel文件')
+
+
+@api.route('/apiMsg/template/download', methods=['GET'])
+def download_api_template():
+    """ 下载接口模板 """
+    return send_from_directory(TEMPLATE_ADDRESS, '接口导入模板.xls', as_attachment=True)
 
 
 @api.route('/apiMsg/run', methods=['POST'])
