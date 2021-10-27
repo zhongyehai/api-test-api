@@ -116,14 +116,10 @@ class EditApiForm(AddApiForm):
 
     def validate_id(self, field):
         """ 校验接口id已存在 """
-        # old = ApiMsg.get_first(id=field.data)
-        # if not old:
-        #     raise ValidationError(f'id为 {field.data} 的接口不存在')
-        # setattr(self, 'old', old)
-
-        if old := ApiMsg.get_first(id=field.data):
-            setattr(self, 'old', old)
-        raise ValidationError(f'id为 {field.data} 的接口不存在')
+        old = ApiMsg.get_first(id=field.data)
+        if not old:
+            raise ValidationError(f'id为 {field.data} 的接口不存在')
+        setattr(self, 'old', old)
 
     def validate_name(self, field):
         """ 校验接口名不重复 """
@@ -161,43 +157,27 @@ class GetApiById(BaseForm):
     id = IntegerField(validators=[DataRequired('接口id必传')])
 
     def validate_id(self, field):
-        # api = ApiMsg.get_first(id=field.data)
-        # if not api:
-        #     raise ValidationError(f'id为 {field.data} 的接口不存在')
-        # setattr(self, 'api', api)
-        if api := ApiMsg.get_first(id=field.data):
-            setattr(self, 'api', api)
-        raise ValidationError(f'id为 {field.data} 的接口不存在')
+        api = ApiMsg.get_first(id=field.data)
+        if not api:
+            raise ValidationError(f'id为 {field.data} 的接口不存在')
+        setattr(self, 'api', api)
 
 
 class DeleteApiForm(GetApiById):
     """ 删除接口 """
 
     def validate_id(self, field):
-        # api = ApiMsg.get_first(id=field.data)
-        # if not api:
-        #     raise ValidationError(f'id为 {field.data} 的接口不存在')
-        #
-        # # 校验接口是否被测试用例引用
-        # case_data = Step.get_first(api_id=field.data)
-        # if case_data:
-        #     case = Case.get_first(id=case_data.case_id)
-        #     raise ValidationError(f'用例 {case.name} 已引用此接口，请先解除引用')
-        #
-        # project_id = Module.get_first(id=api.module_id).project_id
-        # if not self.is_can_delete(project_id, api):
-        #     raise ValidationError('不能删除别人项目下的接口')
-        # setattr(self, 'api', api)
+        api = ApiMsg.get_first(id=field.data)
+        if not api:
+            raise ValidationError(f'id为 {field.data} 的接口不存在')
 
-        if api := ApiMsg.get_first(id=field.data):
+        # 校验接口是否被测试用例引用
+        case_data = Step.get_first(api_id=field.data)
+        if case_data:
+            case = Case.get_first(id=case_data.case_id)
+            raise ValidationError(f'用例 {case.name} 已引用此接口，请先解除引用')
 
-            # 校验接口是否被测试用例引用
-            if case_data := Step.get_first(api_id=field.data):
-                raise ValidationError(f'用例 {Case.get_first(id=case_data.case_id).name} 已引用此接口，请先解除引用')
-
-            # 校验是否有删除权限
-            if not self.is_can_delete(Module.get_first(id=api.module_id).project_id, api):
-                raise ValidationError('不能删除别人项目下的接口')
-
-            setattr(self, 'api', api)
-        raise ValidationError(f'id为 {field.data} 的接口不存在')
+        project_id = Module.get_first(id=api.module_id).project_id
+        if not self.is_can_delete(project_id, api):
+            raise ValidationError('不能删除别人项目下的接口')
+        setattr(self, 'api', api)
