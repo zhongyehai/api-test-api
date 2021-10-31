@@ -185,7 +185,7 @@ def count_report():
     run_type = db.execute_query_sql("""
         select run_type, count(*) as totle
             from (select case 
-                     when run_type = 'module' then 'module'
+                     when run_type = 'set' then 'set'
                      when run_type = 'case' then 'case'
                      when run_type = 'task' then 'task' end as run_type from `report`) as t
             group by run_type
@@ -193,11 +193,11 @@ def count_report():
 
     return restful.success('获取成功', data={
         'title': '测试报告',
-        'options': ['总数', '已读', '未读', '通过数', '失败数', '模块生成的报告', '用例生成的报告', '定时任务生成的报告'],
+        'options': ['总数', '已读', '未读', '通过数', '失败数', '用例生成的报告', '用例集生成的报告', '定时任务生成的报告'],
         'data': [
             sum(status.values()),
             status.get('is_read', 0), status.get('not_read', 0),
             is_passed.get('is_passed', 0), is_passed.get('not_passed', 0),
-            run_type.get('module', 0), run_type.get('case', 0), run_type.get('task', 0)
+            run_type.get('case', 0), run_type.get('set', 0), run_type.get('task', 0)
         ]
     })

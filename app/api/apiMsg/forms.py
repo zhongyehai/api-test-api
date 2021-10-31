@@ -181,3 +181,4 @@ class DeleteApiForm(GetApiById):
         if not self.is_can_delete(project_id, api):
             raise ValidationError('不能删除别人项目下的接口')
         setattr(self, 'api', api)
+

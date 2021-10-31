@@ -710,6 +710,8 @@ FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/files/'))
 TEST_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/test_files/'))
 MOCK_DATA_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/mock_data/'))
 CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/'))
+CFCA_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/cfca_files/'))
+TEMP_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/temp_files/'))
 TEMPLATE_ADDRESS = os.path.abspath(os.path.join(basedir, r'template'))
 
 
@@ -725,7 +727,8 @@ def _check_file_path(paths):
 
 
 _check_file_path([
-    REPORT_ADDRESS, FUNC_ADDRESS, FILE_ADDRESS, LOG_ADDRESS, TEST_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS
+    REPORT_ADDRESS, FUNC_ADDRESS, FILE_ADDRESS, LOG_ADDRESS, TEST_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS,
+    CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
 ])
 
 if __name__ == '__main__':

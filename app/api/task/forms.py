@@ -48,7 +48,7 @@ def validate_webhook(we_chat=None, ding_ding=None):
 class AddTaskForm(BaseForm):
     """ 添加定时任务的校验 """
     project_id = IntegerField(validators=[DataRequired('请选择项目')])
-    module_id = StringField()
+    set_id = StringField()
     case_id = StringField()
     choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
     name = StringField(validators=[DataRequired('任务名不能为空')])

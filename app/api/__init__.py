@@ -13,6 +13,7 @@ from app.api.module import views
 from app.api.func import views
 from app.api.report import views
 from app.api.task import views
+from app.api.sets import views
 from app.api.apiMsg import views
 from app.api.case import views
 from app.api.step import views

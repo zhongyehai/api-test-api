@@ -6,12 +6,11 @@
 # @File : views.py
 # @Software: PyCharm
 
-import json
 from threading import Thread
 
 from flask_login import current_user
 
-from ..module.models import Module
+from ..sets.models import Set
 from ...utils import restful
 from ...utils.required import login_required
 from ...utils.sendReport import async_send_report
@@ -32,10 +31,9 @@ def aps_test(case_ids, task, performer=None):
     runner = RunCase(project_id=task.project_id,  task_name=task.name, case_id=case_ids, task=task)
     jump_res = runner.run_case()
     runner.build_report(jump_res, performer, task.name, 'task')
-    res = json.loads(jump_res)
 
     # 多线程发送测试报告
-    async_send_report(content=res, **task.to_dict())
+    async_send_report(content=task.loads(jump_res), **task.to_dict())
 
     db.session.rollback()  # 把连接放回连接池，不知道为什么定时任务跑完不会自动放回去，导致下次跑的时候，mysql连接超时断开报错
     return runner.new_report_id
@@ -46,7 +44,7 @@ def async_aps_test(*args):
     Thread(target=aps_test, args=args).start()
 
 
-def get_case_id(project_id: int, module_id: list, case_id: list):
+def get_case_id(project_id: int, set_id: list, case_id: list):
     """
     获取要执行的用例的id
     1.如果有用例id，则只拿对应的用例
@@ -55,12 +53,12 @@ def get_case_id(project_id: int, module_id: list, case_id: list):
     """
     if len(case_id) != 0:
         return case_id
-    elif len(module_id) != 0:
-        module_ids = module_id
+    elif len(set_id) != 0:
+        set_ids = set_id
     else:
-        module_ids = [module.id for module in Module.query.filter_by(project_id=project_id).order_by(Module.num.asc()).all()]
-    case_ids = [case.id for module_id in module_ids for case in Case.query.filter_by(
-        module_id=module_id).order_by(Case.num.asc()).all() if case.is_run]
+        set_ids = [module.id for module in Set.query.filter_by(project_id=project_id).order_by(Set.num.asc()).all()]
+    case_ids = [case.id for set_id in set_ids for case in Case.query.filter_by(
+        set_id=set_id).order_by(Case.num.asc()).all() if case.is_run]
     return case_ids
 
 
@@ -71,7 +69,7 @@ def run_task():
     form = RunTaskForm()
     if form.validate():
         task = form.task
-        cases_id = get_case_id(task.project_id, json.loads(task.module_id), json.loads(task.case_id))
+        cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
         new_report_id = aps_test(cases_id, task, performer=User.get_first(id=current_user.id))
         return restful.success(msg='测试成功', data={'report_id': new_report_id})
     return restful.fail(form.get_error())
@@ -103,7 +101,7 @@ class TaskView(BaseMethodView):
             with db.auto_commit():
                 new_task = Task()
                 form.set_attr(num=form.new_num())
-                new_task.create(form.data, 'module_id', 'case_id')
+                new_task.create(form.data, 'set_id', 'case_id')
                 db.session.add(new_task)
             return restful.success(f'定时任务 {form.name.data} 新建成功', new_task.to_dict())
         return restful.fail(form.get_error())
@@ -112,7 +110,7 @@ class TaskView(BaseMethodView):
         form = EditTaskForm()
         if form.validate():
             form.set_attr(num=form.new_num())
-            form.task.update(form.data, 'module_id', 'case_id')
+            form.task.update(form.data, 'set_id', 'case_id')
             return restful.success(f'定时任务 {form.name.data} 修改成功', form.task.to_dict())
         return restful.fail(form.get_error())
 
@@ -132,7 +130,7 @@ class TaskStatus(BaseMethodView):
         form = HasTaskIdForm()
         if form.validate():
             task = form.task
-            cases_id = get_case_id(task.project_id, json.loads(task.module_id), json.loads(task.case_id))
+            cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
             # 把定时任务添加到apscheduler_jobs表中
             scheduler.add_job(func=async_aps_test,  # 异步执行任务
                               trigger='cron',

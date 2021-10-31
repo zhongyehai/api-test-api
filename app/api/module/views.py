@@ -5,13 +5,10 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
-import json
 
 from flask import request
 from flask_login import current_user
 
-from ..case.models import Case
-from ..user.models import User
 from ...utils import restful
 from ...utils.required import login_required
 from ...utils.changSort import num_sort
@@ -20,8 +17,7 @@ from ...baseView import BaseMethodView
 from ...baseModel import db
 from ..project.models import Project
 from .models import Module
-from .forms import AddModelForm, EditModelForm, FindModelForm, DeleteModelForm, GetModelForm, StickModuleForm
-from ...utils.runHttpRunner import RunCase
+from .forms import AddModelForm, EditModelForm, FindModelForm, DeleteModelForm, StickModuleForm, GetModelForm
 
 
 @api.route('/module/list', methods=['GET'])
@@ -31,22 +27,6 @@ def get_module_list():
     form = FindModelForm()
     if form.validate():
         return restful.get_success(data=Module.make_pagination(form))
-    return restful.fail(form.get_error())
-
-
-@api.route('/module/run', methods=['POST'])
-@login_required
-def run_module_cases():
-    """ 运行模块下的用例 """
-    form = GetModelForm()
-    if form.validate():
-        runner = RunCase(
-            project_id=form.module.project_id,
-            case_id=[case.id for case in Case.query.filter_by(module_id=form.module.id).order_by(Case.num.asc()).all()
-                     if case.is_run])
-        json_result = runner.run_case()
-        runner.build_report(json_result, User.get_first(id=current_user.id), form.module.name, 'module')
-        return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
     return restful.fail(form.get_error())
 
 

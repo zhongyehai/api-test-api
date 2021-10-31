@@ -10,7 +10,7 @@ import json
 from flask import request
 from flask_login import current_user
 
-from ..module.models import Module
+from ..sets.models import Set
 from ..user.models import User
 from ...utils import restful
 from ...utils.required import login_required
@@ -62,7 +62,7 @@ def run_case():
     """ 运行测试用例，并生成报告 """
     form = RunCaseForm()
     if form.validate():
-        runner = RunCase(project_id=Module.get_first(id=form.case.module_id).project_id, case_id=form.caseId.data)
+        runner = RunCase(project_id=Set.get_first(id=form.case.set_id).project_id, case_id=form.caseId.data)
         json_result = runner.run_case()
         runner.build_report(json_result, User.get_first(id=current_user.id), form.case.name, 'case')
         return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
@@ -89,7 +89,7 @@ def copy_case():
         new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers')
         new_case.name = old_case.name + '_01'
         new_case.create_user = current_user.id
-        new_case.num = Case.get_new_num(None, module_id=old_case.module_id)
+        new_case.num = Case.get_new_num(None, set_id=old_case.set_id)
         db.session.add(new_case)
 
     # 复制步骤
@@ -114,7 +114,7 @@ class CaseView(BaseMethodView):
         form = AddCaseForm()
         if form.validate():
             form.create_user.data = current_user.id
-            num = Case.get_new_num(form.num.data, module_id=form.module_id.data)
+            num = Case.get_new_num(form.num.data, set_id=form.set_id.data)
 
             # 保存用例
             with db.auto_commit():
@@ -131,8 +131,8 @@ class CaseView(BaseMethodView):
     def put(self):
         form = EditCaseForm()
         if form.validate():
-            num = Case.get_new_num(form.num.data, module_id=form.module_id.data)
-            case, case_list = form.old_data, Case.get_all(module_id=form.module_id.data)
+            num = Case.get_new_num(form.num.data, set_id=form.set_id.data)
+            case, case_list = form.old_data, Case.get_all(set_id=form.set_id.data)
 
             # 修改用例
             with db.auto_commit():

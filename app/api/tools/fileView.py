@@ -14,9 +14,16 @@ from flask import request, send_from_directory
 from config.config import conf
 from .. import api
 from ...utils import restful
-from ...utils.globalVariable import FILE_ADDRESS, CALL_BACK_ADDRESS
+from ...utils.globalVariable import FILE_ADDRESS, CALL_BACK_ADDRESS, CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
 from ...baseView import BaseMethodView
 from ...utils.required import login_required
+
+folders = {
+    'case': FILE_ADDRESS,
+    'cfca': CFCA_FILE_ADDRESS,
+    'callBack': CALL_BACK_ADDRESS,
+    'temp': TEMP_FILE_ADDRESS,
+}
 
 
 def format_time(atime):
@@ -37,7 +44,7 @@ def get_file_list():
     """ 文件列表 """
     pag_size = request.args.get('pageSize') or conf['page']['pageSize']
     page_num = request.args.get('pageNum') or conf['page']['pageNum']
-    addr = FILE_ADDRESS if request.args.get('fileType') == 'case' else CALL_BACK_ADDRESS
+    addr = folders.get(request.args.get('fileType'), 'case')
     file_list = os.listdir(addr)
 
     # 分页
@@ -68,7 +75,7 @@ def check_file():
 @login_required
 def download_file():
     """ 下载文件 """
-    addr = FILE_ADDRESS if request.args.get('fileType') == 'case' else CALL_BACK_ADDRESS
+    addr = folders.get(request.args.get('fileType'), 'case')
     return send_from_directory(addr, request.args.to_dict().get('name'), as_attachment=True)
 
 
@@ -104,8 +111,7 @@ class FileManage(BaseMethodView):
     def delete(self):
         """ 删除文件 """
         request_json = request.get_json(silent=True)
-        name, file_type = request_json.get('name'), request_json.get('fileType')
-        addr = FILE_ADDRESS if file_type == 'case' else CALL_BACK_ADDRESS
+        name, addr = request_json.get('name'), folders.get(request_json.get('fileType'), 'case')
         path = os.path.join(addr, name)
         if os.path.exists(path):
             os.remove(path)

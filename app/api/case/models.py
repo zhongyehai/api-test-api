@@ -22,8 +22,7 @@ class Case(BaseModel):
     variables = db.Column(db.Text(), comment='用例级的公共参数')
     headers = db.Column(db.Text(), comment='用例级的头部信息')
 
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), comment='所属的用例集id')
-    module = db.relationship('Module', backref='cases')
+    set_id = db.Column(db.Integer, db.ForeignKey('sets.id'), comment='所属的用例集id')
 
     def to_dict(self):
         return self.base_to_dict(json_to_dict_list=['func_files', 'variables', 'headers'])
@@ -32,8 +31,8 @@ class Case(BaseModel):
     def make_pagination(cls, form):
         """ 解析分页条件 """
         filters = []
-        if form.moduleId.data:
-            filters.append(cls.module_id == form.moduleId.data)
+        if form.setId.data:
+            filters.append(cls.set_id == form.setId.data)
         if form.name.data:
             filters.append(cls.name.like(f'%{form.name.data}%'))
         return cls.pagination(

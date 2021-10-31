@@ -27,13 +27,13 @@ class Task(BaseModel):
     email_pwd = db.Column(db.String(256), comment='发件人邮箱密码')
     email_to = db.Column(db.Text(), comment='收件人邮箱')
     status = db.Column(db.String(10), default=u'禁用中', comment='任务的运行状态，默认是禁用中')
-    module_id = db.Column(db.String(2048), comment='模块id')
+    set_id = db.Column(db.String(2048), comment='用例集id')
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     project = db.relationship('Project', backref='tasks')
 
     def to_dict(self):
-        return self.base_to_dict(json_to_dict_list=['module_id', 'case_id'])
+        return self.base_to_dict(json_to_dict_list=['set_id', 'case_id'])
 
     @classmethod
     def make_pagination(cls, form):
