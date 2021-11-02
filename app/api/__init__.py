@@ -19,6 +19,7 @@ from app.api.case import views
 from app.api.step import views
 from app.api.tools import views
 from app.api.tools import fileView
+from app.api.tools import accountView
 from app.api.home import view
 from app.api.config import views
 

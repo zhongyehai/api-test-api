@@ -270,9 +270,15 @@ class RunCase(BaseParse):
                     step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
                     project = self.get_formated_project(step.project_id)
                     api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
-                    if step.data_driver:  # 如果有step.data_driver，则说明是数据驱动
+
+                    # 如果有step.data_driver，则说明是数据驱动
+                    if step.data_driver:
                         method = api.get('request', {}).get('method', {})
                         for data in step.data_driver:
+                            # 数据驱动的 comment 字段，用于做标识
+                            if '_comment' in data:
+                                comment = data.pop('_comment')
+                                step.name += f'_{comment}'
                             if method == 'GET':
                                 step.params = data
                             else:

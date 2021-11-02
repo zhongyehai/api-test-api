@@ -31,6 +31,28 @@ def format_time(atime):
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(atime))
 
 
+@api.route('/file/create/download')
+def creat_file():
+    """ 创建指定大小和格式的文件 """
+    start = time.time()
+    size, file_format = float(request.args.get('size')), request.args.get('format')
+    local_time = time.strftime("%Y%m%d%H%M%S", time.localtime())
+    file_name = f"temp_file_{str(local_time)}.{file_format}"
+
+    # 删除历史的大文件
+    for old_file in os.listdir(TEMP_FILE_ADDRESS):
+        if old_file.startswith('temp_file'):
+            os.remove(os.path.join(TEMP_FILE_ADDRESS, old_file))
+
+    # 生成新的大文件
+    file = open(os.path.join(TEMP_FILE_ADDRESS, file_name), 'w', encoding='utf-8')
+    file.seek(1024 * 1024 * 1024 * size)
+    file.write('test')
+    file.close()
+    print(time.time() - start)
+    return send_from_directory(TEMP_FILE_ADDRESS, file_name, as_attachment=True)
+
+
 def make_pagination(data_list, pag_size, page_num):
     """ 数据列表分页 """
     start = (page_num - 1) * pag_size

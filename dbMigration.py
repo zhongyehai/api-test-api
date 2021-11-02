@@ -23,6 +23,7 @@ from app.api.report.models import Report
 from app.api.task.models import Task, ApschedulerJobs
 from app.api.user.models import User, Permission, Role
 from app.api.config.models import Config, ConfigType
+from app.api.tools.models import AccountModel
 from main import app
 
 manager = Manager(app)
