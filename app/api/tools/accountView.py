@@ -53,7 +53,7 @@ class AccountView(BaseMethodView):
         # 账号不重复
         account = AccountModel.get_first(event=request.json['event'], account=request.json.get('account'))
         if account and account.id != request.json.get('id'):
-            return restful.fail(f'当前环境下账号 {account.aaccount} 已存在', data=account.to_dict())
+            return restful.fail(f'当前环境下账号 {account.account} 已存在', data=account.to_dict())
 
         old_account = AccountModel.get_first(id=request.json.get('id'))
         with db.auto_commit():
