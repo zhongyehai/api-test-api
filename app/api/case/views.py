@@ -56,6 +56,26 @@ def get_case_list():
     return restful.fail(form.get_error())
 
 
+@api.route('/case/name', methods=['get'])
+@login_required
+def get_case_name():
+    """ 根据用例id获取用例名 """
+    # caseId: '1,4,12'
+    case_ids: list = request.args.to_dict().get('caseId').split(',')
+    return restful.success(data=[{'id': int(case_id), 'name': Case.get_first(id=case_id).name} for case_id in case_ids])
+
+
+@api.route('/case/quote', methods=['put'])
+@login_required
+def change_case_quote():
+    """ 更新用例引用 """
+    case_id, quote_type, quote = request.json.get('id'), request.json.get('quoteType'), request.json.get('quote')
+    with db.auto_commit():
+        case = Case.get_first(id=case_id)
+        setattr(case, quote_type, json.dumps(quote))
+    return restful.success(msg='引用关系修改成功')
+
+
 @api.route('/case/run', methods=['POST'])
 @login_required
 def run_case():
@@ -86,7 +106,7 @@ def copy_case():
     old_case = Case.get_first(id=request.args.get('id'))
     with db.auto_commit():
         new_case = Case()
-        new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers')
+        new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers', 'before_case', 'after_case')
         new_case.name = old_case.name + '_01'
         new_case.create_user = current_user.id
         new_case.num = Case.get_new_num(None, set_id=old_case.set_id)
@@ -120,7 +140,7 @@ class CaseView(BaseMethodView):
             with db.auto_commit():
                 new_case = Case()
                 form.set_attr(num=num)
-                new_case.create(form.data, 'func_files', 'variables', 'headers')
+                new_case.create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
                 db.session.add(new_case)
 
             # 测试步骤顺序有改动则重新排序
@@ -137,7 +157,7 @@ class CaseView(BaseMethodView):
             # 修改用例
             with db.auto_commit():
                 num_sort(num, case.num, case_list, case)
-                case.update(form.data, 'func_files', 'variables', 'headers')
+                case.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
             # 测试步骤顺序有改动则重新排序
             Step.sort_num_by_list(form.steps.data)
             return restful.success(msg='修改成功', data=case.to_dict())

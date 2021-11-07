@@ -39,12 +39,12 @@ class BaseParse:
         self.project_id = project_id
         self.task_name = task_name
         self.parsed_project_dict = {}
+        self.parsed_case_dict = {}
+        self.parsed_api_dict = {}
 
         Func.create_func_file(FUNC_ADDRESS)
-
         self.func_file_list = Func.get_all()
 
-        self.parsed_api_dict = {}
         self.new_report_id = None
 
         # httpRunner需要的数据格式
@@ -64,6 +64,14 @@ class BaseParse:
                 project_id: ProjectFormatModel(**Project.get_first(id=project_id).to_dict())
             })
         return self.parsed_project_dict[project_id]
+
+    def get_formated_case(self, case_id):
+        """ 从已解析的用例字典中取指定id的用例，如果没有，则取出来解析后放进去 """
+        if case_id not in self.parsed_case_dict:
+            self.parsed_case_dict.update({
+                case_id: CaseFormatModel(**Case.get_first(id=case_id).to_dict())
+            })
+        return self.parsed_case_dict[case_id]
 
     def get_formated_api(self, project, api):
         """ 从已解析的接口字典中取指定id的接口，如果没有，则取出来解析后放进去 """
@@ -203,7 +211,39 @@ class RunCase(BaseParse):
         # 要执行的用例id_list
         self.case_id_list = case_id
 
+        # 前置用例
+        self.before_case = []
+        self.before_case_headers = {}
+        self.before_case_variables = {}
+
+        # 后置用例
+        self.after_case = []
+        self.after_case_headers = {}
+        self.after_case_variables = {}
+
         self.parse_all_case()
+
+    def parse_quote(self, quote_case: list, position: str):
+        """ 解析引用的用例 """
+        quote_case.reverse()
+        for quote in quote_case:
+            case = self.get_formated_case(quote)
+
+            if case:
+                temp_case_list = getattr(self, f'{position}_case')
+                # 记录引用的用例
+                temp_case_list.append(case)
+
+                # 更新引用的用例对应的头部信息
+                case.headers.update(getattr(self, f'{position}_case_headers'))
+                setattr(self, f'{position}_case_headers', case.headers)
+
+                # 更新引用的用例对应的公共变量
+                case.variables.update(getattr(self, f'{position}_case_variables'))
+                setattr(self, f'{position}_case_variables', case.variables)
+
+                if getattr(case, f'{position}_case'):
+                    self.parse_quote(getattr(case, f'{position}_case'), position)
 
     def parse_step(self, project, case, api, step):
         """ 解析测试步骤
@@ -245,27 +285,48 @@ class RunCase(BaseParse):
     def parse_all_case(self):
         """ 解析所有用例 """
 
-        # 遍历用例
+        # 遍历要运行的用例
         for case_id in self.case_id_list:
-            case, extract_key_list = Case.get_first(id=case_id, is_run=True), []  # extract_key_list：步骤中要提取的变量的key
-            if case:  # 可能有用例设置为不运行的情况
-                if not self.task:
-                    self.environment = case.choice_host
-                case = CaseFormatModel(**Case.get_first(id=case_id, is_run=True).to_dict())
-                # 用例格式模板
-                case_template = {
-                    'config': {
-                        'variables': {},
-                        'headers': {},
-                        'name': case.name
-                    },
-                    'teststeps': []
-                }
 
-                all_variables = {}
+            # 递归解析前置引用
+            self.parse_quote([case_id], 'before')
+            self.before_case.reverse()
+            print(f'前置引用用例：{[case.id for case in self.before_case]}')
+
+            # 递归解析后置引用
+            self.parse_quote([case_id], 'after')
+            print(f'后置引用用例：{[case.id for case in self.after_case]}')
+
+            # 当前用例含引用用例的执行顺序
+            current_case = self.after_case.pop(0)  # 前置的最后一个id为当前用例的id，后置的第一个id为当前用例id，去重复
+            case_list = self.before_case + self.after_case
+            print(f'当前用例含引用用例的排列情况: {[case.id for case in case_list]}')
+
+            # 选择运行环境
+            if not self.task:
+                self.environment = current_case.choice_host
+
+            # 用例格式模板
+            case_template = {
+                'config': {
+                    'variables': {},
+                    'headers': {},
+                    'name': current_case.name
+                },
+                'teststeps': []
+            }
+
+            # 当前用例的所有公共变量
+            all_variables = {}
+            all_variables.update(self.before_case_variables)
+            all_variables.update(self.after_case_variables)
+
+            # 根据执行顺序逐个解析用例
+            for case in case_list:
+                extract_key_list = []
 
                 # 遍历解析用例对应的步骤list, 根据num排序
-                steps = Step.query.filter_by(case_id=case_id, is_run=True).order_by(Step.num.asc()).all()
+                steps = Step.query.filter_by(case_id=case.id, is_run=True).order_by(Step.num.asc()).all()
                 for step in steps:
                     step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
                     project = self.get_formated_project(step.project_id)
@@ -292,16 +353,93 @@ class RunCase(BaseParse):
 
                 # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
                 all_variables.update(case.variables)
+
                 # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
                 for extract_key in extract_key_list:
                     if extract_key in all_variables:
                         del all_variables[extract_key]
 
-                case_template['config']['variables'] = all_variables
+                case_template['config']['variables'].update(all_variables)  # = all_variables
 
-                # 设置的用例执行多少次就加入多少次
-                for i in range(case.run_times or 1):
-                    self.DataTemplate['testcases'].append(case_template)
+            # 设置的用例执行多少次就加入多少次
+            for i in range(current_case.run_times or 1):
+                self.DataTemplate['testcases'].append(case_template)
+
+            # 完整的解析完一条用例后，去除对应的引用信息
+            self.before_case = []
+            self.before_case_headers = {}
+            self.before_case_variables = {}
+            self.after_case = []
+            self.after_case_headers = {}
+            self.after_case_variables = {}
 
         # 去除项目级的公共变量，保证用步骤上解析后的公共变量
         self.DataTemplate['project_mapping']['variables'] = {}
+
+        #
+        #     case, extract_key_list = Case.get_first(id=case_id, is_run=True), []  # extract_key_list：步骤中要提取的变量的key
+        #     if case:  # 可能有用例设置为不运行的情况
+        #         if not self.task:
+        #             self.environment = case.choice_host
+        #         case = CaseFormatModel(**Case.get_first(id=case_id, is_run=True).to_dict())
+        #         # 用例格式模板
+        #         case_template = {
+        #             'config': {
+        #                 'variables': {},
+        #                 'headers': {},
+        #                 'name': case.name
+        #             },
+        #             'teststeps': []
+        #         }
+        #
+        #         all_variables = {}
+        #
+        #         # 遍历解析用例对应的步骤list, 根据num排序
+        #         steps = Step.query.filter_by(case_id=case_id, is_run=True).order_by(Step.num.asc()).all()
+        #         for step in steps:
+        #             step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
+        #             project = self.get_formated_project(step.project_id)
+        #             api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
+        #
+        #             # 如果有step.data_driver，则说明是数据驱动
+        #             if step.data_driver:
+        #                 method = api.get('request', {}).get('method', {})
+        #                 for data in step.data_driver:
+        #                     # 数据驱动的 comment 字段，用于做标识
+        #                     if '_comment' in data:
+        #                         comment = data.pop('_comment')
+        #                         step.name += f'_{comment}'
+        #                     if method == 'GET':
+        #                         step.params = data
+        #                     else:
+        #                         step.data_json = step.data_form = data
+        #                     case_template['teststeps'].append(self.parse_step(project, case, api, step))
+        #             else:
+        #                 case_template['teststeps'].append(self.parse_step(project, case, api, step))
+        #
+        #             # 把项目的自定义变量留下来
+        #             all_variables.update(project.variables)
+        #
+        #         # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
+        #         all_variables.update(case.variables)
+        #         # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
+        #         for extract_key in extract_key_list:
+        #             if extract_key in all_variables:
+        #                 del all_variables[extract_key]
+        #
+        #         case_template['config']['variables'] = all_variables
+        #
+        #         # 设置的用例执行多少次就加入多少次
+        #         for i in range(case.run_times or 1):
+        #             self.DataTemplate['testcases'].append(case_template)
+        #
+        #     # 去除引用用例
+        #     self.before_case = []
+        #     self.before_case_headers = {}
+        #     self.before_case_variables = {}
+        #     self.after_case = []
+        #     self.after_case_headers = {}
+        #     self.after_case_variables = {}
+        #
+        # # 去除项目级的公共变量，保证用步骤上解析后的公共变量
+        # self.DataTemplate['project_mapping']['variables'] = {}

@@ -14,12 +14,12 @@ from flask import request, send_from_directory
 from config.config import conf
 from .. import api
 from ...utils import restful
-from ...utils.globalVariable import FILE_ADDRESS, CALL_BACK_ADDRESS, CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
+from ...utils.globalVariable import CASE_FILE_ADDRESS, CALL_BACK_ADDRESS, CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
 from ...baseView import BaseMethodView
 from ...utils.required import login_required
 
 folders = {
-    'case': FILE_ADDRESS,
+    'case': CASE_FILE_ADDRESS,
     'cfca': CFCA_FILE_ADDRESS,
     'callBack': CALL_BACK_ADDRESS,
     'temp': TEMP_FILE_ADDRESS,
@@ -88,9 +88,9 @@ def get_file_list():
 @login_required
 def check_file():
     """ 检查文件是否已存在 """
-    file_name = request.args.get('name')
+    file_name, file_type = request.args.get('name'), request.args.get('fileType')
     return restful.fail(f'文件 {file_name} 已存在') if os.path.exists(
-        os.path.join(FILE_ADDRESS, file_name)) else restful.success('文件不存在')
+        os.path.join(folders.get(file_type), file_name)) else restful.success('文件不存在')
 
 
 @api.route('/file/download', methods=['GET'])
@@ -102,15 +102,12 @@ def download_file():
 
 
 @api.route('/upload', methods=['POST'], strict_slashes=False)
-# @login_required
+@login_required
 def file_upload():
     """ 文件上传 """
-    file, skip = request.files['file'], request.form.get('skip')  # 是否覆盖已存在名字的文件
-    if os.path.exists(os.path.join(FILE_ADDRESS, file.filename)) and skip != '1':
-        return restful.fail(msg='文件已存在，请修改文件名字后再上传', data=file.filename)
-    else:
-        file.save(os.path.join(FILE_ADDRESS, file.filename))
-        return restful.success(msg='上传成功', data=file.filename)
+    file, addr = request.files['file'], folders.get(request.form.get('fileType', 'case'))
+    file.save(os.path.join(addr, file.filename))
+    return restful.success(msg='上传成功', data=file.filename)
 
 
 class FileManage(BaseMethodView):
@@ -119,14 +116,14 @@ class FileManage(BaseMethodView):
     decorators = []
 
     def get(self):
-        filename = request.args.to_dict().get('name')
-        return send_from_directory(FILE_ADDRESS, filename, as_attachment=True)
+        args = request.args.to_dict()
+        return send_from_directory(args.get('fileType', 'case'), args.get('name'), as_attachment=True)
 
     def post(self):
         """ 上传文件 """
-        file_name_list = []
+        file_name_list, addr = [], folders.get(request.form.get('fileType', 'case'))
         for file_io in request.files.getlist('files'):
-            file_io.save(os.path.join(FILE_ADDRESS, file_io.filename))
+            file_io.save(os.path.join(addr, file_io.filename))
             file_name_list.append(file_io.filename)
         return restful.success(msg='上传成功', data=file_name_list)
 

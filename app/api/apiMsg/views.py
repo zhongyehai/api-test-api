@@ -13,7 +13,7 @@ from flask_login import current_user
 
 from ..module.models import Module
 from ...utils import restful
-from ...utils.globalVariable import FILE_ADDRESS, TEMPLATE_ADDRESS
+from ...utils.globalVariable import TEMPLATE_ADDRESS
 from ...utils.parseExcel import parse_file_content
 from ...utils.required import login_required
 from ...utils.runHttpRunner import RunApi
@@ -25,7 +25,7 @@ from ..apiMsg.models import ApiMsg
 from ..step.models import Step
 from ..config.models import Config
 from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
-from config.config import assert_mapping_list, basedir
+from config.config import assert_mapping_list
 
 
 @api.route('/apiMsg/assertMapping', methods=['GET'])

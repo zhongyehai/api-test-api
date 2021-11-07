@@ -703,16 +703,15 @@ CONTENT_TYPE = {
 }
 
 # 各模块的路径
-REPORT_ADDRESS = os.path.abspath(os.path.join(basedir, ".." + r'/reports/'))
-LOG_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/logs/'))
-FUNC_ADDRESS = os.path.abspath(os.path.join(basedir, '.' + r'/func_list'))
-FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/files/'))
-TEST_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/test_files/'))
-MOCK_DATA_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/mock_data/'))
-CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/'))
-CFCA_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/cfca_files/'))
-TEMP_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/temp_files/'))
-TEMPLATE_ADDRESS = os.path.abspath(os.path.join(basedir, r'template'))
+LOG_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/logs/'))  # 日志路径
+TEMPLATE_ADDRESS = os.path.abspath(os.path.join(basedir, r'template'))  # 导入模板存放路径
+FUNC_ADDRESS = os.path.abspath(os.path.join(basedir, '.' + r'/func_list'))  # 自定义函数文件存放地址
+REPORT_ADDRESS = os.path.abspath(os.path.join(basedir, ".." + r'/reports/'))  # 测试报告文件存放地址
+CASE_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/case_files/'))  # 用例数据文件存放地址
+MOCK_DATA_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/mock_data/'))  # mock数据文件存放地址
+CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/'))  # 回调数据文件存放地址
+CFCA_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/cfca_files/'))  # CFCA文件存放地址
+TEMP_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/temp_files/'))  # 临时文件存放地址
 
 
 def _check_file_path(paths):
@@ -727,7 +726,7 @@ def _check_file_path(paths):
 
 
 _check_file_path([
-    REPORT_ADDRESS, FUNC_ADDRESS, FILE_ADDRESS, LOG_ADDRESS, TEST_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS,
+    LOG_ADDRESS, FUNC_ADDRESS, REPORT_ADDRESS, CASE_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS,
     CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
 ])
 

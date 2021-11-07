@@ -31,6 +31,8 @@ class AddCaseForm(BaseForm):
     run_times = IntegerField()
     set_id = IntegerField(validators=[DataRequired('请选择用例集')])
     steps = StringField()
+    before_case = StringField()
+    after_case = StringField()
 
     # TODO 校验头部参数，与变量校验方式一致
 

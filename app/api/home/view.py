@@ -19,7 +19,7 @@ from ..task.models import Task
 from ..report.models import Report
 from ...utils import restful
 from ...utils.required import login_required
-from ...utils.globalVariable import FILE_ADDRESS
+from ...utils.globalVariable import CASE_FILE_ADDRESS
 
 
 @api.route('/count/title', methods=['GET'])
@@ -29,7 +29,7 @@ def count_title():
         'project': len(Project.get_all()),
         'module': len(Module.get_all()),
         'api': len(ApiMsg.get_all()),
-        'file': len(os.listdir(FILE_ADDRESS)),
+        'file': len(os.listdir(CASE_FILE_ADDRESS)),
         'case': len(Case.get_all()),
         'step': len(Step.get_all()),
         'task': len(Task.get_all()),
@@ -83,9 +83,9 @@ def count_api():
 @login_required
 def count_file():
     return restful.success(data={
-        'title': '文件',
+        'title': '测试文件',
         'options': ['总数'],
-        'data': [len(os.listdir(FILE_ADDRESS))],
+        'data': [len(os.listdir(CASE_FILE_ADDRESS))],
     })
 
 

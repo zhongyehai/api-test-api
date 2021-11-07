@@ -8,7 +8,7 @@
 import ast
 import os
 
-from .globalVariable import FILE_ADDRESS, CONTENT_TYPE
+from .globalVariable import CASE_FILE_ADDRESS, CONTENT_TYPE
 from .jsonUtil import JsonUtil
 from config.config import assert_mapping
 
@@ -17,8 +17,8 @@ class Base(JsonUtil):
 
     def build_file_path(self, filename):
         """ 拼装要上传文件的路径 """
-        # print(f'文件路径：{os.path.join(FILE_ADDRESS, filename)}')
-        return os.path.join(FILE_ADDRESS, filename)
+        # print(f'文件路径：{os.path.join(CASE_FILE_ADDRESS, filename)}')
+        return os.path.join(CASE_FILE_ADDRESS, filename)
 
     def parse_headers(self, headers_list):
         """ 解析头部信息
@@ -160,6 +160,8 @@ class CaseFormatModel(Base):
         self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.is_run = kwargs.get('is_run')
         self.run_times = kwargs.get('run_times')
+        self.before_case = kwargs.get('before_case', [])
+        self.after_case = kwargs.get('after_case', [])
         self.module_id = kwargs.get('module_id')
         self.create_user = kwargs.get('create_user')
 
