@@ -15,15 +15,16 @@ class Project(BaseModel):
     """ 项目表 """
     __tablename__ = 'project'
 
-    name = db.Column(db.String(50), nullable=True, unique=True, comment='项目名称')
-    manager = db.Column(db.Integer(), nullable=True, comment='项目管理员id')
-    variables = db.Column(db.Text(), comment='项目的公共变量')
-    headers = db.Column(db.Text(), comment='项目的公共头部信息')
-    func_files = db.Column(db.String(256), nullable=True, comment='引用的函数文件')
-    dev = db.Column(db.String(100), comment='开发环境域名')
-    test = db.Column(db.String(100), comment='测试环境域名')
-    uat = db.Column(db.String(100), comment='uat环境域名')
-    production = db.Column(db.String(100), comment='生产环境域名')
+    name = db.Column(db.String(50), nullable=True, comment='项目名称')
+    manager = db.Column(db.Integer(), nullable=True, default=1, comment='项目管理员id，默认为admin')
+    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='项目的公共变量')
+    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='项目的公共头部信息')
+    func_files = db.Column(db.String(256), nullable=True, default='[]', comment='引用的函数文件')
+    dev = db.Column(db.String(100), default='', comment='开发环境域名')
+    test = db.Column(db.String(100), default='', comment='测试环境域名')
+    uat = db.Column(db.String(100), default='', comment='uat环境域名')
+    production = db.Column(db.String(100), default='', comment='生产环境域名')
+    yapi_id = db.Column(db.Integer(), default='', comment='当前项目在yapi平台的id')
 
     @property
     def headers_boj(self):

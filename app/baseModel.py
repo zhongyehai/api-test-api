@@ -78,7 +78,7 @@ class BaseModel(db.Model, JsonUtil):
     id = db.Column(db.Integer(), primary_key=True, comment='主键，自增')
     created_time = db.Column(db.DateTime, index=True, default=datetime.now, comment='创建时间')
     update_time = db.Column(db.DateTime, index=True, default=datetime.now, onupdate=datetime.now, comment='修改时间')
-    create_user = db.Column(db.Integer(), nullable=True, comment='创建数据的用户id')
+    create_user = db.Column(db.Integer(), nullable=True, default=1, comment='创建数据的用户id')
 
     @property
     def str_created_time(self):

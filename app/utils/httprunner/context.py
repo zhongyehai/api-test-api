@@ -1,3 +1,5 @@
+import json
+
 from . import exceptions, logger, parser, utils, built_in
 
 
@@ -145,6 +147,13 @@ class SessionContext(object):
                              f"{expect_value}({type(expect_value).__name__}) "
                              f"==> pass")
         except (AssertionError, TypeError) as error:
+            # 方便在页面上对比，转为dict
+            try:
+                if isinstance(expect_value, str):
+                    expect_value = json.loads(expect_value)
+            except Exception as error:
+                pass
+
             error_msg = f"""
             断言不通过
             断言方式: {getattr(built_in, comparator).__doc__}

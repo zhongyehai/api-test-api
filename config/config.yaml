@@ -26,3 +26,9 @@ report_addr: 'http://xx.xx.xx.xx/#/apiTest/report'
 error_push:
   url: 'http://push.ijingniu.cn/send'
   key: ''
+
+# yapi相关信息，用于同步项目、模块、接口信息
+yapi:
+  host: 'http://yapi'  # yapi 域名
+  account: ''  # yapi的登录账号
+  password: ''  # yapi的登录密码

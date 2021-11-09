@@ -94,11 +94,11 @@ class CaseSetView(BaseMethodView):
     def put(self):
         form = EditCaseSetForm()
         if form.validate():
+            old, set_list, new_num = form.case_set, Set.get_all(project_id=form.project.id), form.new_num()
+            num_sort(new_num, old.num, set_list, old)
             with db.auto_commit():
-                case_set_list_of_project, old_case_set = Set.get_all(project_id=form.project_id.data), form.case_set
-                num_sort(form.new_num(), old_case_set.num, case_set_list_of_project, old_case_set)
-                old_case_set.name, old_case_set.project_id = form.name.data, form.project_id.data
-            return restful.success(f'修改 {form.name.data} 成功', old_case_set.to_dict())
+                old.update(form.data)
+            return restful.success(f'用例集 {form.name.data} 修改成功', old.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

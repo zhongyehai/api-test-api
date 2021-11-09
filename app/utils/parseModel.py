@@ -41,7 +41,8 @@ class Base(JsonUtil):
         :return
             {"auto_test_token": "eyJhbGciOiJIUzI1NiJ9", "rating_amount": "500000"}
         """
-        return {variable['key']: variable['value'] for variable in variables_list if variable.get('key')}
+        return {variable['key']: variable['value'] for variable in variables_list if
+                variable.get('key') and variable.get('value') is not None}
 
     def parse_params(self, params_list):
         """ 解析查询字符串参数
@@ -50,7 +51,8 @@ class Base(JsonUtil):
         :return
             {"name": "aaa"}
         """
-        return {param['key']: param['value'].replace('%', '&') for param in params_list if param.get('key')}
+        return {param['key']: param['value'].replace('%', '&') for param in params_list if
+                param.get('key') and param.get('value') is not None}
 
     def parse_extracts(self, extracts_list, extract_key_list):
         """ 解析要提取的参数
@@ -62,7 +64,7 @@ class Base(JsonUtil):
         # return [{extract['key']: extract['value']} for extract in extracts_list if extract.get('key')]
         extracts = []
         for extract in extracts_list:
-            if extract.get('key'):
+            if extract.get('key') and extract.get('value') is not None:
                 extract_key_list.append(extract.get('key'))
                 extracts.append({extract['key']: extract['value']})
         return extracts
@@ -77,7 +79,7 @@ class Base(JsonUtil):
         return [
             {
                 assert_mapping[validate['validate_type']]: [validate['key'], ast.literal_eval(validate['value'])]
-            } for validate in validates_list if validate.get('key')
+            } for validate in validates_list if validate.get('key') and validate.get('value') is not None
         ]
 
     def parse_form_data(self, form_data_list):
@@ -127,7 +129,6 @@ class ApiFormatModel(Base):
         self.num = kwargs.get('num')
         self.name = kwargs.get('name')
         self.desc = kwargs.get('desc')
-
         self.up_func = kwargs.get('up_func')
         self.down_func = kwargs.get('down_func')
         self.choice_host = kwargs.get('choice_host')
@@ -140,7 +141,6 @@ class ApiFormatModel(Base):
         self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type.upper() == 'DATA' else {}
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), extract_key_list=kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
-
         self.module_id = kwargs.get('module_id')
         self.project_id = kwargs.get('project_id')
         self.create_user = kwargs.get('create_user')
@@ -177,7 +177,6 @@ class StepFormatModel(Base):
         self.up_func = kwargs.get('up_func')
         self.down_func = kwargs.get('down_func')
         self.is_run = kwargs.get('is_run')
-
         self.headers = self.parse_headers(kwargs.get('headers', {}))
         self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json', {})
@@ -185,7 +184,6 @@ class StepFormatModel(Base):
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.data_driver = kwargs.get('data_driver', {})
-
         self.case_id = kwargs.get('case_id')
         self.api_id = kwargs.get('api_id')
         self.project_id = kwargs.get('project_id')

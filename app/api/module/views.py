@@ -81,11 +81,11 @@ class ModuleView(BaseMethodView):
     def put(self):
         form = EditModelForm()
         if form.validate():
+            old, module_list, new_num = form.old_module, Module.get_all(project_id=form.project.id), form.new_num()
+            num_sort(new_num, old.num, module_list, old)
             with db.auto_commit():
-                module_list_of_project, old_module = Module.get_all(project_id=form.project.id), form.old_module
-                num_sort(form.new_num(), old_module.num, module_list_of_project, old_module)
-                old_module.name, old_module.project_id = form.name.data, form.project_id.data
-            return restful.success(f'模块 {form.name.data} 修改成功', old_module.to_dict())
+                old.update(form.data)
+            return restful.success(f'模块 {form.name.data} 修改成功', old.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

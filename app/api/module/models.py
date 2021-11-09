@@ -12,10 +12,11 @@ from ...baseModel import BaseModel, db
 class Module(BaseModel):
     """ 模块表 """
     __tablename__ = 'module'
-    name = db.Column(db.String(50), nullable=True, comment='接口模块')
+    name = db.Column(db.String(50), nullable=True, comment='模块名')
     num = db.Column(db.Integer(), nullable=True, comment='模块在对应项目下的序号')
-    level = db.Column(db.Integer(), nullable=True, comment='模块级数')
-    parent = db.Column(db.Integer(), nullable=True, comment='上一级模块id')
+    level = db.Column(db.Integer(), nullable=True, default=2, comment='模块级数')
+    parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级模块id')
+    yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台的id')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
 
     project = db.relationship('Project', backref='modules')  # 一对多

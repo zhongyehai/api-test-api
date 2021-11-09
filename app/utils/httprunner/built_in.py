@@ -64,13 +64,17 @@ def _02not_equals(check_value, expect_value):
 
 def _02json_equals(check_value, expect_value):
     """ json相等 """
-    assert check_value == json.loads(expect_value)
+    if isinstance(expect_value, str):
+        expect_value = json.loads(expect_value)
+    assert check_value == expect_value
 
 
 def _03contract_equals(check_value, expect_value):
     """ 契约校验 """
     # 详见：https://pypi.org/project/pactverify/
-    pact_json_verify = PactJsonVerify({'@Matcher': json.loads(expect_value)}, hard_mode=True, separator='@')
+    if isinstance(expect_value, str):
+        expect_value = json.loads(expect_value)
+    pact_json_verify = PactJsonVerify(expect_value, hard_mode=True, separator='@')
     pact_json_verify.verify(check_value)  # 校验实际返回数据
     assert pact_json_verify.verify_result is True, json.dumps(pact_json_verify.verify_info, ensure_ascii=False, indent=4)
 

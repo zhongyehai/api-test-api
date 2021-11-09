@@ -63,6 +63,8 @@ class HttpSession(requests.Session):
 
     def get_req_resp_record(self, resp_obj):
         """ 从response对象中获取请求和响应信息。 """
+        # 把编码统一设为utf-8，防止响应体乱码
+        resp_obj.encoding = 'utf-8'
 
         def log_print(req_resp_dict, r_type):
             msg = f"\n================== {r_type} 详细信息 ==================\n"
@@ -158,10 +160,7 @@ class HttpSession(requests.Session):
         }
         # 记录请求和响应历史记录，包括 3x 的重定向
         response_list = response.history + [response]
-        self.meta_data["data"] = [
-            self.get_req_resp_record(resp_obj)
-            for resp_obj in response_list
-        ]
+        self.meta_data["data"] = [self.get_req_resp_record(resp_obj) for resp_obj in response_list]
         self.meta_data["data"][0]["request"].update(kwargs)
         try:
             response.raise_for_status()

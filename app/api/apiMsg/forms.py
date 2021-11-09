@@ -6,7 +6,6 @@
 # @File : forms.py
 # @Software: PyCharm
 
-import ast
 import re
 
 from wtforms import StringField, IntegerField
@@ -102,7 +101,7 @@ class AddApiForm(BaseForm):
             # 预期结果
             if value:
                 try:
-                    ast.literal_eval(value)
+                    eval(value)
                 except Exception as error:
                     raise ValidationError(f'断言，第 {index + 1} 行, 预期结果 【{value}】 错误，请明确类型')
 
