@@ -3,6 +3,7 @@
 import re
 
 import requests
+from flask import request
 
 from .. import api
 from ..project.models import Project
@@ -11,6 +12,7 @@ from ..module.models import Module
 from ..apiMsg.models import ApiMsg
 from ...utils import restful
 from config.config import conf
+from ...utils.required import login_required
 
 host = conf['yapi']['host']
 account = conf['yapi']['account']
@@ -128,53 +130,77 @@ def get_module_and_api(project_id, headers):
     ).json()
 
 
-@api.route('/yapiToApiTest', methods=['GET', 'POST'])
+def update_project(yapi_project):
+    """ 更新项目 """
+    with db.auto_commit():
+        project = Project.get_first(yapi_id=yapi_project['id']) or Project()
+    project.yapi_id = yapi_project['id']
+    project.name = yapi_project['name']
+    if not project.id:
+        db.session.add(project)
+    return project
+
+
+def update_module(project, yapi_module):
+    """ 更新模块 """
+    module = Module.get_first(project_id=project.id, yapi_id=yapi_module['id']) or Module()
+    module.project_id = project.id
+    module.yapi_id = yapi_module['id']
+    module.name = yapi_module['name']
+    module.num = module.get_new_num(None, project_id=project.id)
+    if not module.id:
+        db.session.add(module)
+
+
+def update_api(project, module_and_api):
+    """ 更新接口 """
+    module_id = ''
+    for yapi_api in module_and_api.get('list', []):
+        print(yapi_api)
+        module_id = module_id or Module.get_first(yapi_id=yapi_api['catid']).id
+        # 更新接口信息
+        api_msg = ApiMsg.get_first(module_id=module_id, yapi_id=yapi_api['_id']) or ApiMsg()
+        api_msg.num = api_msg.get_new_num(None, module_id=module_id)
+        api_msg.name = yapi_api.get('title')
+        api_msg.desc = yapi_api.get('desc')
+        api_msg.method = yapi_api.get('method')
+        api_msg.addr = yapi_api.get('path')
+        api_msg.data_type = yapi_api.get('req_body_type')
+        api_msg.module_id = module_id
+        api_msg.project_id = project.id
+        api_msg.yapi_id = yapi_api.get('_id')
+        if not api_msg.id:
+            db.session.add(api_msg)
+
+
+@api.route('/project/pull', methods=['POST'])
+@login_required
 def yapi_to_api_test():
     """ 同步yapi的项目、模块、接口到测试平台 """
     headers = get_yapi_header()  # 获取头部信息
-    for group_id in get_group_list(headers):  # 获取分组列表
-        # 项目
-        for yapi_project in get_project_list(group_id, headers):
-            print(yapi_project)
-            # 更新项目信息
-            with db.auto_commit():
-                project = Project.get_first(yapi_id=yapi_project['id']) or Project()
-                project.yapi_id = yapi_project['id']
-                project.name = yapi_project['name']
-                if not project.id:
-                    db.session.add(project)
 
-            # 模块
-            for yapi_module in get_module_list(yapi_project['id'], headers):  # 项目下的模块和接口
-                print(yapi_module)
-                # 更新模块信息
-                module = Module.get_first(project_id=project.id, yapi_id=yapi_module['id']) or Module()
-                module.project_id = project.id
-                module.yapi_id = yapi_module['id']
-                module.name = yapi_module['name']
-                module.num = module.get_new_num(None, project_id=project.id)
-                if not module.id:
-                    db.session.add(module)
+    if request.json and request.json.get('id'):  # 有项目id，则只更新对应项目下的信息
+        project = Project.get_first(id=request.json.get('id'))
 
-            # 接口
-            for module_and_api in get_module_and_api(yapi_project['id'], headers):
-                print(f'\n\n  {yapi_project}  \n\n')
-                module_id = ''
-                for yapi_api in module_and_api.get('list', []):
-                    print(yapi_api)
-                    module_id = module_id or Module.get_first(yapi_id=yapi_api['catid']).id
-                    # 更新接口信息
-                    api_msg = ApiMsg.get_first(module_id=module_id, yapi_id=yapi_api['_id']) or ApiMsg()
-                    api_msg.num = api_msg.get_new_num(None, module_id=module_id)
-                    api_msg.name = yapi_api.get('title')
-                    api_msg.desc = yapi_api.get('desc')
-                    api_msg.method = yapi_api.get('method')
-                    api_msg.addr = yapi_api.get('path')
-                    api_msg.data_type = yapi_api.get('req_body_type')
-                    api_msg.module_id = module_id
-                    api_msg.project_id = project.id
-                    api_msg.yapi_id = yapi_api.get('_id')
-                    if not api_msg.id:
-                        db.session.add(api_msg)
+        for yapi_module in get_module_list(project.yapi_id, headers):  # 遍历模块列表
+            print(yapi_module)
+            update_module(project, yapi_module)  # 更新模块信息
 
-    return restful.success('更新成功')
+        for module_and_api in get_module_and_api(project.yapi_id, headers):  # 遍历接口列表
+            print(f'\n\n  {project.yapi_id}  \n\n')
+            update_api(project, module_and_api)  # 更新接口信息
+    else:  # 没有项目id，则更新所有
+        for group_id in get_group_list(headers):  # 遍历分组列表
+            for yapi_project in get_project_list(group_id, headers):
+                print(yapi_project)
+                project = update_project(yapi_project)  # 更新项目信息
+
+                for yapi_module in get_module_list(yapi_project['id'], headers):  # 遍历模块列表
+                    print(yapi_module)
+                    update_module(project, yapi_module)  # 更新模块信息
+
+                for module_and_api in get_module_and_api(yapi_project['id'], headers):  # 遍历接口列表
+                    print(f'\n\n  {yapi_project}  \n\n')
+                    update_api(project, module_and_api)  # 更新接口信息
+
+    return restful.success('数据更新完成')
