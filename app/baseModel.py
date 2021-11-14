@@ -76,8 +76,8 @@ class BaseModel(db.Model, JsonUtil):
 
     # is_delete = db.Column(db.SmallInteger, default=0, comment='通过更改状态来判断记录是否被删除, 0数据有效, 1数据已删除')
     id = db.Column(db.Integer(), primary_key=True, comment='主键，自增')
-    created_time = db.Column(db.DateTime, index=True, default=datetime.now, comment='创建时间')
-    update_time = db.Column(db.DateTime, index=True, default=datetime.now, onupdate=datetime.now, comment='修改时间')
+    created_time = db.Column(db.DateTime, default=datetime.now, comment='创建时间')
+    update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, comment='修改时间')
     create_user = db.Column(db.Integer(), nullable=True, default=1, comment='创建数据的用户id')
 
     @property

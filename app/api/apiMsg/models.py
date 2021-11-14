@@ -15,7 +15,7 @@ class ApiMsg(BaseModel):
     __tablename__ = 'apis'
     num = db.Column(db.Integer(), nullable=True, comment='接口序号')
     name = db.Column(db.String(50), nullable=True, comment='接口名称')
-    desc = db.Column(db.String(50), default='', nullable=True, comment='接口描述')
+    desc = db.Column(db.Text(), default='', nullable=True, comment='接口描述')
     up_func = db.Column(db.String(128), default='', comment='接口执行前的函数')
     down_func = db.Column(db.String(128), default='', comment='接口执行后的函数')
 
@@ -24,11 +24,12 @@ class ApiMsg(BaseModel):
     addr = db.Column(db.Text(), nullable=True, comment='接口地址')
     headers = db.Column(db.Text(), default='[{"key": null, "remark": null, "value": null}]', comment='头部信息')
     params = db.Column(db.Text(), default='[{"key": null, "value": null}]', comment='url参数')
-    data_type = db.Column(db.String(10), nullable=True, default='json', comment='参数类型')
+    data_type = db.Column(db.String(10), nullable=True, default='json', comment='参数类型，json、form-data、xml')
     data_form = db.Column(db.Text(),
                           default='[{"data_type": null, "key": null, "remark": null, "value": null}]',
                           comment='form-data参数')
     data_json = db.Column(db.Text(), default='{}', comment='json参数')
+    data_xml = db.Column(db.Text(), default='', comment='xml参数')
     extracts = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='提取信息')
     validates = db.Column(db.Text(),
                           default='[{"key": null, "remark": null, "validate_type": null, "value": null}]',

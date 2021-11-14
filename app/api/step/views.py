@@ -39,6 +39,17 @@ def change_step_status():
     return restful.success(f'步骤已修改为 {"执行" if request.json.get("is_run") else "不执行"}')
 
 
+@api.route('/step/sort', methods=['put'])
+@login_required
+def change_step_sort():
+    """ 更新步骤的排序 """
+    with db.auto_commit():
+        for index, step_id in enumerate(request.json.get('List')):
+            step = Step.get_first(id=step_id)
+            step.num = index
+    return restful.success(msg='修改排序成功')
+
+
 class StepMethodView(BaseMethodView):
 
     def get(self):
@@ -55,9 +66,9 @@ class StepMethodView(BaseMethodView):
             form.create_user.data = current_user.id
             with db.auto_commit():
                 step = Step()
-                form.set_attr(num=Step.get_new_num(form.num.data, case_id=form.case_id.data))
                 step.create(
                     form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
+                step.num = Step.get_new_num(None, case_id=form.case_id.data)
                 db.session.add(step)
             return restful.success('步骤新建成功', data=step.to_dict())
         return restful.error(form.get_error())
@@ -66,10 +77,8 @@ class StepMethodView(BaseMethodView):
         """ 修改步骤 """
         form = EditStepForm()
         if form.validate():
-            num = Step.get_new_num(form.num.data, case_id=form.case_id.data)
-            step, step_list = form.step, Step.get_all(case_id=form.case_id.data)
+            step = form.step
             with db.auto_commit():
-                num_sort(num, step.num, step_list, step)
                 step.update(
                     form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
             return restful.success(msg='修改成功', data=form.step.to_dict())

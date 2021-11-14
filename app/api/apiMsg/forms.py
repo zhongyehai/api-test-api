@@ -21,7 +21,6 @@ from ..project.models import Project
 
 class AddApiForm(BaseForm):
     """ 添加接口信息的校验 """
-    num = StringField()
     name = StringField(validators=[DataRequired('接口名必传'), Length(1, 50, '接口名长度为1~50位')])
     desc = StringField(validators=[Length(0, 50, message='接口描述长度不超过50位')])
     up_func = StringField()  # 前置条件
@@ -34,6 +33,7 @@ class AddApiForm(BaseForm):
     data_type = StringField()
     data_form = StringField()
     data_json = StringField()
+    data_xml = StringField()
     extracts = StringField()
     validates = StringField()
 
@@ -106,7 +106,7 @@ class AddApiForm(BaseForm):
                     raise ValidationError(f'断言，第 {index + 1} 行, 预期结果 【{value}】 错误，请明确类型')
 
     def new_num(self):
-        return ApiMsg.get_new_num(self.num.data, module_id=self.module_id.data)
+        return ApiMsg.get_new_num(None, module_id=self.module_id.data)
 
 
 class EditApiForm(AddApiForm):

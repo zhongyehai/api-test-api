@@ -76,6 +76,20 @@ def change_case_quote():
     return restful.success(msg='引用关系修改成功')
 
 
+@api.route('/case/sort', methods=['put'])
+@login_required
+def change_case_sort():
+    """ 更新用例的排序 """
+    case_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
+    sorted_case = []
+    with db.auto_commit():
+        for index, case_id in enumerate(case_id_list):
+            case = Case.get_first(id=case_id)
+            case.num = (num - 1) * size + index
+            sorted_case.append(case.to_dict())
+    return restful.success(msg='修改排序成功')
+
+
 @api.route('/case/run', methods=['POST'])
 @login_required
 def run_case():
@@ -134,32 +148,23 @@ class CaseView(BaseMethodView):
         form = AddCaseForm()
         if form.validate():
             form.create_user.data = current_user.id
-            num = Case.get_new_num(form.num.data, set_id=form.set_id.data)
-
             # 保存用例
             with db.auto_commit():
                 new_case = Case()
-                form.set_attr(num=num)
                 new_case.create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
+                new_case.num = Case.get_new_num(None, set_id=form.set_id.data)
                 db.session.add(new_case)
-
-            # 测试步骤顺序有改动则重新排序
-            Step.sort_num_by_list(form.steps.data)
             return restful.success('用例新建成功', data=new_case.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditCaseForm()
         if form.validate():
-            num = Case.get_new_num(form.num.data, set_id=form.set_id.data)
             case, case_list = form.old_data, Case.get_all(set_id=form.set_id.data)
 
             # 修改用例
             with db.auto_commit():
-                num_sort(num, case.num, case_list, case)
                 case.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
-            # 测试步骤顺序有改动则重新排序
-            Step.sort_num_by_list(form.steps.data)
             return restful.success(msg='修改成功', data=case.to_dict())
         return restful.fail(form.get_error())
 

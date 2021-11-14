@@ -135,10 +135,11 @@ class ApiFormatModel(Base):
         self.method = kwargs.get('method')
         self.addr = kwargs.get('addr')
         self.headers = self.parse_headers(kwargs.get('headers', {}))
-        self.data_type = kwargs.get('data_type', 'json')
+        self.data_type = kwargs.get('data_type', 'json').upper()
         self.params = self.parse_params(kwargs.get('params', {}))
-        self.data_json = kwargs.get('data_json') if self.data_type.upper() == 'JSON' else {}
-        self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type.upper() == 'DATA' else {}
+        self.data_json = kwargs.get('data_json') if self.data_type == 'JSON' else {}
+        self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type == 'DATA' else {}
+        self.data_xml = kwargs.get('data_xml', '')
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), extract_key_list=kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.module_id = kwargs.get('module_id')
@@ -181,6 +182,7 @@ class StepFormatModel(Base):
         self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json', {})
         self.data_form = self.parse_form_data(kwargs.get('data_form', {}))
+        self.data_xml = kwargs.get('data_xml', '')
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.data_driver = kwargs.get('data_driver', {})

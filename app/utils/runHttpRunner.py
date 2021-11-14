@@ -104,13 +104,14 @@ class BaseParse:
             'extract': api.extracts,  # 接口要提取的信息
             'validate': api.validates,  # 接口断言信息
             'base_url': getattr(project, self.environment),
+            'data_type': api.data_type,
             'request': {
                 'method': api.method,
                 'url': api.addr,
                 'headers': api.headers,  # 接口头部信息
                 'params': api.params,  # 接口查询字符串参数
                 'json': api.data_json,
-                'data': api.data_form['string'] if api.data_form else {},
+                'data': api.data_form['string'] if api.data_type.upper() == 'DATA' else api.data_xml.encode('utf-8'),
                 'files': api.data_form['files'] if api.data_form else {},
             }
         }
@@ -277,7 +278,7 @@ class RunCase(BaseParse):
                 'headers': headers,  # 接口头部信息
                 'params': step.params,  # 接口查询字符串参数
                 'json': step.data_json,
-                'data': step.data_form.get('string', {}),
+                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml.encode('utf-8'),
                 'files': step.data_form.get('files', {}),
             }
         }

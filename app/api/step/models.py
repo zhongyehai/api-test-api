@@ -17,14 +17,19 @@ class Step(BaseModel):
     run_times = db.Column(db.Integer(), default=1, comment='执行次数，默认执行1次')
 
     name = db.Column(db.String(50), comment='步骤名称')
-    up_func = db.Column(db.String(128), comment='步骤执行前的函数')
-    down_func = db.Column(db.String(128), comment='步骤执行后的函数')
-    headers = db.Column(db.Text(), comment='头部信息')
-    params = db.Column(db.Text(), comment='url参数', default=u'[]')
-    data_form = db.Column(db.Text(), comment='form-data参数')
-    data_json = db.Column(db.Text(), comment='json参数')
-    extracts = db.Column(db.Text(), comment='提取信息')
-    validates = db.Column(db.Text(), comment='断言信息')
+    up_func = db.Column(db.String(128), default='', comment='步骤执行前的函数')
+    down_func = db.Column(db.String(128), default='', comment='步骤执行后的函数')
+    headers = db.Column(db.Text(), default='[{"key": null, "remark": null, "value": null}]', comment='头部信息')
+    params = db.Column(db.Text(), default='[{"key": null, "value": null}]', comment='url参数')
+    data_form = db.Column(db.Text(),
+                          default='[{"data_type": null, "key": null, "remark": null, "value": null}]',
+                          comment='form-data参数')
+    data_json = db.Column(db.Text(), default='{}', comment='json参数')
+    data_xml = db.Column(db.Text(), default='', comment='xml参数')
+    extracts = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='提取信息')
+    validates = db.Column(db.Text(),
+                          default='[{"key": null, "remark": null, "validate_type": null, "value": null}]',
+                          comment='断言信息')
     data_driver = db.Column(db.Text(), default='[]', comment='数据驱动，若此字段有值，则走数据驱动的解析')
     # step_type = db.Column(db.Integer(), default=1, comment='步骤类型，1：api，2：用例')
 

@@ -21,7 +21,7 @@ from .models import Case
 
 class AddCaseForm(BaseForm):
     """ 添加用例的校验 """
-    num = StringField()
+    # num = StringField()
     name = StringField(validators=[DataRequired('用例名称不能为空')])
     desc = StringField()
     choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])

@@ -15,8 +15,9 @@ class Set(BaseModel):
 
     name = db.Column(db.String(50), nullable=True, comment='用例集名称')
     num = db.Column(db.Integer(), nullable=True, comment='用例集在对应项目下的序号')
-    level = db.Column(db.Integer(), nullable=True, comment='用例集级数')
-    parent = db.Column(db.Integer(), nullable=True, comment='上一级用例集id')
+    level = db.Column(db.Integer(), nullable=True, default=2, comment='用例集级数')
+    parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级用例集id')
+    yapi_id = db.Column(db.Integer(), comment='当前用例集在yapi平台对应的项目id')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
 
     project = db.relationship('Project', backref='sets')  # 一对多

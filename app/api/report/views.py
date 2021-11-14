@@ -54,7 +54,8 @@ class ReportView(BaseMethodView):
         if form.validate():
             with db.auto_commit():
                 db.session.delete(form.report)
-            os.remove(form.report_path)
+            if os.path.exists(form.report_path):
+                os.remove(form.report_path)
             return restful.success('删除成功')
         return restful.fail(form.get_error())
 

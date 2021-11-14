@@ -65,23 +65,11 @@ def api_upload():
         with db.auto_commit():
             for api_data in excel_data:
                 new_api = ApiMsg()
-                new_api.headers = api_data.get('headers', '[{"key": null, "remark": null, "value": null}]')
-                new_api.params = api_data.get('params', '[{"key": null, "value": null}]')
-                new_api.data_form = api_data.get('data_form',
-                                                 '[{"data_type": null, "key": null, "remark": null, "value": null}]')
-                new_api.data_json = api_data.get('data_json', '{}')
-                new_api.extracts = api_data.get('extracts', '[{"key": "", "remark": null, "value": null}]')
-                new_api.validates = api_data.get('validates',
-                                                 '[{"key": null, "remark": null, "validate_type": null, "value": null}]')
-                new_api.name = api_data.get('name', '')
+                for key, value in api_data.items():
+                    if hasattr(new_api, key):
+                        setattr(new_api, key, value)
                 new_api.method = api_data.get('method', 'post').upper()
-                new_api.addr = api_data.get('url', '')
                 new_api.num = new_api.get_new_num(None)
-                new_api.desc = api_data.get('desc', '')
-                new_api.up_func = api_data.get('up_func', '')
-                new_api.down_func = api_data.get('down_func', '')
-                new_api.choice_host = api_data.get('choice_host', 'test')
-                new_api.data_type = api_data.get('data_type', 'json')
                 new_api.project_id = module.project_id
                 new_api.module_id = module.id
                 new_api.create_user = user_id
@@ -107,6 +95,18 @@ def run_api_msg():
     return restful.fail(form.get_error())
 
 
+@api.route('/apiMsg/sort', methods=['put'])
+@login_required
+def change_api_sort():
+    """ 更新接口的排序 """
+    api_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
+    with db.auto_commit():
+        for index, api_id in enumerate(api_id_list):
+            api_info = ApiMsg.get_first(id=api_id)
+            api_info.num = (num - 1) * size + index
+    return restful.success(msg='修改排序成功')
+
+
 class ApiMsgView(BaseMethodView):
     """ 接口信息 """
 
@@ -121,8 +121,9 @@ class ApiMsgView(BaseMethodView):
         form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
-                form.num.data, new_api = form.new_num(), ApiMsg()
+                new_api = ApiMsg()
                 new_api.create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
+                new_api.num = form.new_num()
                 db.session.add(new_api)
             return restful.success(f'接口 {form.name.data} 新建成功', data=new_api.to_dict())
         return restful.fail(form.get_error())
@@ -130,11 +131,10 @@ class ApiMsgView(BaseMethodView):
     def put(self):
         form = EditApiForm()
         if form.validate():
-            old, api_list, new_num = form.old, ApiMsg.get_all(module_id=form.module_id.data), form.new_num()
-            num_sort(new_num, old.num, api_list, old)
+            old_api = form.old
             with db.auto_commit():
-                old.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
-            return restful.success(f'接口 {form.name.data} 修改成功', old.to_dict())
+                old_api.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
+            return restful.success(f'接口 {form.name.data} 修改成功', old_api.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
