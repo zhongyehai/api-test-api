@@ -26,8 +26,8 @@ class DownloadReportForm(BaseForm):
         if not report:
             raise ValidationError('报告还未生成, 请联系管理员处理')
         report_path = os.path.join(REPORT_ADDRESS, f'{report.id}.txt')
-        if not report_path:
-            raise ValidationError('报告文件不存在, 请联系管理员处理')
+        if not os.path.exists(report_path):
+            raise ValidationError('报告文件不存在, 可能是未生成，请联系管理员处理')
         with open(report_path, 'r') as file:
             report_content = json.load(file)
         setattr(self, 'report', report)

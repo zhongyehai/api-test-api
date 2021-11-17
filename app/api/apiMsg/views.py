@@ -7,11 +7,13 @@
 # @Software: PyCharm
 
 import json
+from threading import Thread
 
 from flask import request, send_from_directory
 from flask_login import current_user
 
 from ..module.models import Module
+from ..report.models import Report
 from ...utils import restful
 from ...utils.globalVariable import TEMPLATE_ADDRESS
 from ...utils.parseExcel import parse_file_content
@@ -90,8 +92,25 @@ def run_api_msg():
     """ 跑接口信息 """
     form = RunApiMsgForm()
     if form.validate():
-        json_result = RunApi(project_id=form.projectId.data, api_ids=form.apis.data).run_case()
-        return restful.success(msg='测试完成', data={'data': json.loads(json_result)})
+        run_api = form.api
+        project_id = run_api.project_id
+        with db.auto_commit():
+            report = Report()
+            report.name = run_api.name
+            report.run_type = 'api'
+            report.performer = current_user.name
+            report.create_user = current_user.id
+            report.project_id = project_id
+            db.session.add(report)
+
+        # 新起线程运行接口
+        Thread(
+            target=RunApi(
+                project_id=form.projectId.data, run_name=report.name, api_ids=form.apis.data, report_id=report.id
+            ).run_case
+        ).start()
+        # json_result = RunApi(project_id=form.projectId.data, api_ids=form.apis.data).run_case()
+        return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
     return restful.fail(form.get_error())
 
 

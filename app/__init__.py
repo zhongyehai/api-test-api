@@ -3,15 +3,15 @@ import os
 
 from flask import Flask
 from flask_login import LoginManager
-from flask_apscheduler import APScheduler  # 定时任务框架
+from flask_apscheduler import APScheduler
 
 from app.utils import globalVariable
 from app.utils.log import GetLogger
 from config.config import conf, ProductionConfig
 from app.baseModel import db
 
-login_manager = LoginManager()
 scheduler = APScheduler()
+login_manager = LoginManager()
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 

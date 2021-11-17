@@ -15,10 +15,11 @@ class Report(BaseModel):
     """ 测试报告表 """
     __tablename__ = 'report'
     name = db.Column(TEXT, nullable=True, comment='用例的名称集合')
-    status = db.Column(db.String(10), nullable=True, comment='阅读状态，已读、未读')
+    status = db.Column(db.String(10), nullable=True, default='未读', comment='阅读状态，已读、未读')
     is_passed = db.Column(db.Integer, default=1, comment='是否全部通过，1全部通过，0有报错')
     performer = db.Column(db.String(16), nullable=True, comment='执行者')
-    run_type = db.Column(db.String(10), default='task', nullable=True, comment='报告类型，task/case')
+    run_type = db.Column(db.String(10), default='task', nullable=True, comment='报告类型，task/case/api')
+    is_done = db.Column(db.Integer, default=0, comment='是否执行完毕，1执行完毕，0执行中')
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     project = db.relationship('Project', backref='reports')

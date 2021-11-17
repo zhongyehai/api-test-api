@@ -33,11 +33,24 @@ from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, Ste
 
 class BaseParse:
 
-    def __init__(self, project_id=None, task_name=None):
+    def __init__(self, project_id=None, name=None, report_id=None, performer=None, create_user=None):
 
         self.environment = None
         self.project_id = project_id
-        self.task_name = task_name
+        self.run_name = name
+
+        if not report_id:
+            with db.auto_commit():
+                self.report = Report()
+                self.report.name = self.run_name
+                self.report.run_type = 'task'
+                self.report.performer = performer
+                self.report.create_user = create_user
+                self.report.project_id = project_id
+                db.session.add(self.report)
+
+        self.report_id = report_id or self.report.id
+        print(f'report_id: {self.report_id}')
         self.parsed_project_dict = {}
         self.parsed_case_dict = {}
         self.parsed_api_dict = {}
@@ -49,7 +62,7 @@ class BaseParse:
 
         # httpRunner需要的数据格式
         self.DataTemplate = {
-            'project': self.task_name or self.get_formated_project(self.project_id).name,
+            'project': self.run_name or self.get_formated_project(self.project_id).name,
             'project_mapping': {
                 'functions': self.parse_functions(),
                 'variables': {}
@@ -116,25 +129,17 @@ class BaseParse:
             }
         }
 
-    def build_report(self, json_result, performer, name, run_type):
+    def build_report(self, json_result):
         """ 写入测试报告到数据库, 并把数据写入到文本中 """
         result = json.loads(json_result)
-        report = Report()
-        report.performer = performer.name
-        report.create_user = performer.id
-        report.project_id = self.project_id
-        report.status = '待阅'
-        report.is_passed = 1 if result['success'] else 0
-        # report.name = ','.join([detail['name'] for detail in result['details']])
-        report.name = name
-        report.run_type = run_type
-
+        report = Report.get_first(id=self.report_id)
         with db.auto_commit():
-            db.session.add(report)
-        self.new_report_id = report.id
+            report.is_passed = 1 if result['success'] else 0
+            report.is_done = 1
+            # report.name = ','.join([detail['name'] for detail in result['details']])
 
         # 测试报告写入到文本文件
-        with open(os.path.join(REPORT_ADDRESS, f'{self.new_report_id}.txt'), 'w') as f:
+        with open(os.path.join(REPORT_ADDRESS, f'{report.id}.txt'), 'w') as f:
             f.write(json_result)
 
     def run_case(self):
@@ -144,14 +149,16 @@ class BaseParse:
         runner.run(self.DataTemplate)
         summary = runner.summary
         summary['time']['start_at'] = datetime.fromtimestamp(summary['time']['start_at']).strftime("%Y-%m-%d %H:%M:%S")
+        jump_res = json.dumps(summary, ensure_ascii=False, default=encode_object, cls=JSONEncoder)
+        self.build_report(jump_res)
         return json.dumps(summary, ensure_ascii=False, default=encode_object, cls=JSONEncoder)
 
 
 class RunApi(BaseParse):
     """ 接口调试 """
 
-    def __init__(self, project_id=None, task_name=None, api_ids=None):
-        super().__init__(project_id, task_name)
+    def __init__(self, project_id=None, run_name=None, api_ids=None, report_id=None):
+        super().__init__(project_id, run_name, report_id)
 
         # 解析当前项目信息
         self.project = self.get_formated_project(self.project_id)
@@ -196,8 +203,9 @@ class RunApi(BaseParse):
 class RunCase(BaseParse):
     """ 运行测试用例 """
 
-    def __init__(self, project_id=None, task_name=None, case_id=[], task=None):
-        super().__init__(project_id, task_name)
+    def __init__(self, project_id=None, run_name=None, case_id=[], task=None, report_id=None, performer=None,
+                 create_user=None):
+        super().__init__(project_id, run_name, report_id, performer=performer, create_user=create_user)
         self.task = task
         self.environment = task.choice_host if task else None
         # 接口对应的项目字典，在需要解析项目时，先到这里面查，没有则去数据库取出来解析
@@ -205,9 +213,6 @@ class RunCase(BaseParse):
 
         # 步骤对应的接口字典，在需要解析字典时，先到这里面查，没有则去数据库取出来解析
         self.apis_dict = {}
-
-        # 任务名
-        self.task_name = task_name
 
         # 要执行的用例id_list
         self.case_id_list = case_id
@@ -278,7 +283,8 @@ class RunCase(BaseParse):
                 'headers': headers,  # 接口头部信息
                 'params': step.params,  # 接口查询字符串参数
                 'json': step.data_json,
-                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml.encode('utf-8'),
+                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml.encode(
+                    'utf-8'),
                 'files': step.data_form.get('files', {}),
             }
         }

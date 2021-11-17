@@ -10,6 +10,7 @@ from threading import Thread
 
 from flask_login import current_user
 
+from ..report.models import Report
 from ..sets.models import Set
 from ...utils import restful
 from ...utils.required import login_required
@@ -26,11 +27,17 @@ from .models import Task
 from .forms import RunTaskForm, AddTaskForm, EditTaskForm, HasTaskIdForm, DeleteTaskIdForm, GetTaskListForm
 
 
-def aps_test(case_ids, task, performer=None):
+def aps_test(case_ids, task, user=None):
     """ 运行定时任务, 并发送测试报告 """
-    runner = RunCase(project_id=task.project_id,  task_name=task.name, case_id=case_ids, task=task)
+    runner = RunCase(
+        project_id=task.project_id,
+        run_name=task.name,
+        case_id=case_ids,
+        task=task,
+        performer=user.name,
+        create_user=user.id)
     jump_res = runner.run_case()
-    runner.build_report(jump_res, performer, task.name, 'task')
+    # runner.build_report(jump_res)
 
     # 多线程发送测试报告
     async_send_report(content=task.loads(jump_res), **task.to_dict())
@@ -69,9 +76,29 @@ def run_task():
     form = RunTaskForm()
     if form.validate():
         task = form.task
-        cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
-        new_report_id = aps_test(cases_id, task, performer=User.get_first(id=current_user.id))
-        return restful.success(msg='测试成功', data={'report_id': new_report_id})
+        project_id = task.project_id
+        with db.auto_commit():
+            report = Report()
+            report.name = task.name
+            report.run_type = 'task'
+            report.performer = current_user.name
+            report.create_user = current_user.id
+            report.project_id = project_id
+            db.session.add(report)
+
+        # 新起线程运行任务
+        Thread(
+            target=RunCase(
+                project_id=project_id,
+                run_name=report.name,
+                case_id=get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id)),
+                report_id=report.id
+            ).run_case
+        ).start()
+        return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
+        # cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
+        # new_report_id = aps_test(cases_id, task, performer=User.get_first(id=current_user.id))
+        # return restful.success(msg='测试成功', data={'report_id': new_report_id})
     return restful.fail(form.get_error())
 
 

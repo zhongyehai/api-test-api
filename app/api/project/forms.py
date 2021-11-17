@@ -67,7 +67,7 @@ class DeleteProjectForm(GetProjectByIdForm):
         else:
             if not self.is_can_delete(project.id, project):
                 raise ValidationError(f'不能删除别人负责的项目')
-            if project.modules.all():
+            if project.modules:
                 raise ValidationError('请先去 接口管理 删除项目下的接口模块')
         setattr(self, 'pro_data', project)
 

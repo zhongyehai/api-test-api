@@ -6,10 +6,12 @@
 # @File : views.py
 # @Software: PyCharm
 import json
+from threading import Thread
 
 from flask import request
 from flask_login import current_user
 
+from ..report.models import Report
 from ..sets.models import Set
 from ..user.models import User
 from ...utils import restful
@@ -96,10 +98,31 @@ def run_case():
     """ 运行测试用例，并生成报告 """
     form = RunCaseForm()
     if form.validate():
-        runner = RunCase(project_id=Set.get_first(id=form.case.set_id).project_id, case_id=form.caseId.data)
-        json_result = runner.run_case()
-        runner.build_report(json_result, User.get_first(id=current_user.id), form.case.name, 'case')
-        return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
+        case = form.case
+        project_id = Set.get_first(id=case.set_id).project_id
+        with db.auto_commit():
+            report = Report()
+            report.name = case.name
+            report.run_type = 'case'
+            report.performer = current_user.name
+            report.create_user = current_user.id
+            report.project_id = project_id
+            db.session.add(report)
+
+        # 新起线程运行用例
+        Thread(
+            target=RunCase(
+                project_id=project_id,
+                run_name=report.name,
+                case_id=form.caseId.data,
+                report_id=report.id
+            ).run_case
+        ).start()
+        return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
+        # runner = RunCase(project_id=Set.get_first(id=form.case.set_id).project_id, case_id=form.caseId.data)
+        # json_result = runner.run_case()
+        # runner.build_report(json_result, User.get_first(id=current_user.id), form.case.name, 'case')
+        # return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
     return restful.fail(form.get_error())
 
 

@@ -140,7 +140,13 @@ class ValidateProjectId(BaseForm):
 class RunApiMsgForm(ValidateProjectId):
     """ 运行接口 """
     apis = StringField(validators=[DataRequired('请选择接口，再进行测试')])
-    configId = StringField()
+
+    def validate_apis(self, field):
+        """ 校验接口存在 """
+        api = ApiMsg.get_first(id=field.data)
+        if not api:
+            raise ValidationError(f'id为 {field.data} 的接口不存在')
+        setattr(self, 'api', api)
 
 
 class ApiListForm(BaseForm):
@@ -180,4 +186,3 @@ class DeleteApiForm(GetApiById):
         if not self.is_can_delete(project_id, api):
             raise ValidationError('不能删除别人项目下的接口')
         setattr(self, 'api', api)
-

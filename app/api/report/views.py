@@ -8,6 +8,8 @@
 
 import os
 
+from flask import request
+
 from ...utils.report.report import render_html_report
 from ...utils import restful
 from ...utils.required import login_required
@@ -36,6 +38,13 @@ def report_list():
     if form.validate():
         return restful.success(data=Report.make_pagination(form))
     return restful.fail(form.get_error())
+
+
+@api.route('/report/done', methods=['GET'])
+@login_required
+def report_is_done():
+    """ 报告是否生成 """
+    return restful.success(data=Report.get_first(id=request.args.to_dict().get('id')).is_done)
 
 
 class ReportView(BaseMethodView):
