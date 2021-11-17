@@ -6,7 +6,6 @@
 # @File : views.py
 # @Software: PyCharm
 
-import json
 from threading import Thread
 
 from flask import request, send_from_directory
@@ -19,7 +18,6 @@ from ...utils.globalVariable import TEMPLATE_ADDRESS
 from ...utils.parseExcel import parse_file_content
 from ...utils.required import login_required
 from ...utils.runHttpRunner import RunApi
-from ...utils.changSort import num_sort
 from .. import api
 from ...baseView import BaseMethodView
 from ...baseModel import db
@@ -109,7 +107,6 @@ def run_api_msg():
                 project_id=form.projectId.data, run_name=report.name, api_ids=form.apis.data, report_id=report.id
             ).run_case
         ).start()
-        # json_result = RunApi(project_id=form.projectId.data, api_ids=form.apis.data).run_case()
         return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
     return restful.fail(form.get_error())
 

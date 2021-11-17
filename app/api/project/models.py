@@ -24,7 +24,7 @@ class Project(BaseModel):
     test = db.Column(db.String(100), default='', comment='测试环境域名')
     uat = db.Column(db.String(100), default='', comment='uat环境域名')
     production = db.Column(db.String(100), default='', comment='生产环境域名')
-    yapi_id = db.Column(db.Integer(), default='', comment='当前项目在yapi平台的id')
+    yapi_id = db.Column(db.Integer(), default=None, comment='当前项目在yapi平台的id')
 
     @property
     def headers_boj(self):

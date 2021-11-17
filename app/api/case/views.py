@@ -13,10 +13,8 @@ from flask_login import current_user
 
 from ..report.models import Report
 from ..sets.models import Set
-from ..user.models import User
 from ...utils import restful
 from ...utils.required import login_required
-from ...utils.changSort import num_sort
 from .. import api
 from ...baseView import BaseMethodView
 from ...baseModel import db
@@ -119,10 +117,6 @@ def run_case():
             ).run_case
         ).start()
         return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
-        # runner = RunCase(project_id=Set.get_first(id=form.case.set_id).project_id, case_id=form.caseId.data)
-        # json_result = runner.run_case()
-        # runner.build_report(json_result, User.get_first(id=current_user.id), form.case.name, 'case')
-        # return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': json.loads(json_result)})
     return restful.fail(form.get_error())
 
 

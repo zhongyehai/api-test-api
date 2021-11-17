@@ -5,12 +5,13 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
+from threading import Thread
 
 from flask import request
 from flask_login import current_user
 
 from ..case.models import Case
-from ..user.models import User
+from ..report.models import Report
 from ...utils import restful
 from ...utils.required import login_required
 from ...utils.changSort import num_sort
@@ -39,13 +40,27 @@ def run_case_set():
     """ 运行用例集下的用例 """
     form = GetCaseSetForm()
     if form.validate():
-        runner = RunCase(
-            project_id=form.set.project_id,
-            case_id=[case.id for case in Case.query.filter_by(set_id=form.set.id).order_by(Case.num.asc()).all()
-                     if case.is_run])
-        json_result = runner.run_case()
-        runner.build_report(json_result, User.get_first(id=current_user.id), form.set.name, 'set')
-        return restful.success(msg='测试完成', data={'report_id': runner.new_report_id, 'data': form.loads(json_result)})
+        project_id = form.set.project_id
+        with db.auto_commit():
+            report = Report()
+            report.name = form.set.name
+            report.run_type = 'set'
+            report.performer = current_user.name
+            report.create_user = current_user.id
+            report.project_id = project_id
+            db.session.add(report)
+
+        # 新起线程运行任务
+        Thread(
+            target=RunCase(
+                project_id=project_id,
+                run_name=report.name,
+                case_id=[case.id for case in Case.query.filter_by(set_id=form.set.id).order_by(Case.num.asc()).all()
+                         if case.is_run],
+                report_id=report.id
+            ).run_case
+        ).start()
+        return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
     return restful.fail(form.get_error())
 
 
