@@ -8,65 +8,19 @@
 
 from threading import Thread
 
+import requests
 from flask_login import current_user
 
 from ..report.models import Report
 from ..sets.models import Set
 from ...utils import restful
 from ...utils.required import login_required
-from ...utils.sendReport import async_send_report
 from ...utils.runHttpRunner import RunCase
-from ...utils.parseCron import parse_cron
 from .. import api
 from ...baseView import BaseMethodView
 from ...baseModel import db
-from ..case.models import Case
-from ..user.models import User
-from ... import scheduler
 from .models import Task
 from .forms import RunTaskForm, AddTaskForm, EditTaskForm, HasTaskIdForm, DeleteTaskIdForm, GetTaskListForm
-
-
-def aps_test(case_ids, task, user=None):
-    """ 运行定时任务, 并发送测试报告 """
-    runner = RunCase(
-        project_id=task.project_id,
-        run_name=task.name,
-        case_id=case_ids,
-        task=task,
-        performer=user.name,
-        create_user=user.id)
-    jump_res = runner.run_case()
-    # runner.build_report(jump_res)
-
-    # 多线程发送测试报告
-    async_send_report(content=task.loads(jump_res), **task.to_dict())
-
-    db.session.rollback()  # 把连接放回连接池，不知道为什么定时任务跑完不会自动放回去，导致下次跑的时候，mysql连接超时断开报错
-    return runner.new_report_id
-
-
-def async_aps_test(*args):
-    """ 多线程执行定时任务 """
-    Thread(target=aps_test, args=args).start()
-
-
-def get_case_id(project_id: int, set_id: list, case_id: list):
-    """
-    获取要执行的用例的id
-    1.如果有用例id，则只拿对应的用例
-    2.如果没有用例id，有模块id，则拿模块下的所有用例id
-    3.如果没有用例id，也没有用模块id，则拿项目下所有模块下的所有用例
-    """
-    if len(case_id) != 0:
-        return case_id
-    elif len(set_id) != 0:
-        set_ids = set_id
-    else:
-        set_ids = [module.id for module in Set.query.filter_by(project_id=project_id).order_by(Set.num.asc()).all()]
-    case_ids = [case.id for set_id in set_ids for case in Case.query.filter_by(
-        set_id=set_id).order_by(Case.num.asc()).all() if case.is_run]
-    return case_ids
 
 
 @api.route('/task/run', methods=['POST'])
@@ -91,14 +45,11 @@ def run_task():
             target=RunCase(
                 project_id=project_id,
                 run_name=report.name,
-                case_id=get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id)),
+                case_id=Set.get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id)),
                 report_id=report.id
             ).run_case
         ).start()
         return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
-        # cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
-        # new_report_id = aps_test(cases_id, task, performer=User.get_first(id=current_user.id))
-        # return restful.success(msg='测试成功', data={'report_id': new_report_id})
     return restful.fail(form.get_error())
 
 
@@ -154,32 +105,40 @@ class TaskStatus(BaseMethodView):
     """ 任务状态修改 """
 
     def post(self):
+        """ 启用任务 """
         form = HasTaskIdForm()
         if form.validate():
             task = form.task
-            cases_id = get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id))
-            # 把定时任务添加到apscheduler_jobs表中
-            scheduler.add_job(func=async_aps_test,  # 异步执行任务
-                              trigger='cron',
-                              misfire_grace_time=60,
-                              coalesce=False,
-                              args=[cases_id, task, User.get_first(id=current_user.id)],
-                              id=str(form.id.data),
-                              **parse_cron(task.cron))
-            task.status = '启用中'
-            db.session.commit()
-            return restful.success(f'定时任务 {task.name} 启动成功')
+            try:
+                res = requests.post(
+                    url='http://localhost:8025/api/job/status',
+                    json={'userId': current_user.id, 'taskId': task.id}
+                ).json()
+                if res["status"] == 200:
+                    return restful.success(f'定时任务 {form.task.name} 启用成功', data=res)
+                else:
+                    return restful.fail(f'定时任务 {form.task.name} 启用失败', data=res)
+            except Exception as error:
+                return restful.fail(f'定时任务 {form.task.name} 启用失败', data=error)
         return restful.fail(form.get_error())
 
     def delete(self):
+        """ 禁用任务 """
         form = HasTaskIdForm()
         if form.validate():
             if form.task.status != '启用中':
                 return restful.fail(f'任务 {form.task.name} 的状态不为启用中')
-            with db.auto_commit():
-                form.task.status = '禁用中'
-                scheduler.remove_job(str(form.task.id))  # 移除任务
-            return restful.success(f'任务 {form.task.name} 禁用成功')
+            try:
+                res = requests.delete(
+                    url='http://localhost:8025/api/job/status',
+                    json={'taskId': form.task.id}
+                ).json()
+                if res["status"] == 200:
+                    return restful.success(f'定时任务 {form.task.name} 禁用成功', data=res)
+                else:
+                    return restful.fail(f'定时任务 {form.task.name} 禁用失败', data=res)
+            except Exception as error:
+                return restful.fail(f'定时任务 {form.task.name} 禁用失败', data=error)
         return restful.fail(form.get_error())
 
 

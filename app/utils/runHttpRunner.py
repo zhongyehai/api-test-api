@@ -27,7 +27,7 @@ from ..api.report.models import Report
 
 from app.utils.globalVariable import REPORT_ADDRESS, FUNC_ADDRESS
 from app.utils.parse import encode_object
-from app import scheduler  # 定时任务实例
+# from app import scheduler  # 定时任务实例
 from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, StepFormatModel
 
 
@@ -108,8 +108,8 @@ class BaseParse:
         """ 把解析后的接口对象 解析为httpRunner的数据结构 """
         return {
             'name': api.name,  # 接口名
-            'setup_hooks': [api.up_func] if api.up_func else [],  # 前置钩子函数
-            'teardown_hooks': [api.down_func] if api.down_func else [],  # 后置钩子函数
+            'setup_hooks': [up.strip() for up in api.up_func.split(';')] if api.up_func else [],  # 前置钩子函数
+            'teardown_hooks': [func.strip() for func in api.down_func.split(';')] if api.down_func else [],  # 后置钩子函数
             'skip': '',  # 无条件跳过当前测试
             'skipIf': '',  # 如果条件为真，则跳过当前测试
             'skipUnless': '',  # 除非条件为真，否则跳过当前测试
@@ -144,7 +144,7 @@ class BaseParse:
 
     def run_case(self):
         """ 调 HttpRunner().run() 执行测试 """
-        scheduler.app.logger.info(f'请求数据：{self.DataTemplate}')
+        # scheduler.app.logger.info(f'请求数据：{self.DataTemplate}')
         runner = HttpRunner()
         runner.run(self.DataTemplate)
         summary = runner.summary
@@ -171,7 +171,7 @@ class RunApi(BaseParse):
 
     def format_data_for_template(self):
         """ 接口调试 """
-        scheduler.app.logger.info(f'本次测试的接口id：{self.api_ids}')
+        # scheduler.app.logger.info(f'本次测试的接口id：{self.api_ids}')
 
         # 用例的数据结构
         test_case_template = {
@@ -268,8 +268,8 @@ class RunCase(BaseParse):
 
         return {
             'name': step.name,
-            'setup_hooks': [step.up_func] if step.up_func else [],  # 前置钩子函数
-            'teardown_hooks': [step.down_func] if step.down_func else [],  # 后置钩子函数
+            'setup_hooks': [up.strip() for up in step.up_func.split(';')] if step.up_func else [],  # 前置钩子函数
+            'teardown_hooks': [func.strip() for func in step.down_func.split(';')] if step.down_func else [],  # 后置钩子函数
             'skip': '',  # 无条件跳过当前测试
             'skipIf': step.is_run,  # 如果条件为真，则跳过当前测试
             'skipUnless': '',  # 除非条件为真，否则跳过当前测试

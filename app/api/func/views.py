@@ -81,6 +81,19 @@ class FuncView(BaseMethodView):
 
     def put(self):
         form = SaveFuncForm()
+
+        # 把自定义函数脚本内容写入到python脚本中
+        with open(os.path.join(FUNC_ADDRESS, f'{form.name.data}.py'), 'w', encoding='utf8') as file:
+            file.write(form.func_data.data)
+
+        # 动态导入脚本，语法有错误则不保存
+        try:
+            importlib.reload(importlib.import_module(f'func_list.{form.name.data}'))
+        except Exception as e:
+            current_app.logger.info(str(e))
+            error_data = '\n'.join('{}'.format(traceback.format_exc()).split('↵'))
+            return restful.fail(msg='语法错误，请检查', result=error_data)
+
         if form.validate():
             with db.auto_commit():
                 form.func.name, form.func.func_data = form.name.data, form.func_data.data
