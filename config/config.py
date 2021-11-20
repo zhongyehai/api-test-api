@@ -7,12 +7,8 @@
 # @Software: PyCharm
 
 import os
-import time
 import email
 import six
-import multiprocessing
-import logging
-from logging.handlers import TimedRotatingFileHandler
 
 import urllib3.fields as f
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -27,9 +23,6 @@ for func in dir(assert_func_file):
         doc = getattr(assert_func_file, func).__doc__.strip()  # 函数注释
         assert_mapping.setdefault(doc, func)
         assert_mapping_list.append({'value': doc})
-
-# 请求方法列表
-method_mapping = [{'value': method} for method in ['GET', 'POST', 'PUT', 'DELETE']]
 
 basedir, conf = os.path.abspath('.'), load(os.path.abspath('.') + '/config/config.yaml')
 
@@ -52,73 +45,6 @@ def my_format_header_param(name, value):
 
 # 猴子补丁，修复request上传文件时，不能传中文
 f.format_header_param = my_format_header_param
-
-
-class SafeLog(TimedRotatingFileHandler):
-    """ 因为TimedRotatingFileHandler在多进程访问log文件时，切分log日志会报错文件被占用，所以修复这个问题 """
-
-    def __init__(self, *args, **kwargs):
-        super(SafeLog, self).__init__(*args, **kwargs)
-        self.suffix_time = ""
-        self.origin_basename = self.baseFilename
-
-    def shouldRollover(self, record):
-        time_tuple = time.localtime()
-        return 1 if self.suffix_time != time.strftime(self.suffix, time_tuple) \
-                    or not os.path.exists(self.origin_basename + '.' + self.suffix_time) else 0
-
-    def doRollover(self):
-        if self.stream:
-            self.stream.close()
-            self.stream = None
-
-        current_time_tuple = time.localtime()
-        self.suffix_time = time.strftime(self.suffix, current_time_tuple)
-        self.baseFilename = self.origin_basename + '.' + self.suffix_time
-
-        self.mode = 'a'
-
-        with multiprocessing.Lock():
-            if self.backupCount > 0:
-                for s in self.getFilesToDelete():
-                    os.remove(s)
-
-        if not self.delay:
-            self.stream = self._open()
-
-    def getFilesToDelete(self):
-        # 将源代码的 self.baseFilename 改为 self.origin_basename
-        dir_name, base_name = os.path.split(self.origin_basename)
-        file_names = os.listdir(dir_name)
-        result = []
-        prefix = base_name + "."
-        p_len = len(prefix)
-        for fileName in file_names:
-            if fileName[:p_len] == prefix:
-                suffix = fileName[p_len:]
-                if self.extMatch.match(suffix):
-                    result.append(os.path.join(dir_name, fileName))
-        if len(result) < self.backupCount:
-            result = []
-        else:
-            result.sort()
-            result = result[:len(result) - self.backupCount]
-        return result
-
-
-def config_log():
-    """ 日志配置 """
-    handler = SafeLog(
-        filename=os.path.abspath('../..') + r'/logs/' + 'logger',
-        interval=1,
-        backupCount=50,
-        when="D",
-        encoding='UTF-8')
-    handler.setLevel(logging.DEBUG)  # 日志级别
-    handler.suffix = "%Y-%m-%d.log"
-    # handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(lineno)s - %(message)s'))
-    handler.setFormatter(logging.Formatter('%(asctime)s - %(lineno)s - %(message)s'))
-    return handler
 
 
 class ProductionConfig:

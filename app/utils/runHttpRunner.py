@@ -15,8 +15,9 @@ import importlib
 from datetime import datetime
 
 from flask.json import JSONEncoder
-from .httprunner.api import HttpRunner
 
+from .httprunner.api import HttpRunner
+from ..utils.log import logger
 from app.baseModel import db
 from ..api.apiMsg.models import ApiMsg
 from ..api.case.models import Case
@@ -27,7 +28,6 @@ from ..api.report.models import Report
 
 from app.utils.globalVariable import REPORT_ADDRESS, FUNC_ADDRESS
 from app.utils.parse import encode_object
-# from app import scheduler  # 定时任务实例
 from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, StepFormatModel
 
 
@@ -144,7 +144,7 @@ class BaseParse:
 
     def run_case(self):
         """ 调 HttpRunner().run() 执行测试 """
-        # scheduler.app.logger.info(f'请求数据：{self.DataTemplate}')
+        logger.info(f'请求数据：\n{self.DataTemplate}')
         runner = HttpRunner()
         runner.run(self.DataTemplate)
         summary = runner.summary
@@ -171,7 +171,7 @@ class RunApi(BaseParse):
 
     def format_data_for_template(self):
         """ 接口调试 """
-        # scheduler.app.logger.info(f'本次测试的接口id：{self.api_ids}')
+        logger.info(f'本次测试的接口id：\n{self.api_ids}')
 
         # 用例的数据结构
         test_case_template = {

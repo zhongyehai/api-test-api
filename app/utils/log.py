@@ -290,9 +290,3 @@ if __name__ == "__main__":
     # set_log_path = os.path.abspath(
     #     os.path.join(__file__, f"..{sep}..{sep}logs{sep}"))
     # print('测试Log路径：', set_log_path)
-
-    import time
-
-    while True:
-        logger.info('每隔X打印一下')
-        time.sleep(2)

@@ -4,7 +4,10 @@ import json
 from flask import Blueprint, current_app, request
 from flask_login import current_user
 
+from app.utils.log import logger
+
 api = Blueprint('api', __name__)
+api.logger = logger
 
 from . import (errors)
 from app.api.user import views

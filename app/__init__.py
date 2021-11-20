@@ -5,8 +5,8 @@ from flask import Flask
 from flask_login import LoginManager
 
 from app.utils import globalVariable
-from app.utils.log import GetLogger
-from config.config import conf, ProductionConfig
+from app.utils.log import logger
+from config.config import conf, ProductionConfig  # ,logger
 from app.baseModel import db
 
 login_manager = LoginManager()
@@ -17,7 +17,7 @@ def create_app():
     app = Flask(__name__)
     app.conf = conf
     app.config.from_object(ProductionConfig)
-    app.logger = GetLogger().get_logger()
+    app.logger = logger
     ProductionConfig.init_app(app)
 
     db.init_app(app)
