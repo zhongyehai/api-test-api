@@ -92,14 +92,7 @@ def run_api_msg():
     if form.validate():
         run_api = form.api
         project_id = run_api.project_id
-        with db.auto_commit():
-            report = Report()
-            report.name = run_api.name
-            report.run_type = 'api'
-            report.performer = current_user.name
-            report.create_user = current_user.id
-            report.project_id = project_id
-            db.session.add(report)
+        report = Report.get_new_report(run_api.name, 'api', current_user.name, current_user.id, project_id)
 
         # 新起线程运行接口
         Thread(

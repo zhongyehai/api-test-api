@@ -41,14 +41,7 @@ def run_case_set():
     form = GetCaseSetForm()
     if form.validate():
         project_id = form.set.project_id
-        with db.auto_commit():
-            report = Report()
-            report.name = form.set.name
-            report.run_type = 'set'
-            report.performer = current_user.name
-            report.create_user = current_user.id
-            report.project_id = project_id
-            db.session.add(report)
+        report = Report.get_new_report(form.set.name, 'set', current_user.name, current_user.id, project_id)
 
         # 新起线程运行任务
         Thread(

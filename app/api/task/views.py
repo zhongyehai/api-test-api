@@ -31,14 +31,7 @@ def run_task():
     if form.validate():
         task = form.task
         project_id = task.project_id
-        with db.auto_commit():
-            report = Report()
-            report.name = task.name
-            report.run_type = 'task'
-            report.performer = current_user.name
-            report.create_user = current_user.id
-            report.project_id = project_id
-            db.session.add(report)
+        report = Report.get_new_report(task.name, 'task', current_user.name, current_user.id, project_id)
 
         # 新起线程运行任务
         Thread(

@@ -28,6 +28,18 @@ class Report(BaseModel):
         return self.base_to_dict()
 
     @classmethod
+    def get_new_report(cls, name, run_type, performer, create_user, project_id):
+        with db.auto_commit():
+            report = Report()
+            report.name = name
+            report.run_type = run_type
+            report.performer = performer
+            report.create_user = create_user
+            report.project_id = project_id
+            db.session.add(report)
+        return report
+
+    @classmethod
     def make_pagination(cls, form):
         """ 解析分页条件 """
         filters = []

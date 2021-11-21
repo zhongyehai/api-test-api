@@ -40,14 +40,7 @@ class BaseParse:
         self.run_name = name
 
         if not report_id:
-            with db.auto_commit():
-                self.report = Report()
-                self.report.name = self.run_name
-                self.report.run_type = 'task'
-                self.report.performer = performer
-                self.report.create_user = create_user
-                self.report.project_id = project_id
-                db.session.add(self.report)
+            self.report = Report.get_new_report(self.run_name, 'task', performer, create_user, project_id)
 
         self.report_id = report_id or self.report.id
         print(f'report_id: {self.report_id}')

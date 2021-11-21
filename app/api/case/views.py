@@ -98,14 +98,7 @@ def run_case():
     if form.validate():
         case = form.case
         project_id = Set.get_first(id=case.set_id).project_id
-        with db.auto_commit():
-            report = Report()
-            report.name = case.name
-            report.run_type = 'case'
-            report.performer = current_user.name
-            report.create_user = current_user.id
-            report.project_id = project_id
-            db.session.add(report)
+        report = Report.get_new_report(case.name, 'case', current_user.name, current_user.id, project_id)
 
         # 新起线程运行用例
         Thread(
