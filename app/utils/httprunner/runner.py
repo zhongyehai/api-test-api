@@ -119,7 +119,7 @@ class Runner(object):
             raise SkipTest(skip_reason)
 
     def do_hook_actions(self, actions, hook_type):
-        """ call hook actions.
+        """ 执行自定义函数
 
         Args:
             actions (list): each action in actions list maybe in two format.
@@ -132,7 +132,7 @@ class Runner(object):
             hook_type (enum): setup/teardown
 
         """
-        logger.log_debug("call {} hook actions.".format(hook_type))
+        logger.log_debug(f"执行 {hook_type} 类型函数")
         for action in actions:
 
             if isinstance(action, dict) and len(action) == 1:
@@ -150,7 +150,7 @@ class Runner(object):
                 )
             else:
                 # format 2
-                logger.log_debug("call hook function: {}".format(action))
+                logger.log_debug(f"执行自定义函数 {action}")
                 # TODO: check hook function if valid
                 self.session_context.eval_content(action)
 
@@ -202,12 +202,12 @@ class Runner(object):
         # teststep name
         test_name = test_dict.get("name", "")
 
-        # parse test request
+        # 解析请求
         raw_request = test_dict.get('request', {})
         parsed_test_request = self.session_context.eval_content(raw_request)
         self.session_context.update_test_variables("request", parsed_test_request)
 
-        # setup hooks
+        # 执行前置函数
         setup_hooks = test_dict.get("setup_hooks", [])
         if setup_hooks:
             self.do_hook_actions(setup_hooks, "setup")
@@ -223,15 +223,14 @@ class Runner(object):
         # TODO: move method validation to json schema
         valid_methods = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
         if method.upper() not in valid_methods:
-            err_msg = u"Invalid HTTP method! => {}\n".format(method)
-            err_msg += "Available HTTP methods: {}".format("/".join(valid_methods))
+            err_msg = f"请求方法 {method} 错误，仅支持{'/'.join(valid_methods)}"
             logger.log_error(err_msg)
             raise exceptions.ParamsError(err_msg)
 
-        logger.log_info("{method} {url}".format(method=method, url=url))
+        logger.log_info(f"{method} {url}")
         logger.log_debug("request kwargs(raw): {kwargs}".format(kwargs=parsed_test_request))
 
-        # request
+        # 发送请求
         resp = self.http_client_session.request(
             method,
             url,
@@ -240,44 +239,38 @@ class Runner(object):
         )
 
         resp_obj = response.ResponseObject(resp)
-        # teardown hooks
-        teardown_hooks = test_dict.get("teardown_hooks", [])
-        if teardown_hooks:
-            self.session_context.update_test_variables("response", resp_obj)
-            self.do_hook_actions(teardown_hooks, "teardown")
 
-        # extract
-
+        # 数据提取
         extractors = test_dict.get("extract", {})
         extracted_variables_mapping = resp_obj.extract_response(extractors)
         self.http_client_session.meta_data['data'][0]['extract_msgs'] = extracted_variables_mapping
         # setattr(resp_obj, 'extractors',extracted_variables_mapping)
         self.session_context.update_session_variables(extracted_variables_mapping)
 
-        # validate
+        # 后置函数
+        teardown_hooks = test_dict.get("teardown_hooks", [])
+        if teardown_hooks:
+            self.session_context.update_test_variables("response", resp_obj)
+            self.do_hook_actions(teardown_hooks, "teardown")
+
+        # 断言
         validators = test_dict.get("validate", [])
         try:
             self.session_context.validate(validators, resp_obj)
-
         except (exceptions.ParamsError, exceptions.ValidationFailure, exceptions.ExtractFailure):
-            err_msg = "{} DETAILED REQUEST & RESPONSE {}\n".format("*" * 32, "*" * 32)
 
-            # log request
-            err_msg += "====== 请求详细信息 ======\n"
-            err_msg += "url: {}\n".format(url)
-            err_msg += "method: {}\n".format(method)
-            err_msg += "headers: {}\n".format(parsed_test_request.pop("headers", {}))
-            for k, v in parsed_test_request.items():
-                v = utils.omit_long_data(v)
-                err_msg += "{}: {}\n".format(k, repr(v))
-
-            err_msg += "\n"
-
-            # log response
-            err_msg += "====== response details ======\n"
-            err_msg += "status_code: {}\n".format(resp_obj.status_code)
-            err_msg += "headers: {}\n".format(resp_obj.headers)
-            err_msg += "body: {}\n".format(repr(resp_obj.text))
+            err_msg = f"""\n
+            {"*" * 32, "*" * 32} 请求响应详细信息 {"*" * 32, "*" * 32}\n
+            ====== 请求详细信息 ======\n
+            url: {url}\n
+            method: {method}\n
+            headers: {parsed_test_request.pop("headers", {})}\n
+            
+            ====== 响应详细信息 ======\n"
+            status_code: {resp_obj.status_code}\n
+            headers: {resp_obj.headers}\n
+            body: {repr(resp_obj.text)}\n
+            """
             logger.log_error(err_msg)
 
             raise
