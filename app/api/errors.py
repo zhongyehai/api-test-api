@@ -7,6 +7,7 @@
 # @Software: PyCharm
 
 import traceback
+import socket
 
 import requests
 from flask import current_app, request
@@ -28,10 +29,16 @@ def error_handler(e):
     """ 捕获所有服务器内部的异常 """
     # 把错误发送到 即时达推送 的 系统错误 通道
     try:
+        api.logger.error(f'系统出错了: {e}')
         requests.post(
             url=conf['error_push']['url'],
-            json={'key': conf['error_push']['key'], 'head': '系统出错了', 'body': f'{e}'})
-    except:
+            json={
+                'key': conf['error_push']['key'],
+                'head': '系统出错了',
+                'body': f'ip: {socket.gethostbyname(socket.gethostname())}\n{e}'
+            }
+        )
+    except :
         pass
     current_app.logger.exception(f'触发错误url: {request.path}\n{traceback.format_exc()}')
     return restful.error(f'服务器异常: {e}')

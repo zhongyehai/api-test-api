@@ -14,10 +14,10 @@ class ApiMsg(BaseModel):
     """ 接口表 """
     __tablename__ = 'apis'
     num = db.Column(db.Integer(), nullable=True, comment='接口序号')
-    name = db.Column(db.String(50), nullable=True, comment='接口名称')
+    name = db.Column(db.String(255), nullable=True, comment='接口名称')
     desc = db.Column(db.Text(), default='', nullable=True, comment='接口描述')
-    up_func = db.Column(db.String(128), default='', comment='接口执行前的函数')
-    down_func = db.Column(db.String(128), default='', comment='接口执行后的函数')
+    up_func = db.Column(db.Text(), default='', comment='接口执行前的函数')
+    down_func = db.Column(db.Text(), default='', comment='接口执行后的函数')
 
     method = db.Column(db.String(10), nullable=True, comment='请求方式')
     choice_host = db.Column(db.String(10), default='test', comment='选择的环境')

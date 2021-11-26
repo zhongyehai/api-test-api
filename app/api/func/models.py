@@ -16,7 +16,7 @@ class Func(BaseModel):
     """ 自定义函数 """
     __tablename__ = 'func'
 
-    name = db.Column(db.String(50), nullable=True, unique=True, comment='脚本名称')
+    name = db.Column(db.String(255), nullable=True, unique=True, comment='脚本名称')
     func_data = db.Column(LONGTEXT, default='', comment='脚本代码')
 
     @classmethod

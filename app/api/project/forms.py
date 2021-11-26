@@ -16,12 +16,12 @@ from ..user.models import User
 
 class AddProjectForm(BaseForm):
     """ 添加项目参数校验 """
-    name = StringField(validators=[DataRequired('项目名称不能为空'), Length(1, 64, message='项目名长度不可超过64位')])
+    name = StringField(validators=[DataRequired('项目名称不能为空'), Length(1, 255, message='项目名长度不可超过255位')])
     manager = StringField(validators=[DataRequired('请选择负责人')])
-    dev = StringField(validators=[Length(0, 100, message='开发环境域名长度不可超过100位')])
-    test = StringField(validators=[DataRequired('测试环境域名必填'), Length(1, 100, message='测试环境域名长度不可超过100位')])
-    uat = StringField(validators=[Length(0, 100, message='uat环境域名长度不可超过100位')])
-    production = StringField(validators=[Length(0, 100, message='生产环境域名长度不可超过100位')])
+    dev = StringField(validators=[Length(0, 255, message='开发环境域名长度不可超过255位')])
+    test = StringField(validators=[DataRequired('测试环境域名必填'), Length(1, 255, message='测试环境域名长度不可超过255位')])
+    uat = StringField(validators=[Length(0, 255, message='uat环境域名长度不可超过255位')])
+    production = StringField(validators=[Length(0, 255, message='生产环境域名长度不可超过255位')])
     variables = StringField()
     headers = StringField()
     func_files = StringField()

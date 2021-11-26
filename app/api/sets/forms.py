@@ -29,7 +29,7 @@ class GetCaseSetForm(BaseForm):
 class AddCaseSetForm(BaseForm):
     """ 添加用例集的校验 """
     project_id = StringField(validators=[DataRequired('请先选择首页项目')])
-    name = StringField(validators=[DataRequired('用例集名称不能为空'), Length(1, 50, message='用例集名长度为1~50位')])
+    name = StringField(validators=[DataRequired('用例集名称不能为空'), Length(1, 255, message='用例集名长度为1~255位')])
     level = StringField()
     parent = StringField()
     id = StringField()

@@ -13,7 +13,7 @@ class Set(BaseModel):
     """ 用例集表 """
     __tablename__ = 'sets'
 
-    name = db.Column(db.String(50), nullable=True, comment='用例集名称')
+    name = db.Column(db.String(255), nullable=True, comment='用例集名称')
     num = db.Column(db.Integer(), nullable=True, comment='用例集在对应项目下的序号')
     level = db.Column(db.Integer(), nullable=True, default=2, comment='用例集级数')
     parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级用例集id')

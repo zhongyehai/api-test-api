@@ -17,7 +17,7 @@ from .models import Module
 class AddModelForm(BaseForm):
     """ 添加模块的校验 """
     project_id = IntegerField(validators=[DataRequired('项目id必传')])
-    name = StringField(validators=[DataRequired('模块名必传'), Length(1, 50, message='模块名称为1~50位')])
+    name = StringField(validators=[DataRequired('模块名必传'), Length(1, 255, message='模块名称为1~255位')])
     level = StringField()
     parent = StringField()
     id = StringField()

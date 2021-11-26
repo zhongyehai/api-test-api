@@ -21,8 +21,8 @@ from ..project.models import Project
 
 class AddApiForm(BaseForm):
     """ 添加接口信息的校验 """
-    name = StringField(validators=[DataRequired('接口名必传'), Length(1, 50, '接口名长度为1~50位')])
-    desc = StringField(validators=[Length(0, 50, message='接口描述长度不超过50位')])
+    name = StringField(validators=[DataRequired('接口名必传'), Length(1, 255, '接口名长度为1~255位')])
+    desc = StringField()
     up_func = StringField()  # 前置条件
     down_func = StringField()  # 后置条件
     method = StringField(validators=[DataRequired('请求方法必传'), Length(1, 10, message='请求方法长度为1~10位')])

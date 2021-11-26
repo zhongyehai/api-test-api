@@ -54,7 +54,7 @@ can = '可用属性：' \
 class AddStepForm(BaseForm):
     """ 添加步骤校验 """
 
-    name = StringField(validators=[DataRequired('步骤名称不能为空'), Length(1, 50, message='步骤名长度为1~50位')])
+    name = StringField(validators=[DataRequired('步骤名称不能为空'), Length(1, 255, message='步骤名长度为1~255位')])
     up_func = StringField()
     down_func = StringField()
     is_run = IntegerField()
