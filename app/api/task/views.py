@@ -39,6 +39,7 @@ def run_task():
                 project_id=project_id,
                 run_name=report.name,
                 case_id=Set.get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id)),
+                task=task,
                 report_id=report.id
             ).run_case
         ).start()

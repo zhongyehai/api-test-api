@@ -60,6 +60,8 @@ import portalocker.constants as porta_lock_const
 from logging.handlers import TimedRotatingFileHandler
 from portalocker.utils import Lock as PortaLock
 
+from .globalVariable import LOG_ADDRESS
+
 
 class ConcurrentLogFileLock(PortaLock):
     """
@@ -255,7 +257,8 @@ class GetLogger:
 
             # 建立一个循环文件handler来把日志记录在文件里
             file_handler = ConcurrentTimedRotatingFileHandler(
-                filename=os.path.abspath('..') + r'/logs/' + 'logger',  # 定义日志的存储
+                # filename=os.path.abspath('..') + r'/logs/' + 'logger',  # 定义日志的存储
+                filename=self.logs_dir + 'logger',  # 定义日志的存储
                 when="MIDNIGHT",  # 按照日期进行切分when = D： 表示按天进行切分,or self.when == 'MIDNIGHT'
                 interval=1,  # interval = 1： 每天都切分。 比如interval = 2就表示两天切分一下。
                 backupCount=30,  # 最多存放日志的数量
@@ -275,7 +278,7 @@ class GetLogger:
 
 
 logging.handlers.ConcurrentTimedRotatingFileHandler = ConcurrentTimedRotatingFileHandler
-logger = GetLogger().get_logger()
+logger = GetLogger(LOG_ADDRESS).get_logger()
 
 if __name__ == "__main__":
     # 对上面代码进行测试
