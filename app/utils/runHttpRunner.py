@@ -101,8 +101,8 @@ class BaseParse:
         """ 把解析后的接口对象 解析为httpRunner的数据结构 """
         return {
             'name': api.name,  # 接口名
-            'setup_hooks': [up.strip() for up in api.up_func.split(';')] if api.up_func else [],  # 前置钩子函数
-            'teardown_hooks': [func.strip() for func in api.down_func.split(';')] if api.down_func else [],  # 后置钩子函数
+            'setup_hooks': [up.strip() for up in api.up_func.split(';') if up] if api.up_func else [],
+            'teardown_hooks': [func.strip() for func in api.down_func.split(';') if func] if api.down_func else [],
             'skip': '',  # 无条件跳过当前测试
             'skipIf': '',  # 如果条件为真，则跳过当前测试
             'skipUnless': '',  # 除非条件为真，否则跳过当前测试
@@ -261,8 +261,8 @@ class RunCase(BaseParse):
 
         return {
             'name': step.name,
-            'setup_hooks': [up.strip() for up in step.up_func.split(';')] if step.up_func else [],  # 前置钩子函数
-            'teardown_hooks': [func.strip() for func in step.down_func.split(';')] if step.down_func else [],  # 后置钩子函数
+            'setup_hooks': [up.strip() for up in step.up_func.split(';') if up] if step.up_func else [],
+            'teardown_hooks': [func.strip() for func in step.down_func.split(';') if func] if step.down_func else [],
             'skip': '',  # 无条件跳过当前测试
             'skipIf': step.is_run,  # 如果条件为真，则跳过当前测试
             'skipUnless': '',  # 除非条件为真，否则跳过当前测试

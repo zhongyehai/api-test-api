@@ -68,17 +68,6 @@ def case_set_tree():
     return restful.success(data=set_list)
 
 
-@api.route('/caseSet/stick', methods=['PUT'])
-@login_required
-def stick_set():
-    """ 置顶用例集合 """
-    old_data = Set.get_first(id=request.json.get('id'))
-    list_data = Project.get_first(id=request.json.get('projectId')).case_sets.all()
-    with db.auto_commit():
-        num_sort(1, old_data.num, list_data, old_data)
-    return restful.success('置顶完成')
-
-
 class CaseSetView(BaseMethodView):
     """ 用例集管理 """
 

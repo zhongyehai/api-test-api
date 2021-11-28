@@ -42,21 +42,6 @@ def module_tree():
     return restful.success(data=module_list)
 
 
-@api.route('/module/stick', methods=['PUT'])
-@login_required
-def stick_module():
-    """ 置顶模块 """
-    form = StickModuleForm()
-    if form.validate():
-        list_data = Project.get_first(id=form.project_id.data).modules.all()
-        with db.auto_commit():
-            old_data = Module.get_first(id=form.id.data)
-            old_num = old_data.num
-            num_sort(1, old_num, list_data, old_data)
-        return restful.success('置顶完成')
-    return restful.fail(form.get_error())
-
-
 class ModuleView(BaseMethodView):
     """ 模块管理 """
 

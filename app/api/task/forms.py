@@ -24,15 +24,13 @@ def validate_email(email_server, email_from, email_pwd, email_to):
         raise ValidationError('选择了要邮件接收，则发件人、收件人、密码3个必须有值')
 
     # 校验发件邮箱
-    if not validators.email(email_from):
+    if email_from and not validators.email(email_from.strip()):
         raise ValidationError(f'发件人邮箱 {email_from} 格式错误')
 
-    if '@qq' not in email_from.lower() and '@bbd' not in email_from.lower():
-        raise ValidationError('发件邮箱暂时只支持qq邮箱和公司邮箱')
-
     # 校验收件邮箱
-    for mail in email_to.split(','):
-        if not validators.email(mail):
+    for mail in email_to.split(';'):
+        mail = mail.strip()
+        if mail and not validators.email(mail):
             raise ValidationError(f'收件人邮箱 {mail} 格式错误')
 
 

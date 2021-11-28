@@ -57,7 +57,13 @@ def by_ding_ding(content, webhook):
 
 def by_email(email_server, email_from, email_pwd, email_to, content):
     """ 通过邮件发送测试报告 """
-    SendEmail(email_server, email_from, email_pwd, email_to.split(','), render_html_report(content)).send_email()
+    SendEmail(
+        email_server,
+        email_from.strip(),
+        email_pwd,
+        [email.strip() for email in email_to.split(';') if email],
+        render_html_report(content)
+    ).send_email()
 
 
 def send_report(**kwargs):

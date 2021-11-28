@@ -81,12 +81,10 @@ def change_case_quote():
 def change_case_sort():
     """ 更新用例的排序 """
     case_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
-    sorted_case = []
     with db.auto_commit():
         for index, case_id in enumerate(case_id_list):
             case = Case.get_first(id=case_id)
             case.num = (num - 1) * size + index
-            sorted_case.append(case.to_dict())
     return restful.success(msg='修改排序成功')
 
 

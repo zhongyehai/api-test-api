@@ -149,7 +149,7 @@ class BaseModel(db.Model, JsonUtil):
     def base_to_dict(self, json_to_dict_list=[], pop_list=[]):
         """ 自定义序列化器，把模型的每个字段转为key，方便返回给前端 """
         dict_data = {}
-        pop_list += ['created_time', 'update_time']
+        pop_list.extend(['created_time', 'update_time'])
         for column in self.__table__.columns:
             if column.name not in pop_list:
                 data = getattr(self, column.name)

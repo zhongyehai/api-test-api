@@ -45,7 +45,7 @@ class Task(BaseModel):
             page_num=form.pageNum.data,
             page_size=form.pageSize.data,
             filters=filters,
-            order_by=cls.id.asc()
+            order_by=cls.num.asc()
         )
 
 

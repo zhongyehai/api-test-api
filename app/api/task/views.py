@@ -9,6 +9,7 @@
 from threading import Thread
 
 import requests
+from flask import request
 from flask_login import current_user
 
 from ..report.models import Report
@@ -54,6 +55,36 @@ def task_list():
     form = GetTaskListForm()
     if form.validate():
         return restful.success(data=Task.make_pagination(form))
+    return restful.fail(form.get_error())
+
+
+@api.route('/task/sort', methods=['put'])
+@login_required
+def change_task_sort():
+    """ 更新定时任务的排序 """
+    task_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
+    with db.auto_commit():
+        for index, task_id in enumerate(task_id_list):
+            task = Task.get_first(id=task_id)
+            task.num = (num - 1) * size + index
+    return restful.success(msg='修改排序成功')
+
+
+@api.route('/task/copy', methods=['POST'])
+@login_required
+def task_copy():
+    """ 复制任务 """
+    form = HasTaskIdForm()
+    if form.validate():
+        old_task = form.task
+        with db.auto_commit():
+            new_task = Task()
+            new_task.create(old_task.to_dict(), 'set_id', 'case_id')
+            new_task.name = old_task.name + '_01'
+            new_task.status = '禁用中'
+            new_task.num = Task.get_new_num(old_task.num, project_id=old_task.project_id)
+            db.session.add(new_task)
+        return restful.success(msg='复制成功', data=new_task.to_dict())
     return restful.fail(form.get_error())
 
 
