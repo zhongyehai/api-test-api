@@ -1,16 +1,15 @@
 """ yapi 的数据同步到 api-test """
-
+import json
 import re
 
 import requests
 from flask import request
 
 from .. import api
+from ..config.models import Config
 from ..project.models import Project
-from ..step.models import Step
 from ...baseModel import db
 from ..module.models import Module
-from ..sets.models import Set
 from ..apiMsg.models import ApiMsg
 from ...utils import restful
 from config.config import conf
@@ -97,8 +96,14 @@ def get_group_list(headers):
         ]
     }
     """
+    # 不需要同步的分组关键字
+    ignore_group = json.loads(Config.get_first(name='ignore_keyword_for_group') or '[]')
     group_list = requests.get(f'{host}/api/group/list', headers=headers).json()['data']
-    return [{'id': group['_id'], 'name': group['group_name']} for group in group_list]
+    return [
+        {
+            'id': group['_id'], 'name': group['group_name']
+        } for group in group_list for ignore in ignore_group if ignore not in group['group_name']
+    ]
 
 
 def get_group(group_id, headers):
@@ -122,11 +127,17 @@ def get_yapi_project_list(group_id, headers):
         }
     }
     """
+    # 不需要同步的项目关键字
+    ignore_project = json.loads(Config.get_first(name='ignore_keyword_for_project') or '[]')
     project_list = requests.get(
         f'{host}/api/project/list?group_id={group_id}&page=1&limit=1000',
         headers=headers,
     ).json()['data']['list']
-    return [{'id': project['_id'], 'name': project['name']} for project in project_list]
+    return [
+        {
+            'id': project['_id'], 'name': project['name']
+        } for project in project_list for ignore in ignore_project if ignore not in project['name']
+    ]
 
 
 def get_module_list(project_id, headers):

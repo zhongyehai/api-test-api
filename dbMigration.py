@@ -33,28 +33,8 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
-def init_admin():
-    """ 初始化管理员用户 """
-    if User.query.filter_by(name='管理员').first():
-        print(f'{"=" * 15} 已存在管理员用户，可直接登录 {"=" * 15}')
-        return
-    else:
-        print(f'{"=" * 15} 开始创建管理员用户 {"=" * 15}')
-        with db.auto_commit():
-            user = User()
-            user.account = 'admin'
-            user.password = '123456'
-            user.name = '管理员'
-            user.status = 1
-            user.role_id = 2
-            user.create_user = 1
-            db.session.add(user)
-        print(f'{"=" * 15} 创建管理员用户成功 {"=" * 15}')
-
-
-@manager.command
 def init_role():
-    """ 初始化角色 """
+    """ 初始化权限、角色 """
     print(f'{"=" * 15} 开始创建角色 {"=" * 15}')
     roles_permissions_map = OrderedDict()
     roles_permissions_map[u'测试人员'] = ['COMMON']
@@ -73,6 +53,24 @@ def init_role():
             role.permission.append(permission)
             db.session.commit()
     print(f'{"=" * 15} 角色创建成功 {"=" * 15}')
+
+
+@manager.command
+def init_user():
+    """ 初始化用户 """
+    print(f'{"=" * 15} 开始创建管理员用户 {"=" * 15}')
+    user_list = [
+        {'account': 'admin', 'password': '123456', 'name': '管理员', 'status': 1, 'role_id': 2, 'create_user': 1},
+        {'account': 'common', 'password': 'common', 'name': '公用账号', 'status': 1, 'role_id': 1, 'create_user': 1}
+    ]
+    for user_info in user_list:
+        if User.get_first(account=user_info['account']) is None:
+            with db.auto_commit():
+                user = User()
+                user.create(user_info)
+                db.session.add(user)
+            print(f'{"=" * 15} 用户 {user_info["name"]} 创建成功 {"=" * 15}')
+    print(f'{"=" * 15} 用户创建完成 {"=" * 15}')
 
 
 @manager.command
@@ -113,7 +111,9 @@ def init_config():
             "工作": "job",
             "ipv4": "ipv4",
             "ipv6": "ipv6"
-        }, ensure_ascii=False), 'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'}
+        }, ensure_ascii=False), 'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'},
+        {'name': 'ignore_keyword_for_group', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的分组关键字'},
+        {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'}
     ]
     for data in conf_list:
         if Config.get_first(name=data["name"]) is None:
@@ -131,7 +131,7 @@ def init():
     """ 初始化 权限、角色、管理员 """
     print(f'{"=" * 15} 正在初始化数据 {"=" * 15}')
     init_role()
-    init_admin()
+    init_user()
     init_config_type()
     init_config()
     print(f'{"=" * 15} 数据初始化完毕 {"=" * 15}')
