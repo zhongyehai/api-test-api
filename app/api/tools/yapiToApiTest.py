@@ -12,12 +12,7 @@ from ...baseModel import db
 from ..module.models import Module
 from ..apiMsg.models import ApiMsg
 from ...utils import restful
-from config.config import conf
 from ...utils.required import login_required
-
-host = conf['yapi']['host']
-account = conf['yapi']['account']
-password = conf['yapi']['password']
 
 
 def update_project(yapi_project):
@@ -73,11 +68,11 @@ def update_api(project, module_and_api):
                 db.session.add(api_msg)
 
 
-def get_yapi_header():
+def get_yapi_header(host, account, password):
     """ 登录yapi，获取set-cookie """
     login_res = requests.post(
         f'{host}/api/user/login',
-        json={"email": "yehai.zhong@xintech.cn", "password": "Sc123456"}
+        json={"email": account, "password": password}
     ).headers['Set-Cookie']
     return {
         'Cookie': '_yapi_token=' + re.findall('_yapi_token=(.+?); ', login_res)[0] + '; ' +
@@ -85,7 +80,7 @@ def get_yapi_header():
     }
 
 
-def get_group_list(headers):
+def get_group_list(host, headers, ignore_group):
     """ 获取分组列表
     yapi接口响应关键数据
     {
@@ -96,8 +91,6 @@ def get_group_list(headers):
         ]
     }
     """
-    # 不需要同步的分组关键字
-    ignore_group = json.loads(Config.get_first(name='ignore_keyword_for_group') or '[]')
     group_list = requests.get(f'{host}/api/group/list', headers=headers).json()['data']
     return [
         {
@@ -106,13 +99,13 @@ def get_group_list(headers):
     ]
 
 
-def get_group(group_id, headers):
+def get_group(host, group_id, headers):
     """ 根据 yapi 的分组id，获取分组信息 """
     group = requests.get(f'{host}/api/group/get?id={group_id}', headers=headers).json()['data']
     return {'id': group['_id'], 'name': group['group_name']}
 
 
-def get_yapi_project_list(group_id, headers):
+def get_yapi_project_list(host, group_id, headers, ignore_project):
     """ 获取指定分组下的项目列表
     yapi接口响应
     {
@@ -127,8 +120,6 @@ def get_yapi_project_list(group_id, headers):
         }
     }
     """
-    # 不需要同步的项目关键字
-    ignore_project = json.loads(Config.get_first(name='ignore_keyword_for_project') or '[]')
     project_list = requests.get(
         f'{host}/api/project/list?group_id={group_id}&page=1&limit=1000',
         headers=headers,
@@ -140,7 +131,7 @@ def get_yapi_project_list(group_id, headers):
     ]
 
 
-def get_module_list(project_id, headers):
+def get_module_list(host, project_id, headers):
     """ 获取模块id
     yapi 接口响应
     {
@@ -161,7 +152,7 @@ def get_module_list(project_id, headers):
     return [{'id': module['_id'], 'project_id': module['project_id'], 'name': module['name']} for module in module_list]
 
 
-def get_module_and_api(project_id, headers):
+def get_module_and_api(host, project_id, headers):
     """ 导出项目下的模块和接口
     yapi 接口返回
     [
@@ -206,21 +197,29 @@ def get_module_and_api(project_id, headers):
 @login_required
 def yapi_to_api_test():
     """ 同步yapi的项目、模块、接口到测试平台 """
-    headers = get_yapi_header()  # 获取头部信息
+
+    # 获取配置
+    conf = Config.query.filter(Config.name.in_([
+        'yapi_host', 'yapi_account', 'yapi_password', 'ignore_keyword_for_group', 'ignore_keyword_for_project'
+    ])).all()
+    yapi_host, yapi_account, yapi_password = conf[0].value, conf[1].value, conf[2].value
+    ignore_group, ignore_project = json.loads(conf[3].value or '[]'), json.loads(conf[4].value or '[]')
+
+    headers = get_yapi_header(yapi_host, yapi_account, yapi_password)  # 获取头部信息
+    group_list = get_group_list(yapi_host, headers, ignore_group)  # 所有分组列表
     project_list = []
-    group_list = get_group_list(headers)  # 所有分组列表
 
     # 传了指定的项目id，则只更新对应项目下的信息
     if request.json and request.json.get('id'):
         yapi_id = Project.get_first(id=request.json.get('id')).yapi_id
         for group in group_list:
-            for project in get_yapi_project_list(group['id'], headers):
+            for project in get_yapi_project_list(yapi_host, group['id'], headers, ignore_project):
                 if project['id'] == yapi_id:
                     project_list = [project]
                     break
     else:  # 没有指定项目id，则全量更新
         for group in group_list:
-            project_list += get_yapi_project_list(group['id'], headers)
+            project_list += get_yapi_project_list(yapi_host, group['id'], headers, ignore_project)
 
     for yapi_project in project_list:
 
@@ -229,12 +228,12 @@ def yapi_to_api_test():
         api_test_project = update_project(yapi_project)
 
         # 更新模块
-        for yapi_module in get_module_list(yapi_project['id'], headers):
+        for yapi_module in get_module_list(yapi_host, yapi_project['id'], headers):
             api.logger.info(f'模块：{yapi_module}')
             update_module(api_test_project, yapi_module)
 
         # 更新接口信息
-        for module_and_api in get_module_and_api(yapi_project['id'], headers):
+        for module_and_api in get_module_and_api(yapi_host, yapi_project['id'], headers):
             update_api(api_test_project, module_and_api)
 
     return restful.success('数据更新完成')

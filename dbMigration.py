@@ -112,6 +112,9 @@ def init_config():
             "ipv4": "ipv4",
             "ipv6": "ipv6"
         }, ensure_ascii=False), 'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'},
+        {'name': 'yapi_host', 'value': '', 'type': '系统配置', 'desc': 'yapi域名'},
+        {'name': 'yapi_account', 'value': '', 'type': '系统配置', 'desc': 'yapi账号'},
+        {'name': 'yapi_password', 'value': '', 'type': '系统配置', 'desc': 'yapi密码'},
         {'name': 'ignore_keyword_for_group', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的分组关键字'},
         {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'}
     ]
