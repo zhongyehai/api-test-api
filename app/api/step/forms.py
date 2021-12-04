@@ -63,6 +63,7 @@ class AddStepForm(BaseForm):
     params = StringField()
     data_form = StringField()
     data_json = StringField()
+    data_xml = StringField()
     extracts = StringField()
     validates = StringField()
     data_driver = StringField()

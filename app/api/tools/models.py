@@ -35,3 +35,14 @@ class AccountModel(BaseModel):
             page_size=filter.get("page_size"),
             filters=filters,
             order_by=cls.created_time.desc())
+
+
+class KYMModule(BaseModel):
+    """ KYM分析表 """
+    __tablename__ = 'kym'
+
+    project = db.Column(db.String(50), comment='项目名')
+    kym = db.Column(db.Text, default='{}', comment='kym分析')
+
+    def to_dict(self):
+        return self.base_to_dict(json_to_dict_list=['kym'])

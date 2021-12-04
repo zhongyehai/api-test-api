@@ -24,12 +24,87 @@ from app.api.task.models import Task, ApschedulerJobs
 from app.api.user.models import User, Permission, Role
 from app.api.config.models import Config, ConfigType
 from app.api.tools.models import AccountModel
+from app.api.tools.models import KYMModule
 from main import app
 
 manager = Manager(app)
 
 Migrate(app, db)
 manager.add_command('db', MigrateCommand)
+
+make_user_info_mapping = {
+    "姓名": "name",
+    "身份证号": "ssn",
+    "手机号": "phone_number",
+    "银行卡": "credit_card_number",
+    "地址": "address",
+    "公司名": "company",
+    "统一社会信用代码": "credit_code",
+    "邮箱": "company_email",
+    "工作": "job",
+    "ipv4": "ipv4",
+    "ipv6": "ipv6"
+}
+
+kym_keword = {
+    "里程碑": [
+        {"key": "需求评审时间", "value": ""},
+        {"key": "开发提测时间", "value": ""},
+        {"key": "测试周期测试时间多长", "value": ""},
+        {"key": "轮次安排进行几轮测试", "value": ""},
+        {"key": "UAT验收时间", "value": ""},
+        {"key": "上线时间", "value": ""}
+    ],
+    "涉及人员": [
+        {"key": "负责迭代的产品是谁", "value": ""},
+        {"key": "后端开发是谁经验如何", "value": ""},
+        {"key": "前端开发是谁经验如何", "value": ""},
+        {"key": "测试人员是谁", "value": ""}
+    ],
+    "涉及模块": [
+        {"key": "项目中涉及哪些模块，对应的开发责任人是谁", "value": ""}
+    ],
+    "项目信息": [
+        {"key": "项目背景是什么", "value": ""},
+        {"key": "这个项目由什么需要特别注意的地方", "value": ""},
+        {"key": "可以向谁进一步了解项目信息", "value": ""},
+        {"key": "有没有文档、手册、材料等可供参考", "value": ""},
+        {"key": "这是全新的产品还是维护升级的", "value": ""},
+        {"key": "有没有竞品分析结果或同类产品可供参考", "value": ""},
+        {"key": "历史版本曾今发生过那些重大故障", "value": ""}
+    ],
+    "使用群体": [
+        {"key": "产品使用群体是哪些", "value": ""},
+        {"key": "用户与用户之间有什么关联", "value": ""},
+        {"key": "用户为什么提这个需求", "value": ""},
+        {"key": "用户最关心的是什么", "value": ""},
+        {"key": "用户的实际使用环境是什么", "value": ""}
+    ],
+    "测试信息": [
+        {"key": "会使用到的测试账号有哪些?", "value": ""},
+        {"key": "会用到的测试地址", "value": ""},
+        {"key": "有没有不太熟悉、掌握的流程", "value": ""}
+    ],
+    "设备工具": [
+        {"key": "测试过程中是否会用到其他测试设备资源是否够（Ukey、手机、平板）", "value": ""},
+        {"key": "会用到什么测试工具会不会使用", "value": ""}
+    ],
+    "测试团队": [
+        {"key": "有几个测试团队负责测试", "value": ""},
+        {"key": "负责测试的人员组成情况", "value": ""},
+        {"key": "测试人员的经验如何", "value": ""},
+        {"key": "测试人员对被测对象的熟悉程度如何", "value": ""},
+        {"key": "测试人员是专职的还是兼职的", "value": ""},
+        {"key": "测试人手是否充足", "value": ""}],
+    "测试项": [
+        {"key": "主要的测试内容有哪些", "value": ""},
+        {"key": "哪部分可以降低优先级或者先不测试", "value": ""},
+        {"key": "哪些内容是新增或修改", "value": ""},
+        {"key": "是否涉及历史数据迁移测试", "value": ""},
+        {"key": "是否涉及与外系统联调测试", "value": ""},
+        {"key": "是否需要进行性能、兼容性、安全测试", "value": ""}
+    ]
+}
 
 
 @manager.command
@@ -60,8 +135,8 @@ def init_user():
     """ 初始化用户 """
     print(f'{"=" * 15} 开始创建管理员用户 {"=" * 15}')
     user_list = [
-        {'account': 'admin', 'password': '123456', 'name': '管理员', 'status': 1, 'role_id': 2, 'create_user': 1},
-        {'account': 'common', 'password': 'common', 'name': '公用账号', 'status': 1, 'role_id': 1, 'create_user': 1}
+        {'account': 'admin', 'password': '123456', 'name': '管理员', 'status': 1, 'role_id': 2},
+        {'account': 'common', 'password': 'common', 'name': '公用账号', 'status': 1, 'role_id': 1}
     ]
     for user_info in user_list:
         if User.get_first(account=user_info['account']) is None:
@@ -83,7 +158,6 @@ def init_config_type():
     ]
     for data in config_type_list:
         if ConfigType.get_first(name=data["name"]) is None:
-            data['create_user'] = 1
             with db.auto_commit():
                 config_type = ConfigType()
                 config_type.create(data)
@@ -99,28 +173,17 @@ def init_config():
     conf_list = [
         {'name': 'QQ邮箱', 'value': 'smtp.qq.com', 'type': '邮箱', 'desc': 'QQ邮箱服务器'},
         {'name': 'http_methods', 'value': 'GET,POST,PUT,DELETE', 'type': '系统配置', 'desc': 'http请求方式，以英文的 "," 隔开'},
-        {'name': 'make_user_info_mapping', 'value': json.dumps({
-            "姓名": "name",
-            "身份证号": "ssn",
-            "手机号": "phone_number",
-            "银行卡": "credit_card_number",
-            "地址": "address",
-            "公司名": "company",
-            "统一社会信用代码": "credit_code",
-            "邮箱": "company_email",
-            "工作": "job",
-            "ipv4": "ipv4",
-            "ipv6": "ipv6"
-        }, ensure_ascii=False), 'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'},
+        {'name': 'make_user_info_mapping', 'value': json.dumps(make_user_info_mapping, ensure_ascii=False),
+         'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'},
         {'name': 'yapi_host', 'value': '', 'type': '系统配置', 'desc': 'yapi域名'},
         {'name': 'yapi_account', 'value': '', 'type': '系统配置', 'desc': 'yapi账号'},
         {'name': 'yapi_password', 'value': '', 'type': '系统配置', 'desc': 'yapi密码'},
         {'name': 'ignore_keyword_for_group', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的分组关键字'},
-        {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'}
+        {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'},
+        {'name': 'kym', 'value': json.dumps(kym_keword, ensure_ascii=False, indent=4), 'type': '系统配置', 'desc': 'KYM分析项'}
     ]
     for data in conf_list:
         if Config.get_first(name=data["name"]) is None:
-            data['create_user'] = 1
             with db.auto_commit():
                 config = Config()
                 config.create(data)

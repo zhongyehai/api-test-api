@@ -117,7 +117,7 @@ class BaseParse:
                 'headers': api.headers,  # 接口头部信息
                 'params': api.params,  # 接口查询字符串参数
                 'json': api.data_json,
-                'data': api.data_form['string'] if api.data_type.upper() == 'DATA' else api.data_xml.encode('utf-8'),
+                'data': api.data_form['string'] if api.data_type.upper() == 'DATA' else api.data_xml,
                 'files': api.data_form['files'] if api.data_form else {},
             }
         }
@@ -129,7 +129,6 @@ class BaseParse:
         with db.auto_commit():
             report.is_passed = 1 if result['success'] else 0
             report.is_done = 1
-            # report.name = ','.join([detail['name'] for detail in result['details']])
 
         # 测试报告写入到文本文件
         with open(os.path.join(REPORT_ADDRESS, f'{report.id}.txt'), 'w') as f:
@@ -144,7 +143,7 @@ class BaseParse:
         summary['time']['start_at'] = datetime.fromtimestamp(summary['time']['start_at']).strftime("%Y-%m-%d %H:%M:%S")
         jump_res = json.dumps(summary, ensure_ascii=False, default=encode_object, cls=JSONEncoder)
         self.build_report(jump_res)
-        return json.dumps(summary, ensure_ascii=False, default=encode_object, cls=JSONEncoder)
+        return jump_res
 
 
 class RunApi(BaseParse):
@@ -276,8 +275,7 @@ class RunCase(BaseParse):
                 'headers': headers,  # 接口头部信息
                 'params': step.params,  # 接口查询字符串参数
                 'json': step.data_json,
-                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml.encode(
-                    'utf-8'),
+                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml,
                 'files': step.data_form.get('files', {}),
             }
         }

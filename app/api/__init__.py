@@ -24,6 +24,7 @@ from app.api.tools import views
 from app.api.tools import fileView
 from app.api.tools import accountView
 from app.api.tools import yapiToApiTest
+from app.api.tools import kymView
 from app.api.home import view
 from app.api.config import views
 

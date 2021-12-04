@@ -544,14 +544,13 @@ def parse_data(content, variables_mapping=None, functions_mapping=None, raise_if
         content = content.strip()
 
         try:
-            # replace functions with evaluated value
-            # Notice: parse_string_functions must be called before parse_string_variables
+            # 提取并执行自定义函数
             content = parse_string_functions(
                 content,
                 variables_mapping,
                 functions_mapping
             )
-            # replace variables with binding value
+            # 用公用变量替换字符串中的占位符
             content = parse_string_variables(
                 content,
                 variables_mapping,
@@ -693,8 +692,7 @@ def _extend_with_testcase(test_dict, testcase_def_dict):
 
 
 def __parse_config(config, project_mapping):
-    """ parse testcase/testsuite config, include variables and name.
-    """
+    """ 解析 testcase/testsuite config, 包括变量和名称。"""
     # get config variables
     raw_config_variables = config.pop("variables", {})
     raw_config_variables_mapping = utils.ensure_mapping_format(raw_config_variables)
@@ -789,7 +787,7 @@ def __parse_testcase_tests(tests, config, project_mapping):
             if parsed_key in test_dict["variables"]:
                 test_dict["variables"][parsed_key] = parsed_value
 
-        # parse test_dict name
+        # 测试步骤名字
         test_dict["name"] = parse_data(
             test_dict.pop("name", ""),
             test_dict["variables"],
@@ -818,7 +816,7 @@ def __parse_testcase_tests(tests, config, project_mapping):
                 _extend_with_api(test_dict, api_def_dict)
 
             if test_dict.get("base_url"):
-                # parse base_url
+                # 解析 base_url
                 base_url = parse_data(
                     test_dict.pop("base_url"),
                     test_dict["variables"],

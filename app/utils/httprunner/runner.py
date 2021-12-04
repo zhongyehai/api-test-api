@@ -202,10 +202,14 @@ class Runner(object):
         # teststep name
         test_name = test_dict.get("name", "")
 
-        # 解析请求
+        # 解析请求，替换变量、自定义函数
         raw_request = test_dict.get('request', {})
         parsed_test_request = self.session_context.eval_content(raw_request)
         self.session_context.update_test_variables("request", parsed_test_request)
+
+        # 如果请求体是字符串（xml），转为utf-8格式
+        if isinstance(parsed_test_request['data'], str):
+            parsed_test_request['data'] = parsed_test_request['data'].encode('utf-8')
 
         # 执行前置函数
         setup_hooks = test_dict.get("setup_hooks", [])

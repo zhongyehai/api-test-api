@@ -5,6 +5,7 @@
 # @Site : 
 # @File : views.py
 # @Software: PyCharm
+from flask import request
 from flask_login import current_user
 
 from ...utils import restful
@@ -71,6 +72,13 @@ def conf_list():
     if form.validate():
         return restful.success(data=Config.make_pagination(form))
     return restful.error(form.get_error())
+
+
+@api.route('/config/configByName', methods=['GET'])
+@login_required
+def get_conf_by_name():
+    """ 根据配置名获取配置 """
+    return restful.success(data=Config.get_first(name=request.args.get('name')).to_dict())
 
 
 class ConfigView(BaseMethodView):
