@@ -34,8 +34,8 @@ def error_handler(e):
             url=conf['error_push']['url'],
             json={
                 'key': conf['error_push']['key'],
-                'head': '系统出错了',
-                'body': f'ip: {socket.gethostbyname(socket.gethostname())}\n{e}'
+                'head': f'{conf["SECRET_KEY"]}报错了',
+                'body': f'{e}'
             }
         )
     except :

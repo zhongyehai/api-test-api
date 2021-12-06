@@ -51,9 +51,8 @@ class ConfigTypeView(BaseMethodView):
         form = PutConfigTypeForm()
         if form.validate():
             with db.auto_commit():
-                delattr(form.data, 'name')
-                form.config_type.update(form.data, spike_list=['key'])
-            return restful.success('修改成功', data=form.conf.to_dict())
+                form.conf_type.update(form.data)
+            return restful.success('修改成功', data=form.conf_type.to_dict())
         return restful.error(form.get_error())
 
     def delete(self):
