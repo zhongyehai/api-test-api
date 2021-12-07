@@ -12,12 +12,12 @@ class AccountModel(BaseModel):
     """ 测试账号表 """
     __tablename__ = 'account'
 
-    project = db.Column(db.String(50), comment='项目名')
-    name = db.Column(db.String(50), comment='账户名')
-    account = db.Column(db.String(50), comment='登录账号')
-    password = db.Column(db.String(50), comment='登录密码')
+    project = db.Column(db.String(255), comment='项目名')
+    name = db.Column(db.String(255), comment='账户名')
+    account = db.Column(db.String(255), comment='登录账号')
+    password = db.Column(db.String(255), comment='登录密码')
     desc = db.Column(db.Text(), comment='备注')
-    event = db.Column(db.String(10), comment='环境')
+    event = db.Column(db.String(50), comment='环境')
 
     def to_dict(self, *args, **kwargs):
         return self.base_to_dict(*args, **kwargs)
@@ -41,7 +41,7 @@ class KYMModule(BaseModel):
     """ KYM分析表 """
     __tablename__ = 'kym'
 
-    project = db.Column(db.String(50), comment='项目名')
+    project = db.Column(db.String(255), comment='项目名')
     kym = db.Column(db.Text, default='{}', comment='kym分析')
 
     def to_dict(self):

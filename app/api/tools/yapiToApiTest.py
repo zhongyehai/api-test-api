@@ -15,6 +15,15 @@ from ...utils import restful
 from ...utils.required import login_required
 
 
+def pop_ignore(data_list, ignore_list, key):
+    """ 过滤要排除的项 """
+    for index, project in enumerate(data_list):
+        for ignore in ignore_list:
+            if ignore and ignore in project[key]:
+                data_list.pop(index)
+    return data_list
+
+
 def update_project(yapi_project):
     """ yapi 的项目信息更新到测试平台的项目 """
     with db.auto_commit():
@@ -92,13 +101,7 @@ def get_group_list(host, headers, ignore_group):
     }
     """
     group_list = requests.get(f'{host}/api/group/list', headers=headers).json()['data']
-
-    # 过滤要排除的项
-    for index, group in enumerate(group_list):
-        for ignore in ignore_group:
-            if ignore and ignore in group['group_name']:
-                group_list.pop(index)
-    return group_list
+    return pop_ignore(group_list, ignore_group, 'group_name')
 
 
 def get_group(host, group_id, headers):
@@ -126,12 +129,7 @@ def get_yapi_project_list(host, group_id, headers, ignore_project):
         f'{host}/api/project/list?group_id={group_id}&page=1&limit=1000',
         headers=headers,
     ).json()['data']['list']
-    # 过滤要排除的项
-    for index, project in enumerate(project_list):
-        for ignore in ignore_project:
-            if ignore and ignore in project['name']:
-                project_list.pop(index)
-    return project_list
+    return pop_ignore(project_list, ignore_project, 'name')
 
 
 def get_module_list(host, project_id, headers):

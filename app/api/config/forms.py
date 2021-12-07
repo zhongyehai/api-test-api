@@ -48,11 +48,17 @@ class PutConfigTypeForm(PostConfigTypeForm):
     """ 修改配置类型表单校验 """
     id = IntegerField(validators=[DataRequired('配置类型id必传')])
 
+    def validate_id(self, field):
+        old_conf_type = ConfigType.get_first(id=field.data)
+        if not old_conf_type:
+            raise ValidationError(f'id为 {field.data} 的配置类型不存在')
+        setattr(self, 'conf_type', old_conf_type)
+
     def validate_name(self, field):
-        conf_type = ConfigType.get_first(id=field.data)
-        if conf_type.id != self.id.data:
+        old_conf_type = ConfigType.get_first(name=field.data)
+        if old_conf_type and old_conf_type.id != self.id.data:
             raise ValidationError(f'名为 {field.data} 的配置类型已存在')
-        setattr(self, 'conf_type', conf_type)
+        setattr(self, 'conf_type', old_conf_type)
 
 
 class GetConfigListForm(BaseForm):

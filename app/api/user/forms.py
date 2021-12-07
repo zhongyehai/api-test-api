@@ -17,7 +17,7 @@ from .models import User, Role
 class CreateUserForm(BaseForm):
     """ 创建用户的验证 """
     name = StringField(validators=[DataRequired('请设置用户名'), Length(2, 12, message='用户名长度为2~12位')])
-    account = StringField(validators=[DataRequired('请设置账号'), Length(2, 12, message='账号长度为2~12位')])
+    account = StringField(validators=[DataRequired('请设置账号'), Length(2, 50, message='账号长度为2~50位')])
     password = StringField(validators=[DataRequired('请设置密码'), Length(6, 18, message='密码长度长度为6~18位')])
     role_id = IntegerField(validators=[DataRequired('请选择角色')])
 
