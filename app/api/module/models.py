@@ -16,7 +16,9 @@ class Module(BaseModel):
     num = db.Column(db.Integer(), nullable=True, comment='模块在对应项目下的序号')
     level = db.Column(db.Integer(), nullable=True, default=2, comment='模块级数')
     parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级模块id')
-    yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的项目/模块id')
+    yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的模块id')
+    yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的项目id')
+    yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
 
     project = db.relationship('Project', backref='modules')  # 一对多
@@ -39,3 +41,17 @@ class Module(BaseModel):
             filters=filters,
             order_by=cls.num.asc()
         )
+
+
+class YapiModule(BaseModel):
+    """ yapi的模块表 """
+    __tablename__ = 'yapi_module'
+
+    yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的项目id')
+    yapi_name = db.Column(db.String(255), comment='当前模块在yapi平台的名字')
+    yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的模块id')
+    yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
+
+    def to_dict(self):
+        """ 转字典 """
+        return self.base_to_dict()

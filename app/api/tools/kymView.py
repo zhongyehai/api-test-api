@@ -25,9 +25,11 @@ def add_kym_project():
     if KYMModule.get_first(project=request.json['project']):
         return restful.fail(f"项目 {request.json['project']} 已存在")
     with db.auto_commit():
+        kym_data = {"nodeData": {"topic": request.json['project'], "root": True, "children": []}}
+        kym_data['nodeData']['children'] = json.loads(Config.get_first(name='kym').value)
         kym = KYMModule()
         kym.project = request.json['project']
-        kym.kym = Config.get_first(name='kym').value
+        kym.kym = json.dumps(kym_data, ensure_ascii=False, indent=4)
         kym.create_user = current_user.id
         db.session.add(kym)
     return restful.success('新增成功', data=kym.to_dict())

@@ -15,15 +15,15 @@ class JsonUtil:
     @classmethod
     def dump(cls, obj, fp, *args, **kwargs):
         """ json.dump """
-        if 'ensure_ascii' not in kwargs:
-            kwargs.setdefault('ensure_ascii', False)
+        kwargs.setdefault('ensure_ascii', False)
+        kwargs.setdefault('indent', 4)
         return json.dump(obj, fp, *args, **kwargs)
 
     @classmethod
     def dumps(cls, obj, *args, **kwargs):
         """ json.dumps """
-        if 'ensure_ascii' not in kwargs:
-            kwargs.setdefault('ensure_ascii', False)
+        kwargs.setdefault('ensure_ascii', False)
+        kwargs.setdefault('indent', 4)
         return json.dumps(obj, *args, **kwargs)
 
     @classmethod

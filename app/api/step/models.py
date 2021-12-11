@@ -52,5 +52,5 @@ class Step(BaseModel):
     def to_dict(self):
         """ 转为字典输出 """
         return self.base_to_dict(
-            json_to_dict_list=["headers", "params", "data_form", "data_json", "extracts", "validates", "data_driver"]
+            to_dict=["headers", "params", "data_form", "data_json", "extracts", "validates", "data_driver"]
         )

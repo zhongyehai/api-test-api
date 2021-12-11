@@ -88,13 +88,13 @@ class BaseModel(db.Model, JsonUtil):
     def str_update_time(self):
         return datetime.strftime(self.update_time, "%Y-%m-%d %H:%M:%S")
 
-    def create(self, attrs_dict, *args):
+    def create(self, attrs_dict: dict, *args):
         """ 插入数据，若指定了字段，则把该字段的值转为json """
         for key, value in attrs_dict.items():
             if hasattr(self, key) and key != 'id':
                 setattr(self, key, self.dumps(value) if key in args else value)
 
-    def update(self, attrs_dict, *args):
+    def update(self, attrs_dict: dict, *args):
         """ 修改数据，若指定了字段，则把该字段的值转为json """
         for key, value in attrs_dict.items():
             if hasattr(self, key) and key not in ['id', 'create_user']:
@@ -146,19 +146,19 @@ class BaseModel(db.Model, JsonUtil):
                 return cls.get_filter_by(**kwargs).order_by(cls.num.desc()).first().num + 1
         return int(num)
 
-    def base_to_dict(self, json_to_dict_list=[], pop_list=[]):
+    def base_to_dict(self, to_dict: list = [], pop_list: list = []):
         """ 自定义序列化器，把模型的每个字段转为key，方便返回给前端 """
         dict_data = {}
         pop_list.extend(['created_time', 'update_time'])
         for column in self.__table__.columns:
             if column.name not in pop_list:
                 data = getattr(self, column.name)
-                dict_data[column.name] = data if column.name not in json_to_dict_list else self.loads(data)
+                dict_data[column.name] = data if column.name not in to_dict else self.loads(data)
         dict_data.update({'created_time': self.str_created_time, 'update_time': self.str_update_time})
         return dict_data
 
     @classmethod
-    def pagination(cls, page_num, page_size, filters=None, order_by=None):
+    def pagination(cls, page_num, page_size, filters: list = [], order_by=None):
         """ 分页, 如果没有传页码和页数，则根据查询条件获取全部数据
         filters：过滤条件
         page_num：页数

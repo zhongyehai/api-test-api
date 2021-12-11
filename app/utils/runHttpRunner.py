@@ -43,7 +43,7 @@ class BaseParse:
             self.report = Report.get_new_report(self.run_name, 'task', performer, create_user, project_id)
 
         self.report_id = report_id or self.report.id
-        print(f'report_id: {self.report_id}')
+        logger.info(f'report_id: {self.report_id}')
         self.parsed_project_dict = {}
         self.parsed_case_dict = {}
         self.parsed_api_dict = {}
@@ -289,16 +289,16 @@ class RunCase(BaseParse):
             # 递归解析前置引用
             self.parse_quote([case_id], 'before')
             self.before_case.reverse()
-            print(f'前置引用用例：{[case.id for case in self.before_case]}')
+            logger.info(f'前置引用用例：{[case.id for case in self.before_case]}')
 
             # 递归解析后置引用
             self.parse_quote([case_id], 'after')
-            print(f'后置引用用例：{[case.id for case in self.after_case]}')
+            logger.info(f'后置引用用例：{[case.id for case in self.after_case]}')
 
             # 当前用例含引用用例的执行顺序
             current_case = self.after_case.pop(0)  # 前置的最后一个id为当前用例的id，后置的第一个id为当前用例id，去重复
             case_list = self.before_case + self.after_case
-            print(f'当前用例含引用用例的排列情况: {[case.id for case in case_list]}')
+            logger.info(f'当前用例含引用用例的排列情况: {[case.id for case in case_list]}')
 
             # 选择运行环境
             if not self.task:

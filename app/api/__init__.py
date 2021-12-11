@@ -20,20 +20,22 @@ from app.api.sets import views
 from app.api.apiMsg import views
 from app.api.case import views
 from app.api.step import views
-from app.api.tools import views
+from app.api.tools import toolViews
 from app.api.tools import fileView
 from app.api.tools import accountView
 from app.api.tools import yapiToApiTest
 from app.api.tools import kymView
 from app.api.home import view
 from app.api.config import views
+from app.api.tools import listView
 
 
 @api.before_request
 def before_request():
     """ 前置钩子函数， 每个请求进来先经过此函数"""
     name = current_user.name if hasattr(current_user, 'name') else ''
-    current_app.logger.info(f'[{request.remote_addr}] [{name}] [{request.method}] [{request.url}]: \n请求参数：{request.json}')
+    current_app.logger.info(
+        f'[{request.remote_addr}] [{name}] [{request.method}] [{request.url}]: \n请求参数：{request.json}')
 
 
 @api.after_request

@@ -33,7 +33,7 @@ class Task(BaseModel):
     project = db.relationship('Project', backref='tasks')
 
     def to_dict(self):
-        return self.base_to_dict(json_to_dict_list=['set_id', 'case_id'])
+        return self.base_to_dict(to_dict=['set_id', 'case_id'])
 
     @classmethod
     def make_pagination(cls, form):

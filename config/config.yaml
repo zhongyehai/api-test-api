@@ -21,6 +21,7 @@ webhook: ''
 
 # 测试报告前端地址
 report_addr: 'http://xx.xx.xx.xx/#/apiTest/report'
+diff_addr: 'http://xx.xx.xx.xx/#/testManage/diffRecord'
 
 # 即时达推送 的 系统错误通道
 error_push:

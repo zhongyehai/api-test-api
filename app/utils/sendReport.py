@@ -91,5 +91,40 @@ def async_send_report(**kwargs):
     print('多线程发送测试报告完毕')
 
 
+def send_diff_api_message(content, addr):
+    """ 发送接口对比报告 """
+    msg = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": "接口监控",
+            "text": f'## 接口监控 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} \n> '
+                    f'### 任务名：{content["title"]} \n> '
+                    f'#### 对比项目:<font color=#27AE60> {content["project"]["totle"]} </font>个 \n> '
+                    f'##### 新增项目:<font color=#27AE60> {content["project"]["add"]} </font>个 \n> '
+                    f'##### 修改项目:<font color=#3498DB> {content["project"]["modify"]} </font>个 \n> '
+                    f'##### 删除项目:<font color=#E74C3C> {content["project"]["remove"]} </font>个 \n> '
+                    f'##### 乱码:<font color=#E74C3C> {content["project"]["errorCode"]} </font>个 \n> '
+                    f'##### \n> '
+                    f'#### 对比模块:<font color=#27AE60> {content["module"]["totle"]} </font>个 \n> '
+                    f'##### 新增模块:<font color=#27AE60> {content["module"]["add"]} </font>个 \n> '
+                    f'##### 修改模块:<font color=#3498DB> {content["module"]["modify"]} </font>个 \n> '
+                    f'##### 删除模块:<font color=#E74C3C> {content["module"]["remove"]} </font>个 \n> '
+                    f'##### 乱码:<font color=#E74C3C> {content["module"]["errorCode"]} </font>个 \n> '
+                    f'##### \n> '
+                    f'#### 对比接口:<font color=#27AE60> {content["api"]["totle"]} </font>个 \n> '
+                    f'##### 新增模块:<font color=#27AE60> {content["api"]["add"]} </font>个 \n> '
+                    f'##### 修改模块:<font color=#3498DB> {content["api"]["modify"]} </font>个 \n> '
+                    f'##### 删除模块:<font color=#E74C3C> {content["api"]["remove"]} </font>个 \n> '
+                    f'##### 乱码:<font color=#E74C3C> {content["api"]["errorCode"]} </font>个 \n> '
+                    f'##### \n> '
+                    f'#### 请登录[测试平台]({conf["diff_addr"]})查看详情，并确认是否更新\n'
+        }
+    }
+    try:
+        print(f'测试结果通过钉钉机器人发送：{requests.post(addr, json=msg, verify=False).json()}')
+    except Exception as error:
+        print(f'向钉钉机器人发送测试报告失败，错误信息：\n{error}')
+
+
 if __name__ == '__main__':
     pass

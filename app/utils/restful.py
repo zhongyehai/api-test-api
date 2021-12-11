@@ -21,7 +21,7 @@ class HttpCode:
 
 def restful_result(code, message, data, **kwargs):
     """ 统一返 result风格 """
-    return jsonify({'status': code, 'message': message, 'data': data or {}, **kwargs})
+    return jsonify({'status': code, 'message': message, 'data': data, **kwargs})
 
 
 def success(msg=HttpCode.success['message'], data=None, **kwargs):

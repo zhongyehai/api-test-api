@@ -27,7 +27,7 @@ class Case(BaseModel):
     set_id = db.Column(db.Integer, db.ForeignKey('sets.id'), comment='所属的用例集id')
 
     def to_dict(self):
-        return self.base_to_dict(json_to_dict_list=['func_files', 'variables', 'headers', 'before_case', 'after_case'])
+        return self.base_to_dict(to_dict=['func_files', 'variables', 'headers', 'before_case', 'after_case'])
 
     @classmethod
     def make_pagination(cls, form):
