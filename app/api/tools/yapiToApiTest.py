@@ -475,14 +475,62 @@ def diff_by_yapi():
                                 api_detail_change_detail['children'].append({
                                     "topic": f'接口地址由【{db_data.get("path")}】变更为【{yapi_api["path"]}】'
                                 })
-                            # 头部信息
-                            if json.dumps(db_data.get('req_headers'), sort_keys=True) != json.dumps(
-                                    yapi_api.get('req_headers'), sort_keys=True):
+                            # 头部信息增加
+                            if not json.dumps(db_data.get('req_headers')) and json.dumps(yapi_api.get('req_headers')):
                                 diff_is_changed = True
                                 api_is_changed = True
                                 api_detail_change_detail['children'].append({
                                     "topic": f'头部信息由【{db_data.get("req_headers")}】变更为【{yapi_api["req_headers"]}】'
                                 })
+                            # 头部信息删除
+                            elif json.dumps(db_data.get('req_headers')) and not json.dumps(yapi_api.get('req_headers')):
+                                diff_is_changed = True
+                                api_is_changed = True
+                                api_detail_change_detail['children'].append({
+                                    "topic": f'头部信息由【{db_data.get("req_headers")}】变更为【{yapi_api["req_headers"]}】'
+                                })
+                            else:
+                                # 头部信息修改
+                                for args in db_data.get('req_headers'):
+                                    args.pop('_id', None)
+                                for args in yapi_api.get('req_headers'):
+                                    args.pop('_id', None)
+                                if json.dumps(db_data.get('req_headers'), sort_keys=True) != json.dumps(
+                                        yapi_api.get('req_headers'), sort_keys=True):
+                                    diff_is_changed = True
+                                    api_is_changed = True
+                                    api_detail_change_detail['children'].append({
+                                        "topic": f'头部信息由【{db_data.get("req_headers")}】变更为【{yapi_api["req_headers"]}】'
+                                    })
+
+                            # 查询字符串参数增加
+                            if not json.dumps(db_data.get('req_query')) and json.dumps(yapi_api.get('req_query')):
+                                diff_is_changed = True
+                                api_is_changed = True
+                                api_detail_change_detail['children'].append({
+                                    "topic": f'查询字符串参数由【{db_data.get("req_query")}】变更为【{yapi_api["req_query"]}】'
+                                })
+                            # 查询字符串参数删除
+                            elif json.dumps(db_data.get('req_query')) and not json.dumps(yapi_api.get('req_query')):
+                                diff_is_changed = True
+                                api_is_changed = True
+                                api_detail_change_detail['children'].append({
+                                    "topic": f'查询字符串参数由【{db_data.get("req_query")}】变更为【{yapi_api["req_query"]}】'
+                                })
+                            else:
+                                # 头查询字符串参数修改
+                                for args in db_data.get('req_query'):
+                                    args.pop('_id', None)
+                                for args in yapi_api.get('req_query'):
+                                    args.pop('_id', None)
+                                if json.dumps(db_data.get('req_query'), sort_keys=True) != json.dumps(
+                                        yapi_api.get('req_query'), sort_keys=True):
+                                    diff_is_changed = True
+                                    api_is_changed = True
+                                    api_detail_change_detail['children'].append({
+                                        "topic": f'查询字符串参数由【{db_data.get("req_query")}】变更为【{yapi_api["req_query"]}】'
+                                    })
+
                             # 请求参数类型
                             if db_data.get('req_body_type') != yapi_api.get('req_body_type'):
                                 diff_is_changed = True
@@ -497,21 +545,36 @@ def diff_by_yapi():
                                 api_detail_change_detail['children'].append({
                                     "topic": f'json参数由【{db_data.get("req_body_other")}】变更为【{yapi_api.get("req_body_other")}】'
                                 })
-                            # 请求form参数
-                            if json.dumps(db_data.get('req_body_form'), sort_keys=True) != json.dumps(
-                                    yapi_api.get('req_body_form'), sort_keys=True):
+                            # form参数增加
+                            if not json.dumps(db_data.get('req_body_form')) and json.dumps(
+                                    yapi_api.get('req_body_form')):
                                 diff_is_changed = True
                                 api_is_changed = True
                                 api_detail_change_detail['children'].append({
                                     "topic": f'form参数由【{db_data.get("req_body_form")}】变更为【{yapi_api["req_body_form"]}】'
                                 })
-                            # 查询字符串参数
-                            if db_data.get('req_query') != yapi_api["req_query"]:
+                            # form参数删除
+                            elif json.dumps(db_data.get('req_body_form')) and not json.dumps(
+                                    yapi_api.get('req_body_form')):
                                 diff_is_changed = True
                                 api_is_changed = True
                                 api_detail_change_detail['children'].append({
-                                    "topic": f'查询字符串参数由【{db_data.get("req_query")}】变更为【{yapi_api["req_query"]}】'
+                                    "topic": f'form参数由【{db_data.get("req_body_form")}】变更为【{yapi_api["req_body_form"]}】'
                                 })
+                            else:
+                                # form参数修改
+                                for args in db_data.get('req_body_form'):
+                                    args.pop('_id', None)
+                                for args in yapi_api.get('req_body_form'):
+                                    args.pop('_id', None)
+                                if json.dumps(db_data.get('req_body_form'), sort_keys=True) != json.dumps(
+                                        yapi_api.get('req_body_form'), sort_keys=True):
+                                    diff_is_changed = True
+                                    api_is_changed = True
+                                    api_detail_change_detail['children'].append({
+                                        "topic": f'form参数由【{db_data.get("req_body_form")}】变更为【{yapi_api["req_body_form"]}】'
+                                    })
+
                             # 响应数据类型
                             if db_data.get('res_body_type') != yapi_api["res_body_type"]:
                                 diff_is_changed = True
@@ -587,7 +650,7 @@ def diff_by_yapi():
     # 有改动则发送报告
     if diff_is_changed:
         send_diff_api_message(
-            diff_summary, request.json.get('addr') or Config.get_first(name='default_diff_message_send_addr')
+            diff_summary, request.json.get('addr') or Config.get_first(name='default_diff_message_send_addr').value
         )
     return restful.success('对比完成', data=yapi_diff_record.to_dict())
 
