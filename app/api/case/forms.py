@@ -41,16 +41,17 @@ class AddCaseForm(BaseForm):
         2.校验是否存在引用了自定义变量，但是自定义变量未声明的情况
         """
 
-        # 获取待验证的是否有引用的变量
-        temp_check = extract_variables(convert(field.data))
+        # # 获取待验证的是否有引用的变量
+        # variable_list = extract_variables(convert(field.data))
 
         # 校验是否存在有使用了自定义函数但是没有引用自定义函数文件的情况
         if re.search('\${(.*?)}', '{}{}'.format(field.data, json.dumps(self.steps.data)),
                      flags=0) and not self.func_files.data:
             raise ValidationError('参数引用函数后，必须引用函数文件')
-        #
-        if temp_check:
-            raise ValidationError('参数引用${}在业务变量和项目公用变量均没找到'.format(',$'.join(temp_check)))
+
+        # # 引用了项目公共变量，但是项目公共变量中没有变量
+        # if variable_list:
+        #     raise ValidationError('参数引用${}在业务变量和项目公用变量均没找到'.format(',$'.join(variable_list)))
 
     def validate_set_id(self, field):
         """ 校验用例集存在 """

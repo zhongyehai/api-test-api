@@ -14,7 +14,10 @@ class DataPoolView(BaseMethodView):
     """ 数据池 """
 
     def get(self):
-        return restful.success('获取成功', data=[data_pool.to_dict() for data_pool in AutoTestPolyFactoring.get_all()])
+        return restful.success('获取成功', data=[
+            data_pool.to_dict() for data_pool in
+            AutoTestPolyFactoring.query.filter().order_by(AutoTestPolyFactoring.id.desc()).all()
+        ])
 
 
 @api.route('/diffRecord/list')
