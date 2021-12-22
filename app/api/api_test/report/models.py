@@ -23,9 +23,6 @@ class Report(BaseModel):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     project = db.relationship('Project', backref='reports')
 
-    def to_dict(self):
-        return self.base_to_dict()
-
     @classmethod
     def get_new_report(cls, name, run_type, performer, create_user, project_id):
         with db.auto_commit():

@@ -131,7 +131,6 @@ def copy_case():
         new_case = Case()
         new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers', 'before_case', 'after_case')
         new_case.name = old_case.name + '_01'
-        new_case.create_user = current_user.id
         new_case.num = Case.get_new_num(None, set_id=old_case.set_id)
         db.session.add(new_case)
 
@@ -156,8 +155,6 @@ class CaseView(BaseMethodView):
     def post(self):
         form = AddCaseForm()
         if form.validate():
-            form.create_user.data = current_user.id
-            # 保存用例
             with db.auto_commit():
                 new_case = Case()
                 new_case.create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
@@ -170,8 +167,6 @@ class CaseView(BaseMethodView):
         form = EditCaseForm()
         if form.validate():
             case, case_list = form.old_data, Case.get_all(set_id=form.set_id.data)
-
-            # 修改用例
             with db.auto_commit():
                 case.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
             return restful.success(msg='修改成功', data=case.to_dict())

@@ -42,6 +42,3 @@ class AutoTestPolyFactoring(BaseModel):
     eliminate_apply_status = db.Column(db.String(10), nullable=True, default='1', comment='剔单申请状态(1默认状态;2剔除申请中;3已剔除；)')
     revoke_status = db.Column(db.String(10), nullable=True, default='1', comment='撤回状态(1默认状态；2已撤回)')
     enable_flag = db.Column(db.String(10), nullable=True, default='1', comment='是否可用（0：不可用；1：可用）')
-
-    def to_dict(self):
-        return self.base_to_dict()

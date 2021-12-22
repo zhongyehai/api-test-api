@@ -127,7 +127,6 @@ class ApiMsgView(BaseMethodView):
 
     def post(self):
         form = AddApiForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
                 new_api = ApiMsg()

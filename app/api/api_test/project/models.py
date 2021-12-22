@@ -56,6 +56,6 @@ class Project(BaseModel):
             filters=filters,
             order_by=cls.created_time.desc())
 
-    def to_dict(self):
+    def to_dict(self, *args, **kwargs):
         """ 自定义序列化器，把模型的每个字段转为字典，方便返回给前端 """
-        return self.base_to_dict(to_dict=["hosts", "variables", "headers", "func_files"])
+        return super(Project, self).to_dict(to_dict=["hosts", "variables", "headers", "func_files"])

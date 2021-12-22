@@ -39,10 +39,9 @@ class ApiMsg(BaseModel):
 
     module = db.relationship('Module', backref='apis')
 
-    def to_dict(self):
-        """ 转为字典 """
-        return self.base_to_dict(
-            to_dict=['headers', 'params', 'data_form', 'data_json', 'extracts', 'validates'],
+    def to_dict(self, *args, **kwargs):
+        return super(ApiMsg, self).to_dict(
+            to_dict=['headers', 'params', 'data_form', 'data_json', 'extracts', 'validates']
         )
 
     @classmethod

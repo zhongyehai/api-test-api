@@ -17,10 +17,6 @@ class YapiProject(BaseModel):
     yapi_id = db.Column(db.Integer(), comment='当前项目在yapi平台的id')
     yapi_data = db.Column(db.Text, comment='当前项目在yapi平台的数据')
 
-    def to_dict(self):
-        """ 转字典 """
-        return self.base_to_dict()
-
 
 class YapiModule(BaseModel):
     """ yapi的模块表 """

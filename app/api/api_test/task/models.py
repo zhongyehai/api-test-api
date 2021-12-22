@@ -31,8 +31,8 @@ class Task(BaseModel):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
     project = db.relationship('Project', backref='tasks')
 
-    def to_dict(self):
-        return self.base_to_dict(to_dict=['set_id', 'case_id'])
+    def to_dict(self, *args, **kwargs):
+        return super(Task, self).to_dict(to_dict=['set_id', 'case_id'])
 
     @classmethod
     def make_pagination(cls, form):

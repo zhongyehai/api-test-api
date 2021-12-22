@@ -47,7 +47,6 @@ class ProjectView(BaseMethodView):
     def post(self):
         """ 新增项目 """
         form = AddProjectForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
                 project = Project()

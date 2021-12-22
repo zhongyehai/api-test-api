@@ -93,7 +93,6 @@ class UserView(AdminMethodView):
 
     def post(self):
         form = CreateUserForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
                 user = User()

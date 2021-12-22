@@ -91,7 +91,6 @@ class ConfigView(BaseMethodView):
     def post(self):
         form = PostConfigForm()
         if form.validate():
-            form.create_user.data = current_user.id
             with db.auto_commit():
                 config = Config()
                 config.create(form.data)

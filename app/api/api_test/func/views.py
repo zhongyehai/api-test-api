@@ -70,10 +70,9 @@ class FuncView(BaseMethodView):
 
     def post(self):
         form = CreatFuncForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
-                func = Func(name=form.name.data, create_user=current_user.id)
+                func = Func(name=form.name.data, create_user=current_user.id, update_user=current_user.id)
                 db.session.add(func)
             return restful.success(f'函数文件 {form.name.data} 创建成功')
         return restful.fail(form.get_error())
@@ -95,7 +94,7 @@ class FuncView(BaseMethodView):
 
         if form.validate():
             with db.auto_commit():
-                form.func.name, form.func.func_data = form.name.data, form.func_data.data
+                form.func.name, form.func.func_data, form.func.update_user = form.name.data, form.func_data.data, current_user.id
             return restful.success(f'函数文件 {form.name.data} 修改成功', data=form.func.to_dict())
         return restful.fail(form.get_error())
 

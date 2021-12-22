@@ -6,7 +6,6 @@
 # @File : views.py
 # @Software: PyCharm
 from flask import request
-from flask_login import current_user
 
 from ... import api
 from ....utils import restful
@@ -61,7 +60,6 @@ class StepMethodView(BaseMethodView):
         """ 新增步骤 """
         form = AddStepForm()
         if form.validate():
-            form.create_user.data = current_user.id
             with db.auto_commit():
                 step = Step()
                 step.create(

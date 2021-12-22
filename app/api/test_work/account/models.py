@@ -19,9 +19,6 @@ class AccountModel(BaseModel):
     desc = db.Column(db.Text(), comment='备注')
     event = db.Column(db.String(50), comment='环境')
 
-    def to_dict(self, *args, **kwargs):
-        return self.base_to_dict(*args, **kwargs)
-
     @classmethod
     def make_pagination(cls, filter):
         """ 解析分页条件 """

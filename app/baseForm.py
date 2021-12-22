@@ -16,8 +16,6 @@ from .api.api_test.project.models import Project
 class BaseForm(Form, JsonUtil):
     """ 初始化Form校验基类，并初统一处理请求参数 """
 
-    create_user = IntegerField()
-
     def __init__(self):
         """ 初始化的时候获取所有参数一起传给BaseForm """
         data, args = request.get_json(silent=True) or request.form.to_dict(), request.args.to_dict()
@@ -44,20 +42,6 @@ class BaseForm(Form, JsonUtil):
         3.当前用户为当前要删除项目的负责人
         """
         return Project.is_manager_id(project_id) or self.is_admin() or obj.is_create_user(current_user.id)
-
-    # def field_to_json(self, *args):
-    #     """ 把指定的字段值转为json """
-    #     for arg in args:
-    #         if hasattr(self, arg):
-    #             field = getattr(self, arg)
-    #             field.data = self.dumps(field.data)
-    #
-    # def field_to_dict(self, *args):
-    #     """ 把指定的字段值从json转为字典 """
-    #     for arg in args:
-    #         if hasattr(self, arg):
-    #             field = getattr(self, arg)
-    #             field.data = self.loads(field.data)
 
     def set_attr(self, **kwargs):
         """ 根据键值对 对form对应字段的值赋值 """

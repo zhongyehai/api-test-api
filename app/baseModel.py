@@ -8,6 +8,7 @@
 from datetime import datetime
 from werkzeug.exceptions import abort
 
+from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy as _SQLAlchemy, BaseQuery, Pagination
 from sqlalchemy import MetaData
 from contextlib import contextmanager
@@ -78,6 +79,7 @@ class BaseModel(db.Model, JsonUtil):
     created_time = db.Column(db.DateTime, default=datetime.now, comment='创建时间')
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, comment='修改时间')
     create_user = db.Column(db.Integer(), nullable=True, default=1, comment='创建数据的用户id')
+    update_user = db.Column(db.Integer(), nullable=True, default=1, comment='修改数据的用户id')
 
     @property
     def str_created_time(self):
@@ -89,14 +91,25 @@ class BaseModel(db.Model, JsonUtil):
 
     def create(self, attrs_dict: dict, *args):
         """ 插入数据，若指定了字段，则把该字段的值转为json """
+        # 如果是执行初始化脚本，获取不到current_user，try一下
+        try:
+            setattr(self, 'create_user', current_user.id)
+            setattr(self, 'update_user', current_user.id)
+        except Exception as error:
+            pass
         for key, value in attrs_dict.items():
             if hasattr(self, key) and key != 'id':
                 setattr(self, key, self.dumps(value) if key in args else value)
 
     def update(self, attrs_dict: dict, *args):
         """ 修改数据，若指定了字段，则把该字段的值转为json """
+        # 如果是执行初始化脚本，获取不到current_user，try一下
+        try:
+            setattr(self, 'update_user', current_user.id)
+        except Exception as error:
+            pass
         for key, value in attrs_dict.items():
-            if hasattr(self, key) and key not in ['id', 'create_user']:
+            if hasattr(self, key) and key != 'id':
                 setattr(self, key, self.dumps(value) if key in args else value)
 
     # def delete(self):
@@ -145,7 +158,7 @@ class BaseModel(db.Model, JsonUtil):
                 return cls.get_filter_by(**kwargs).order_by(cls.num.desc()).first().num + 1
         return int(num)
 
-    def base_to_dict(self, to_dict: list = [], pop_list: list = []):
+    def to_dict(self, to_dict: list = [], pop_list: list = []):
         """ 自定义序列化器，把模型的每个字段转为key，方便返回给前端 """
         dict_data = {}
         pop_list.extend(['created_time', 'update_time'])

@@ -22,7 +22,7 @@ from app.baseModel import db
 from app.api.api_test.module.models import Module
 from app.api.api_test.apiMsg.models import ApiMsg
 from app.utils import restful
-from app.utils.globalVariable import DIFF_RESULT, TEMP_FILE_ADDRESS
+from app.utils.globalVariable import DIFF_RESULT
 from app.utils.required import login_required
 from app.utils.sendReport import send_diff_api_message
 from app.utils.makeXmind import make_xmind
@@ -70,13 +70,21 @@ def update_project(yapi_project, base_path=None):
         project = Project.get_first(yapi_id=yapi_project['_id']) or Project()
         project.name = yapi_project['name']
         project.yapi_id = yapi_project['_id']
+
         # 处理项目的basepath，更新到测试环境
+        # 已解析项目的basepath
+        split_data = project.test.split('com')
+        old_base_path = split_data[1] if split_data.__len__() >= 2 else project.test
+        # 新的basepath
         if base_path:
-            if project.test:
-                if base_path not in project.test:
-                    project.test += base_path
+            if old_base_path:
+                if base_path != old_base_path and base_path not in old_base_path:
+                    project.test += base_path[1:] if project.test.endswith('/') and base_path.startswith('/') else base_path
             else:
                 project.test = base_path
+        else:
+            project.test = split_data[0] + 'com' if split_data[0] else split_data[0]
+
         if not project.id:
             db.session.add(project)
     api.logger.info(f'解析yapi后的项目信息：\n{project.to_dict()}')
@@ -326,11 +334,12 @@ def yapi_pull_all():
             # 更新项目
             api.logger.info(f'项目：{yapi_project}')
             if assert_coding_format(yapi_project.get('name')):
-                pro_data = get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers)  # 项目数据
-                api_test_project = update_project(yapi_project, pro_data['base_path'])  # 更新项目
+
+                # 更新项目
+                api_test_project = update_project(yapi_project, yapi_project.get('basepath'))
 
                 # 更新模块
-                for yapi_module in pro_data['module_list']:
+                for yapi_module in get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers)['module_list']:
                     api.logger.info(f'模块：{yapi_module}')
                     if assert_coding_format(yapi_module['name']):
                         update_module(api_test_project, yapi_module)
@@ -372,7 +381,7 @@ def yapi_pull_project():
             # 更新项目
             api.logger.info(f'项目：{yapi_project}')
             if assert_coding_format(yapi_project.get('name')):
-                update_project(yapi_project)
+                update_project(yapi_project, yapi_project.get('basepath'))
 
     return restful.success('数据更新完成')
 

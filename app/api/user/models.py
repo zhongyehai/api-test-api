@@ -90,9 +90,8 @@ class User(UserMixin, BaseModel):
             filters=filters,
             order_by=cls.created_time.desc())
 
-    def to_dict(self):
-        """ 转字典 """
-        return self.base_to_dict(pop_list=['password_hash'])
+    def to_dict(self, *args, **kwargs):
+        return super(User, self).to_dict(pop_list=['password_hash'])
 
     def can(self, permission_name):
         """ 判断当前用户是否有当前请求的权限 """

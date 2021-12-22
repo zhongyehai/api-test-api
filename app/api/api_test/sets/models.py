@@ -23,9 +23,6 @@ class Set(BaseModel):
     project = db.relationship('Project', backref='sets')  # 一对多
     cases = db.relationship('Case', order_by='Case.num.asc()', lazy='dynamic')
 
-    def to_dict(self):
-        return self.base_to_dict()
-
     @classmethod
     def get_case_id(cls, project_id: int, set_id: list, case_id: list):
         """

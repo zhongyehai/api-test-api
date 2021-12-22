@@ -15,5 +15,5 @@ class KYMModule(BaseModel):
     project = db.Column(db.String(255), comment='项目名')
     kym = db.Column(db.Text, default='{}', comment='kym分析')
 
-    def to_dict(self):
-        return self.base_to_dict(to_dict=['kym'])
+    def to_dict(self, *args, **kwargs):
+        return super(KYMModule, self).to_dict(to_dict=['kym'])

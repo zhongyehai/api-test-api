@@ -48,8 +48,7 @@ class Step(BaseModel):
                 if step['num'] != index:
                     cls.get_first(id=step.get('id')).num = index
 
-    def to_dict(self):
-        """ 转为字典输出 """
-        return self.base_to_dict(
+    def to_dict(self, *args, **kwargs):
+        return super(Step, self).to_dict(
             to_dict=["headers", "params", "data_form", "data_json", "extracts", "validates", "data_driver"]
         )

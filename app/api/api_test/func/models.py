@@ -26,10 +26,6 @@ class Func(BaseModel):
             with open(os.path.join(addr, f'{func.name}.py'), 'w', encoding='utf8') as file:
                 file.write(func.func_data)
 
-    def to_dict(self):
-        """ 返回字典 """
-        return self.base_to_dict()
-
     @classmethod
     def make_pagination(cls, form):
         """ 解析分页条件 """

@@ -23,10 +23,6 @@ class Module(BaseModel):
 
     project = db.relationship('Project', backref='modules')  # 一对多
 
-    def to_dict(self):
-        """ 转字典 """
-        return self.base_to_dict()
-
     @classmethod
     def make_pagination(cls, form):
         """ 解析分页条件 """

@@ -78,7 +78,6 @@ class CaseSetView(BaseMethodView):
 
     def post(self):
         form = AddCaseSetForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
                 new_set, form.num.data = Set(), form.new_num()

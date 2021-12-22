@@ -9,7 +9,6 @@ import json
 import os
 
 from flask import request, send_from_directory
-from flask_login import current_user
 
 from app.api import api
 from app.utils.globalVariable import TEMP_FILE_ADDRESS
@@ -31,9 +30,7 @@ def add_kym_project():
         kym_data = {"nodeData": {"topic": request.json['project'], "root": True, "children": []}}
         kym_data['nodeData']['children'] = json.loads(Config.get_first(name='kym').value)
         kym = KYMModule()
-        kym.project = request.json['project']
-        kym.kym = json.dumps(kym_data, ensure_ascii=False, indent=4)
-        kym.create_user = current_user.id
+        kym.create({'project': request.json['project'], 'kym': json.dumps(kym_data, ensure_ascii=False, indent=4)})
         db.session.add(kym)
     return restful.success('新增成功', data=kym.to_dict())
 
@@ -69,7 +66,7 @@ class KYMView(BaseMethodView):
         """ 修改KYM号 """
         kym = KYMModule.get_first(project=request.json['project'])
         with db.auto_commit():
-            kym.kym = json.dumps(request.json['kym'], ensure_ascii=False, indent=4)
+            kym.update({'kym': json.dumps(request.json['kym'], ensure_ascii=False, indent=4)})
         return restful.success('修改成功', data=kym.to_dict())
 
 

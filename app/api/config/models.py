@@ -16,10 +16,6 @@ class ConfigType(BaseModel):
     name = db.Column(db.String(128), nullable=True, unique=True, comment='字段名')
     desc = db.Column(db.Text(), comment='描述')
 
-    def to_dict(self):
-        """ 返回字典 """
-        return self.base_to_dict()
-
     @classmethod
     def make_pagination(cls, form):
         """ 解析分页条件 """
@@ -41,10 +37,6 @@ class Config(BaseModel):
     value = db.Column(db.Text(), nullable=True, comment='字段值')
     type = db.Column(db.String(128), nullable=True, comment='配置类型')
     desc = db.Column(db.Text(), comment='描述')
-
-    def to_dict(self):
-        """ 返回字典 """
-        return self.base_to_dict()
 
     @classmethod
     def make_pagination(cls, form):

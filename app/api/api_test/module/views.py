@@ -7,7 +7,6 @@
 # @Software: PyCharm
 
 from flask import request
-from flask_login import current_user
 
 from ....utils import restful
 from ....utils.required import login_required
@@ -52,7 +51,6 @@ class ModuleView(BaseMethodView):
 
     def post(self):
         form = AddModelForm()
-        form.create_user.data = current_user.id
         if form.validate():
             with db.auto_commit():
                 new_model, form.num.data = Module(), form.new_num()
