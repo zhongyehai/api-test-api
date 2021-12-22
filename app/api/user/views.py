@@ -5,7 +5,6 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
-
 from flask_login import login_user, logout_user, current_user
 
 from ...utils import restful

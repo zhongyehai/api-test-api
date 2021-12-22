@@ -5,7 +5,6 @@
 # @Site :
 # @File : models.py
 # @Software: PyCharm
-
 from werkzeug.security import check_password_hash, generate_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 

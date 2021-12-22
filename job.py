@@ -15,8 +15,8 @@ from flask_apscheduler import APScheduler
 from app.utils import restful
 from app.utils.sendReport import async_send_report
 from app.utils.parseCron import parse_cron
-from app.api.sets.models import Set, db
-from app.api.task.models import Task
+from app.api.api_test.sets.models import Set, db
+from app.api.api_test.task.models import Task
 from app.api.user.models import User
 from app import create_app
 from app.utils.runHttpRunner import RunCase
@@ -88,4 +88,4 @@ class JobStatus(MethodView):
 job.add_url_rule('/api/job/status', view_func=JobStatus.as_view('jobStatus'))
 
 if __name__ == '__main__':
-    job.run(host='0.0.0.0', port=8025, threaded=False)
+    job.run(host='0.0.0.0', port=8025)

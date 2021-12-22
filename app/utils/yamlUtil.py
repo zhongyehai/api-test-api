@@ -3,9 +3,8 @@
 # @Time : 2020/9/25 17:13
 # @Author : ZhongYeHai
 # @Site :
-# @File : yamlManage.py
+# @File : yamlUtil.py
 # @Software: PyCharm
-
 import yaml
 
 

@@ -12,18 +12,22 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 from app.baseModel import db
-from app.api.apiMsg.models import ApiMsg, YapiApiMsg
-from app.api.case.models import Case
-from app.api.sets.models import Set
-from app.api.step.models import Step
-from app.api.func.models import Func
-from app.api.module.models import Module, YapiModule
-from app.api.project.models import Project, YapiProject
-from app.api.report.models import Report
-from app.api.task.models import Task, ApschedulerJobs
+from app.api.api_test.project.models import Project
+from app.api.api_test.module.models import Module
+from app.api.api_test.apiMsg.models import ApiMsg
+from app.api.api_test.sets.models import Set
+from app.api.api_test.case.models import Case
+from app.api.api_test.step.models import Step
+from app.api.api_test.task.models import Task, ApschedulerJobs
+from app.api.api_test.report.models import Report
+from app.api.api_test.func.models import Func
+from app.api.test_work.account.models import AccountModel
+from app.api.test_work.kym.models import KYMModule
+from app.api.test_work.yapi.models import YapiProject, YapiModule, YapiApiMsg, YapiDiffRecord
+from app.api.test_work.frontDiff.models import FrontDiffRecord
+from app.api.tools.dataPool.models import AutoTestPolyFactoring
 from app.api.user.models import User, Permission, Role
 from app.api.config.models import Config, ConfigType
-from app.api.tools.models import AccountModel, KYMModule, AutoTestPolyFactoring, YapiDiffRecord
 from main import app
 
 manager = Manager(app)
@@ -208,7 +212,8 @@ def init_config():
         {'name': 'yapi_password', 'value': '', 'type': '系统配置', 'desc': 'yapi密码'},
         {'name': 'ignore_keyword_for_group', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的分组关键字'},
         {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'},
-        {'name': 'kym', 'value': json.dumps(kym_keword, ensure_ascii=False, indent=4), 'type': '系统配置', 'desc': 'KYM分析项'},
+        {'name': 'kym', 'value': json.dumps(kym_keword, ensure_ascii=False, indent=4), 'type': '系统配置',
+         'desc': 'KYM分析项'},
         {'name': 'default_diff_message_send_addr', 'value': '', 'type': '系统配置', 'desc': 'yapi接口监控报告默认发送钉钉机器人地址'},
     ]
     for data in conf_list:

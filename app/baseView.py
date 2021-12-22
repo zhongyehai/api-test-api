@@ -5,7 +5,6 @@
 # @Site : 
 # @File : baseView.py
 # @Software: PyCharm
-
 from flask import views
 
 from .utils.required import login_required, admin_required

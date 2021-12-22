@@ -5,7 +5,6 @@
 # @Site : 
 # @File : models.py
 # @Software: PyCharm
-
 from ...baseModel import BaseModel, db
 
 

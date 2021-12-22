@@ -11,23 +11,25 @@ api.logger = logger
 
 from . import (errors)
 from app.api.user import views
-from app.api.project import views
-from app.api.module import views
-from app.api.func import views
-from app.api.report import views
-from app.api.task import views
-from app.api.sets import views
-from app.api.apiMsg import views
-from app.api.case import views
-from app.api.step import views
-from app.api.tools import toolViews
+from app.api.api_test.project import views
+from app.api.api_test.module import views
+from app.api.api_test.apiMsg import views
+from app.api.api_test.sets import views
+from app.api.api_test.case import views
+from app.api.api_test.step import views
+from app.api.api_test.task import views
+from app.api.api_test.report import views
+from app.api.api_test.func import views
+from app.api.test_work.account import views
+from app.api.test_work.kym import views
+from app.api.test_work.yapi import views
+from app.api.tools.dataPool import views
+from app.api.tools import makeUser
+from app.api.tools import examination
+from app.api.tools import mockData
 from app.api.tools import fileView
-from app.api.tools import accountView
-from app.api.tools import yapiToApiTest
-from app.api.tools import kymView
-from app.api.home import view
+from app.api.home import views
 from app.api.config import views
-from app.api.tools import listView
 
 
 @api.before_request

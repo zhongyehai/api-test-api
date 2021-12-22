@@ -5,7 +5,6 @@
 # @Site : 
 # @File : forms.py
 # @Software: PyCharm
-
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 

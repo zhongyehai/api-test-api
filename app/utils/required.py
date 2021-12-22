@@ -1,14 +1,10 @@
-""" 状态和权限校验装饰器 """
-
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time : 2020/9/25 17:13
 # @Author : ZhongYeHai
 # @Site :
-# @File : customDecorator.py
+# @File : required.py
 # @Software: PyCharm
-
-
 from functools import wraps
 
 from flask import request

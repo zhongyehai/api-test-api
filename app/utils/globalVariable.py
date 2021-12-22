@@ -5,7 +5,6 @@
 # @Site :
 # @File : globalVariable.py
 # @Software: PyCharm
-
 import os
 
 from config.config import basedir
@@ -713,6 +712,7 @@ MOCK_DATA_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/mock_data/')
 CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/'))  # 回调数据文件存放地址
 CFCA_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/cfca_files/'))  # CFCA文件存放地址
 TEMP_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/temp_files/'))  # 临时文件存放地址
+GIT_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/git_files/'))  # git文件存放地址
 
 
 def _check_file_path(paths):
@@ -728,7 +728,7 @@ def _check_file_path(paths):
 
 _check_file_path([
     LOG_ADDRESS, FUNC_ADDRESS, REPORT_ADDRESS, DIFF_RESULT, CASE_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS,
-    CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
+    CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS, GIT_FILE_ADDRESS
 ])
 
 if __name__ == '__main__':

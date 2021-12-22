@@ -5,9 +5,7 @@
 # @Site :
 # @File : errors.py
 # @Software: PyCharm
-
 import traceback
-import socket
 
 import requests
 from flask import current_app, request
@@ -20,7 +18,7 @@ from config.config import conf
 @api.app_errorhandler(404)
 def page_not_found(e):
     """ 捕获404的所有异常 """
-    current_app.logger.exception(f'404错误url: {request.path}')
+    # current_app.logger.exception(f'404错误url: {request.path}')
     return restful.url_not_find(msg=f'接口 {request.path} 不存在')
 
 

@@ -5,7 +5,6 @@
 # @Site :
 # @File : sendReport.py
 # @Software: PyCharm
-
 from datetime import datetime
 from threading import Thread
 

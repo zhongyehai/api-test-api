@@ -1,5 +1,3 @@
-""" 把数据取出来解析，并组装成httpRunner需要的数据格式 """
-
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time : 2020/9/25 17:13
@@ -7,7 +5,6 @@
 # @Site :
 # @File : httpRun.py
 # @Software: PyCharm
-
 import json
 import os
 import types
@@ -19,12 +16,12 @@ from flask.json import JSONEncoder
 from .httprunner.api import HttpRunner
 from ..utils.log import logger
 from app.baseModel import db
-from ..api.apiMsg.models import ApiMsg
-from ..api.case.models import Case
-from ..api.step.models import Step
-from ..api.func.models import Func
-from ..api.project.models import Project
-from ..api.report.models import Report
+from ..api.api_test.apiMsg.models import ApiMsg
+from ..api.api_test.case.models import Case
+from ..api.api_test.step.models import Step
+from app.api.api_test.func.models import Func
+from ..api.api_test.project.models import Project
+from ..api.api_test.report.models import Report
 
 from app.utils.globalVariable import REPORT_ADDRESS, FUNC_ADDRESS
 from app.utils.parse import encode_object
@@ -43,12 +40,11 @@ class BaseParse:
             self.report = Report.get_new_report(self.run_name, 'task', performer, create_user, project_id)
 
         self.report_id = report_id or self.report.id
-        logger.info(f'report_id: {self.report_id}')
         self.parsed_project_dict = {}
         self.parsed_case_dict = {}
         self.parsed_api_dict = {}
 
-        Func.create_func_file(FUNC_ADDRESS)
+        Func.create_func_file(FUNC_ADDRESS)  # 创建所有函数文件
         self.func_file_list = Func.get_all()
 
         self.new_report_id = None
@@ -57,7 +53,7 @@ class BaseParse:
         self.DataTemplate = {
             'project': self.run_name or self.get_formated_project(self.project_id).name,
             'project_mapping': {
-                'functions': self.parse_functions(),
+                'functions': {},
                 'variables': {}
             },
             'testcases': []
@@ -66,36 +62,36 @@ class BaseParse:
     def get_formated_project(self, project_id):
         """ 从已解析的项目字典中取指定id的项目，如果没有，则取出来解析后放进去 """
         if project_id not in self.parsed_project_dict:
-            self.parsed_project_dict.update({
-                project_id: ProjectFormatModel(**Project.get_first(id=project_id).to_dict())
-            })
+            project = Project.get_first(id=project_id)
+            self.parse_functions(json.loads(project.func_files))
+            self.parsed_project_dict.update({project_id: ProjectFormatModel(**project.to_dict())})
         return self.parsed_project_dict[project_id]
 
     def get_formated_case(self, case_id):
         """ 从已解析的用例字典中取指定id的用例，如果没有，则取出来解析后放进去 """
         if case_id not in self.parsed_case_dict:
-            self.parsed_case_dict.update({
-                case_id: CaseFormatModel(**Case.get_first(id=case_id).to_dict())
-            })
+            case = Case.get_first(id=case_id)
+            self.parse_functions(json.loads(case.func_files))
+            self.parsed_case_dict.update({case_id: CaseFormatModel(**case.to_dict())})
         return self.parsed_case_dict[case_id]
 
     def get_formated_api(self, project, api):
         """ 从已解析的接口字典中取指定id的接口，如果没有，则取出来解析后放进去 """
         if api.id not in self.parsed_api_dict:
+            if api.project_id not in self.parsed_project_dict:
+                self.parse_functions(json.loads(Project.get_first(id=api.project_id).func_files))
             self.parsed_api_dict.update({
                 api.id: self.parse_api(project, ApiFormatModel(**api.to_dict()))
             })
         return self.parsed_api_dict[api.id]
 
-    def parse_functions(self):
+    def parse_functions(self, func_list):
         """ 获取自定义函数 """
-        func_file_dict = {}
-        for func_file in self.func_file_list:
-            func_file_data = importlib.reload(importlib.import_module('func_list.{}'.format(func_file.name)))
-            func_file_dict.update({
+        for func_file_name in func_list:
+            func_file_data = importlib.reload(importlib.import_module('func_list.{}'.format(func_file_name)))
+            self.DataTemplate['project_mapping']['functions'].update({
                 name: item for name, item in vars(func_file_data).items() if isinstance(item, types.FunctionType)
             })
-        return func_file_dict
 
     def parse_api(self, project, api):
         """ 把解析后的接口对象 解析为httpRunner的数据结构 """

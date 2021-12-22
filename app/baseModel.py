@@ -5,7 +5,6 @@
 # @Site :
 # @File : baseModel.py
 # @Software: PyCharm
-
 from datetime import datetime
 from werkzeug.exceptions import abort
 

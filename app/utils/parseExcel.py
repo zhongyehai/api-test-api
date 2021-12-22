@@ -1,11 +1,9 @@
-""" 从excel读取sheet内容 """
-
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time : 2021/3/11 16:58
 # @Author : ZhongYeHai
 # @Site : 
-# @File : getExcel.py
+# @File : parseExcel.py
 # @Software: PyCharm
 import xlrd
 

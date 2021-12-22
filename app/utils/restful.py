@@ -5,7 +5,6 @@
 # @Site :
 # @File : restful.py
 # @Software: PyCharm
-
 from flask import jsonify
 
 
