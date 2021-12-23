@@ -27,10 +27,6 @@ class YapiModule(BaseModel):
     yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的模块id')
     yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
 
-    def to_dict(self):
-        """ 转字典 """
-        return self.base_to_dict()
-
 
 class YapiApiMsg(BaseModel):
     """ yapi的接口表 """
@@ -40,10 +36,6 @@ class YapiApiMsg(BaseModel):
     yapi_name = db.Column(db.String(255), comment='当前接口在yapi平台的名字')
     yapi_id = db.Column(db.Integer(), comment='当前接口在yapi平台对应的接口id')
     yapi_data = db.Column(db.Text, comment='当前接口在yapi平台的数据')
-
-    def to_dict(self):
-        """ 转字典 """
-        return self.base_to_dict()
 
 
 class YapiDiffRecord(BaseModel):
@@ -67,6 +59,3 @@ class YapiDiffRecord(BaseModel):
             page_size=attr.get('pageSize', 20),
             filters=filters,
             order_by=cls.created_time.desc())
-
-    def to_dict(self):
-        return self.base_to_dict()

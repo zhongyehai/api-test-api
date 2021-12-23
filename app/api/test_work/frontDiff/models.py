@@ -29,6 +29,3 @@ class FrontDiffRecord(BaseModel):
             page_size=attr.get('pageSize', 20),
             filters=filters,
             order_by=cls.created_time.desc())
-
-    def to_dict(self):
-        return self.base_to_dict()
