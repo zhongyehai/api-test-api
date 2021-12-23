@@ -5,6 +5,7 @@
 # @Site : 
 # @File : job.py
 # @Software: PyCharm
+import os
 import json
 from threading import Thread
 
@@ -20,6 +21,8 @@ from app.api.api_test.task.models import Task
 from app.api.user.models import User
 from app import create_app
 from app.utils.runHttpRunner import RunCase
+
+os.environ['TZ'] = 'Asia/Shanghai'
 
 job = create_app()
 
