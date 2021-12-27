@@ -18,7 +18,6 @@ from ....utils.changSort import num_sort
 from ....utils.runHttpRunner import RunCase
 from ... import api
 from ....baseView import BaseMethodView
-from ....baseModel import db
 from .models import Set
 from .forms import AddCaseSetForm, EditCaseSetForm, FindCaseSet, GetCaseSetEditForm, DeleteCaseSetForm, GetCaseSetForm
 
@@ -79,10 +78,8 @@ class CaseSetView(BaseMethodView):
     def post(self):
         form = AddCaseSetForm()
         if form.validate():
-            with db.auto_commit():
-                new_set, form.num.data = Set(), form.new_num()
-                new_set.create(form.data)
-                db.session.add(new_set)
+            form.num.data = form.new_num()
+            new_set = Set().create(form.data)
             return restful.success(f'名为 {form.name.data} 的用例集创建成功', new_set.to_dict())
         return restful.fail(form.get_error())
 
@@ -91,16 +88,14 @@ class CaseSetView(BaseMethodView):
         if form.validate():
             old, set_list, new_num = form.case_set, Set.get_all(project_id=form.project.id), form.new_num()
             num_sort(new_num, old.num, set_list, old)
-            with db.auto_commit():
-                old.update(form.data)
+            old.update(form.data)
             return restful.success(f'用例集 {form.name.data} 修改成功', old.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
         form = DeleteCaseSetForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.case_set)
+            form.case_set.delete()
             return restful.success('删除成功')
         return restful.fail(form.get_error())
 

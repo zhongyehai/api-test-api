@@ -39,12 +39,7 @@ class AccountView(BaseMethodView):
 
         if AccountModel.get_first(event=request.json['event'], account=request.json['account']):
             return restful.fail(f"当前环境下 {request.json['account']} 账号已存在，直接修改即可")
-        with db.auto_commit():
-            account = AccountModel()
-            for key, value in request.json.items():
-                setattr(account, key, value)
-            account.create_user = current_user.id
-            db.session.add(account)
+        account = AccountModel().create(request.json)
         return restful.success('新增成功', data=account.to_dict())
 
     def put(self):
@@ -55,14 +50,12 @@ class AccountView(BaseMethodView):
             return restful.fail(f'当前环境下账号 {account.account} 已存在', data=account.to_dict())
 
         old_account = AccountModel.get_first(id=request.json.get('id'))
-        with db.auto_commit():
-            old_account.update(request.json)
+        old_account.update(request.json)
         return restful.success('修改成功', data=old_account.to_dict())
 
     def delete(self):
         """ 删除账号 """
-        with db.auto_commit():
-            db.session.delete(AccountModel.get_first(id=request.json.get('id')))
+        AccountModel.get_first(id=request.json.get('id')).delete()
         return restful.success('删除成功')
 
 

@@ -91,15 +91,18 @@ class BaseModel(db.Model, JsonUtil):
 
     def create(self, attrs_dict: dict, *args):
         """ 插入数据，若指定了字段，则把该字段的值转为json """
-        # 如果是执行初始化脚本，获取不到current_user，try一下
-        try:
-            setattr(self, 'create_user', current_user.id)
-            setattr(self, 'update_user', current_user.id)
-        except Exception as error:
-            pass
-        for key, value in attrs_dict.items():
-            if hasattr(self, key) and key != 'id':
-                setattr(self, key, self.dumps(value) if key in args else value)
+        with db.auto_commit():
+            # 如果是执行初始化脚本，获取不到current_user，try一下
+            try:
+                setattr(self, 'create_user', current_user.id)
+                setattr(self, 'update_user', current_user.id)
+            except Exception as error:
+                pass
+            for key, value in attrs_dict.items():
+                if hasattr(self, key) and key != 'id':
+                    setattr(self, key, self.dumps(value) if key in args else value)
+            db.session.add(self)
+        return self
 
     def update(self, attrs_dict: dict, *args):
         """ 修改数据，若指定了字段，则把该字段的值转为json """
@@ -108,9 +111,21 @@ class BaseModel(db.Model, JsonUtil):
             setattr(self, 'update_user', current_user.id)
         except Exception as error:
             pass
-        for key, value in attrs_dict.items():
-            if hasattr(self, key) and key != 'id':
-                setattr(self, key, self.dumps(value) if key in args else value)
+        with db.auto_commit():
+            for key, value in attrs_dict.items():
+                if hasattr(self, key) and key != 'id':
+                    setattr(self, key, self.dumps(value) if key in args else value)
+
+    def delete(self):
+        """ 删除单条数据 """
+        with db.auto_commit():
+            db.session.delete(self)
+
+    @staticmethod
+    def delete_batch(models: list):
+        """ 批量删除并自动提交 """
+        with db.auto_commit():
+            [db.session.delete(model) for model in models]
 
     # def delete(self):
     #     """ 软删除 """
@@ -139,6 +154,14 @@ class BaseModel(db.Model, JsonUtil):
     def get_filter(cls, **kwargs):
         """ 获取filter对象 """
         return cls.query.filter(**kwargs)
+
+    @classmethod
+    def change_sort(cls, id_list, page_num, page_size):
+        """ 批量修改排序 """
+        with db.auto_commit():
+            for index, case_id in enumerate(id_list):
+                case = cls.get_first(id=case_id)
+                case.num = (page_num - 1) * page_size + index
 
     @classmethod
     def get_new_num(cls, num, **kwargs):

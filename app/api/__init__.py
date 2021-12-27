@@ -5,6 +5,7 @@ from flask import Blueprint, current_app, request
 from flask_login import current_user
 
 from app.utils.log import logger
+from .. import db
 
 api = Blueprint('api', __name__)
 api.logger = logger

@@ -101,8 +101,7 @@ class FuncView(BaseMethodView):
     def delete(self):
         form = DeleteFuncForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.func)
+            form.func.delete()
             return restful.success(f'函数文件 {form.name.data} 删除成功')
         return restful.fail(form.get_error())
 

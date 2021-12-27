@@ -60,12 +60,9 @@ class StepMethodView(BaseMethodView):
         """ 新增步骤 """
         form = AddStepForm()
         if form.validate():
-            with db.auto_commit():
-                step = Step()
-                step.create(
-                    form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
-                step.num = Step.get_new_num(None, case_id=form.case_id.data)
-                db.session.add(step)
+            form.num.data = Step.get_new_num(None, case_id=form.case_id.data)
+            step = Step().create(
+                form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
             return restful.success('步骤新建成功', data=step.to_dict())
         return restful.error(form.get_error())
 
@@ -73,10 +70,9 @@ class StepMethodView(BaseMethodView):
         """ 修改步骤 """
         form = EditStepForm()
         if form.validate():
-            step = form.step
-            with db.auto_commit():
-                step.update(
-                    form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
+            form.step.update(
+                form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver'
+            )
             return restful.success(msg='修改成功', data=form.step.to_dict())
         return restful.fail(form.get_error())
 
@@ -84,8 +80,7 @@ class StepMethodView(BaseMethodView):
         """ 删除步骤 """
         form = GetStepForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.step)
+            form.step.delete()
             return restful.success(f'步骤 {form.step.name} 删除成功')
         return restful.error(form.get_error())
 

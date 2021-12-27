@@ -61,11 +61,7 @@ def task_list():
 @login_required
 def change_task_sort():
     """ 更新定时任务的排序 """
-    task_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
-    with db.auto_commit():
-        for index, task_id in enumerate(task_id_list):
-            task = Task.get_first(id=task_id)
-            task.num = (num - 1) * size + index
+    Task.change_sort(request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize'))
     return restful.success(msg='修改排序成功')
 
 
@@ -99,11 +95,8 @@ class TaskView(BaseMethodView):
     def post(self):
         form = AddTaskForm()
         if form.validate():
-            with db.auto_commit():
-                new_task = Task()
-                form.set_attr(num=form.new_num())
-                new_task.create(form.data, 'set_id', 'case_id')
-                db.session.add(new_task)
+            form.set_attr(num=form.new_num())
+            new_task = Task().create(form.data, 'set_id', 'case_id')
             return restful.success(f'定时任务 {form.name.data} 新建成功', new_task.to_dict())
         return restful.fail(form.get_error())
 
@@ -118,8 +111,7 @@ class TaskView(BaseMethodView):
     def delete(self):
         form = DeleteTaskIdForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.task)
+            form.task.delete()
             return restful.success(f'任务 {form.task.name} 删除成功')
         return restful.fail(form.get_error())
 

@@ -5,14 +5,10 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
-
-from flask_login import current_user
-
 from ....utils import restful
 from ....utils.required import login_required
 from ... import api
 from ....baseView import BaseMethodView
-from ....baseModel import db
 from .models import Project
 from .forms import AddProjectForm, EditProjectForm, FindProjectForm, DeleteProjectForm, GetProjectByIdForm
 
@@ -48,10 +44,7 @@ class ProjectView(BaseMethodView):
         """ 新增项目 """
         form = AddProjectForm()
         if form.validate():
-            with db.auto_commit():
-                project = Project()
-                project.create(form.data, 'hosts', 'variables', 'headers', 'func_files')
-                db.session.add(project)
+            project = Project().create(form.data, 'hosts', 'variables', 'headers', 'func_files')
             return restful.success(f'项目 {form.name.data} 新建成功', project.to_dict())
         return restful.fail(msg=form.get_error())
 
@@ -59,9 +52,7 @@ class ProjectView(BaseMethodView):
         """ 修改项目 """
         form = EditProjectForm()
         if form.validate():
-            with db.auto_commit():
-                form.project.update(form.data, 'hosts', 'variables', 'headers', 'func_files')
-                db.session.add(form.project)
+            form.project.update(form.data, 'hosts', 'variables', 'headers', 'func_files')
             return restful.success(f'项目 {form.name.data} 修改成功', form.project.to_dict())
         return restful.fail(msg=form.get_error())
 
@@ -69,8 +60,7 @@ class ProjectView(BaseMethodView):
         """ 删除项目 """
         form = DeleteProjectForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.pro_data)
+            form.pro_data.delete()
             return restful.success(msg=f'项目 {form.pro_data.name} 删除成功')
         return restful.fail(form.get_error())
 

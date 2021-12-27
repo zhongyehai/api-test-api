@@ -172,10 +172,7 @@ def init_user():
     ]
     for user_info in user_list:
         if User.get_first(account=user_info['account']) is None:
-            with db.auto_commit():
-                user = User()
-                user.create(user_info)
-                db.session.add(user)
+            User().create(user_info)
             print(f'{"=" * 15} 用户 {user_info["name"]} 创建成功 {"=" * 15}')
     print(f'{"=" * 15} 用户创建完成 {"=" * 15}')
 
@@ -190,10 +187,7 @@ def init_config_type():
     ]
     for data in config_type_list:
         if ConfigType.get_first(name=data["name"]) is None:
-            with db.auto_commit():
-                config_type = ConfigType()
-                config_type.create(data)
-                db.session.add(config_type)
+            ConfigType().create(data)
             print(f'{"=" * 15} 配置类型 {data["name"]} 创建成功 {"=" * 15}')
     print(f'{"=" * 15} 配置类型创建完成 {"=" * 15}')
 
@@ -218,10 +212,7 @@ def init_config():
     ]
     for data in conf_list:
         if Config.get_first(name=data["name"]) is None:
-            with db.auto_commit():
-                config = Config()
-                config.create(data)
-                db.session.add(config)
+            Config().create(data)
             print(f'{"=" * 15} 配置 {data["name"]} 创建成功 {"=" * 15}')
     print(f'{"=" * 15} 配置创建完成 {"=" * 15}')
 

@@ -66,6 +66,7 @@ class AddStepForm(BaseForm):
     extracts = StringField()
     validates = StringField()
     data_driver = StringField()
+    num = StringField()
 
     project_id = IntegerField(validators=[DataRequired('项目id必传')])
     case_id = IntegerField(validators=[DataRequired('用例id必传')])

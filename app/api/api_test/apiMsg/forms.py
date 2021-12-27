@@ -36,6 +36,7 @@ class AddApiForm(BaseForm):
     data_xml = StringField()
     extracts = StringField()
     validates = StringField()
+    num = StringField()
 
     project_id = StringField(validators=[DataRequired('项目id必传')])
     module_id = StringField(validators=[DataRequired('模块id必传')])

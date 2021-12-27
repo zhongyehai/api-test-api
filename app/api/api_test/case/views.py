@@ -81,11 +81,7 @@ def change_case_quote():
 @login_required
 def change_case_sort():
     """ 更新用例的排序 """
-    case_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
-    with db.auto_commit():
-        for index, case_id in enumerate(case_id_list):
-            case = Case.get_first(id=case_id)
-            case.num = (num - 1) * size + index
+    Case.change_sort(request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize'))
     return restful.success(msg='修改排序成功')
 
 
@@ -155,21 +151,16 @@ class CaseView(BaseMethodView):
     def post(self):
         form = AddCaseForm()
         if form.validate():
-            with db.auto_commit():
-                new_case = Case()
-                new_case.create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
-                new_case.num = Case.get_new_num(None, set_id=form.set_id.data)
-                db.session.add(new_case)
+            form.num.data = Case.get_new_num(None, set_id=form.set_id.data)
+            new_case = Case().create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
             return restful.success('用例新建成功', data=new_case.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditCaseForm()
         if form.validate():
-            case, case_list = form.old_data, Case.get_all(set_id=form.set_id.data)
-            with db.auto_commit():
-                case.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
-            return restful.success(msg='修改成功', data=case.to_dict())
+            form.old_data.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
+            return restful.success(msg='修改成功', data=form.old_data.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
@@ -178,11 +169,10 @@ class CaseView(BaseMethodView):
             case, steps = form.case, Step.get_all(case_id=form.id.data)
 
             # 数据有依赖关系，先删除步骤，再删除用例
-            if steps:
-                with db.auto_commit():
+            with db.auto_commit():
+                if steps:
                     for step in steps:
                         db.session.delete(step)
-            with db.auto_commit():
                 db.session.delete(case)
             return restful.success(f'用例 {case.name} 删除成功')
         return restful.fail(form.get_error())

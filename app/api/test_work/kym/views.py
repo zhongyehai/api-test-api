@@ -65,8 +65,7 @@ class KYMView(BaseMethodView):
     def put(self):
         """ 修改KYM号 """
         kym = KYMModule.get_first(project=request.json['project'])
-        with db.auto_commit():
-            kym.update({'kym': json.dumps(request.json['kym'], ensure_ascii=False, indent=4)})
+        kym.update({'kym': json.dumps(request.json['kym'], ensure_ascii=False, indent=4)})
         return restful.success('修改成功', data=kym.to_dict())
 
 

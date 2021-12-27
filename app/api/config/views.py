@@ -91,26 +91,21 @@ class ConfigView(BaseMethodView):
     def post(self):
         form = PostConfigForm()
         if form.validate():
-            with db.auto_commit():
-                config = Config()
-                config.create(form.data)
-                db.session.add(config)
+            config = Config().create(form.data)
             return restful.success('新增成功', data=config.to_dict())
         return restful.error(form.get_error())
 
     def put(self):
         form = PutConfigForm()
         if form.validate():
-            with db.auto_commit():
-                form.conf.update(form.data)
+            form.conf.update(form.data)
             return restful.success('修改成功', data=form.conf.to_dict())
         return restful.error(form.get_error())
 
     def delete(self):
         form = DeleteConfigForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.conf)
+            form.conf.delete()
             return restful.success('删除成功')
         return restful.error(form.get_error())
 

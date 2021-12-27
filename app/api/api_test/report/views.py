@@ -60,8 +60,7 @@ class ReportView(BaseMethodView):
     def delete(self):
         form = DeleteReportForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.report)
+            form.report.delete()
             if os.path.exists(form.report_path):
                 os.remove(form.report_path)
             return restful.success('删除成功')

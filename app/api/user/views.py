@@ -94,27 +94,22 @@ class UserView(AdminMethodView):
     def post(self):
         form = CreateUserForm()
         if form.validate():
-            with db.auto_commit():
-                user = User()
-                user.create(form.data)
-                db.session.add(user)
+            user = User().create(form.data)
             return restful.success(f'用户 {form.name.data} 新增成功', user.to_dict())
         return restful.fail(msg=form.get_error())
 
     def put(self):
         form = EditUserForm()
         if form.validate():
-            old_user = form.user
-            form.password.data = form.password.data or old_user.password  # 若密码字段有值则修改密码，否则不修改密码
+            form.password.data = form.password.data or form.user.password  # 若密码字段有值则修改密码，否则不修改密码
             form.user.update(form.data)
-            return restful.success(f'用户 {old_user.name} 修改成功', old_user.to_dict())
+            return restful.success(f'用户 {form.user.name} 修改成功', form.user.to_dict())
         return restful.fail(msg=form.get_error())
 
     def delete(self):
         form = DeleteUserForm()
         if form.validate():
-            with db.auto_commit():
-                db.session.delete(form.user)
+            form.user.delete()
             return restful.success('删除成功')
         return restful.fail(form.get_error())
 

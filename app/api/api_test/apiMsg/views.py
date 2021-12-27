@@ -5,7 +5,6 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
-
 from threading import Thread
 
 from flask import request, send_from_directory
@@ -22,7 +21,6 @@ from ... import api
 from ....baseView import BaseMethodView
 from ....baseModel import db
 from ..apiMsg.models import ApiMsg
-from ..step.models import Step
 from ...config.models import Config
 from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
 from config.config import assert_mapping_list
@@ -41,7 +39,8 @@ def methods_mapping():
     """ 获取配置的请求方法列表 """
     return restful.success(
         '获取成功',
-        data=[{'value': method} for method in Config.get_first(name='http_methods').value.split(',')])
+        data=[{'value': method} for method in Config.get_first(name='http_methods').value.split(',')]
+    )
 
 
 @api.route('/apiMsg/list', methods=['GET'])
@@ -61,7 +60,7 @@ def api_upload():
     if not module:
         return restful.fail('模块不存在')
     if file and file.filename.endswith('xls'):
-        excel_data = parse_file_content(file.read())  # [{'请求类型': 'get', '接口名称': 'xx接口', 'url': '/api/v1/xxx'}]
+        excel_data = parse_file_content(file.read())  # [{'请求类型': 'get', '接口名称': 'xx接口', 'addr': '/api/v1/xxx'}]
         with db.auto_commit():
             for api_data in excel_data:
                 new_api = ApiMsg()
@@ -108,11 +107,7 @@ def run_api_msg():
 @login_required
 def change_api_sort():
     """ 更新接口的排序 """
-    api_id_list, num, size = request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize')
-    with db.auto_commit():
-        for index, api_id in enumerate(api_id_list):
-            api_info = ApiMsg.get_first(id=api_id)
-            api_info.num = (num - 1) * size + index
+    ApiMsg.change_sort(request.json.get('List'), request.json.get('pageNum'), request.json.get('pageSize'))
     return restful.success(msg='修改排序成功')
 
 
@@ -128,32 +123,23 @@ class ApiMsgView(BaseMethodView):
     def post(self):
         form = AddApiForm()
         if form.validate():
-            with db.auto_commit():
-                new_api = ApiMsg()
-                new_api.create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
-                new_api.num = form.new_num()
-                db.session.add(new_api)
+            form.num.data = form.new_num()
+            new_api = ApiMsg().create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
             return restful.success(f'接口 {form.name.data} 新建成功', data=new_api.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditApiForm()
         if form.validate():
-            old_api = form.old
-            with db.auto_commit():
-                old_api.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
-            return restful.success(f'接口 {form.name.data} 修改成功', old_api.to_dict())
+            form.old.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
+            return restful.success(f'接口 {form.name.data} 修改成功', form.old.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
         form = DeleteApiForm()
         if form.validate():
-            with db.auto_commit():
-                # 同步删除接口信息下对应用例下的接口步骤信息
-                for case_data in Step.get_all(api_id=form.id.data):
-                    db.session.delete(case_data)
-                db.session.delete(form.api)
-            return restful.success('删除成功')
+            form.api.delete()
+            return restful.success(f'接口 【{form.api.name}】 删除成功')
         return restful.fail(form.get_error())
 
 
