@@ -20,7 +20,7 @@ class Report(BaseModel):
     run_type = db.Column(db.String(10), default='task', nullable=True, comment='报告类型，task/case/api')
     is_done = db.Column(db.Integer, default=0, comment='是否执行完毕，1执行完毕，0执行中')
 
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的服务id')
     project = db.relationship('Project', backref='reports')
 
     @classmethod

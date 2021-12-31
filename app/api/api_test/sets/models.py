@@ -14,11 +14,11 @@ class Set(BaseModel):
     __tablename__ = 'sets'
 
     name = db.Column(db.String(255), nullable=True, comment='用例集名称')
-    num = db.Column(db.Integer(), nullable=True, comment='用例集在对应项目下的序号')
+    num = db.Column(db.Integer(), nullable=True, comment='用例集在对应服务下的序号')
     level = db.Column(db.Integer(), nullable=True, default=2, comment='用例集级数')
     parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级用例集id')
-    yapi_id = db.Column(db.Integer(), comment='当前用例集在yapi平台对应的项目id')
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
+    yapi_id = db.Column(db.Integer(), comment='当前用例集在yapi平台对应的服务id')
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的服务id')
 
     project = db.relationship('Project', backref='sets')  # 一对多
     cases = db.relationship('Case', order_by='Case.num.asc()', lazy='dynamic')
@@ -29,7 +29,7 @@ class Set(BaseModel):
         获取要执行的用例的id
         1.如果有用例id，则只拿对应的用例
         2.如果没有用例id，有模块id，则拿模块下的所有用例id
-        3.如果没有用例id，也没有用模块id，则拿项目下所有模块下的所有用例
+        3.如果没有用例id，也没有用模块id，则拿服务下所有模块下的所有用例
         """
         if len(case_id) != 0:
             return case_id

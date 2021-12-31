@@ -127,7 +127,7 @@ def copy_case():
         new_case = Case()
         new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers', 'before_case', 'after_case')
         new_case.name = old_case.name + '_01'
-        new_case.num = Case.get_new_num(None, set_id=old_case.set_id)
+        new_case.num = Case.get_insert_num(set_id=old_case.set_id)
         db.session.add(new_case)
 
     # 复制步骤
@@ -151,7 +151,7 @@ class CaseView(BaseMethodView):
     def post(self):
         form = AddCaseForm()
         if form.validate():
-            form.num.data = Case.get_new_num(None, set_id=form.set_id.data)
+            form.num.data = Case.get_insert_num(set_id=form.set_id.data)
             new_case = Case().create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
             return restful.success('用例新建成功', data=new_case.to_dict())
         return restful.fail(form.get_error())
@@ -166,15 +166,15 @@ class CaseView(BaseMethodView):
     def delete(self):
         form = DeleteCaseForm()
         if form.validate():
-            case, steps = form.case, Step.get_all(case_id=form.id.data)
+            case_name, case, steps = form.case.name, form.case, Step.get_all(case_id=form.id.data)
 
             # 数据有依赖关系，先删除步骤，再删除用例
             with db.auto_commit():
                 if steps:
                     for step in steps:
                         db.session.delete(step)
-                db.session.delete(case)
-            return restful.success(f'用例 {case.name} 删除成功')
+            db.session.delete(case)
+            return restful.success(f'用例 {case_name} 删除成功')
         return restful.fail(form.get_error())
 
 

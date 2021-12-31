@@ -68,7 +68,7 @@ class AddStepForm(BaseForm):
     data_driver = StringField()
     num = StringField()
 
-    project_id = IntegerField(validators=[DataRequired('项目id必传')])
+    project_id = IntegerField(validators=[DataRequired('服务id必传')])
     case_id = IntegerField(validators=[DataRequired('用例id必传')])
     api_id = IntegerField(validators=[DataRequired('接口id必传')])
 
@@ -116,9 +116,9 @@ class AddStepForm(BaseForm):
                     raise ValidationError(f'断言第 {validate_index + 1} 行, 预期结果【{value}】错误，请明确数据类型')
 
     def validate_project_id(self, field):
-        """ 校验项目id """
+        """ 校验服务id """
         if not Project.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
+            raise ValidationError(f'id为 {field.data} 的服务不存在')
 
     def validate_case_id(self, field):
         """ 校验用例存在 """

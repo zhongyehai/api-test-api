@@ -12,13 +12,13 @@ from ....baseModel import BaseModel, db
 
 
 class Project(BaseModel):
-    """ 项目表 """
+    """ 服务表 """
     __tablename__ = 'project'
 
-    name = db.Column(db.String(255), nullable=True, comment='项目名称')
-    manager = db.Column(db.Integer(), nullable=True, default=1, comment='项目管理员id，默认为admin')
-    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='项目的公共变量')
-    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='项目的公共头部信息')
+    name = db.Column(db.String(255), nullable=True, comment='服务名称')
+    manager = db.Column(db.Integer(), nullable=True, default=1, comment='服务管理员id，默认为admin')
+    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共变量')
+    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共头部信息')
     func_files = db.Column(db.Text(), nullable=True, default='[]', comment='引用的函数文件')
     dev = db.Column(db.String(255), default='', comment='开发环境域名')
     test = db.Column(db.String(255), default='', comment='测试环境域名')
@@ -27,7 +27,7 @@ class Project(BaseModel):
     yapi_id = db.Column(db.Integer(), default=None, comment='对应YapiProject表里面的原始数据在yapi平台的id')
 
     def is_not_manager(self):
-        """ 判断用户非项目负责人 """
+        """ 判断用户非服务负责人 """
         return current_user.id != self.manager
 
     @classmethod

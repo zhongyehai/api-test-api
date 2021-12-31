@@ -39,7 +39,7 @@ class BaseForm(Form, JsonUtil):
         可删除条件（或）：
         1.当前用户为系统管理员
         2.当前用户为当前数据的创建者
-        3.当前用户为当前要删除项目的负责人
+        3.当前用户为当前要删除服务的负责人
         """
         return Project.is_manager_id(project_id) or self.is_admin() or obj.is_create_user(current_user.id)
 

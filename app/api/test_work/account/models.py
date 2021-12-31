@@ -12,7 +12,7 @@ class AccountModel(BaseModel):
     """ 测试账号表 """
     __tablename__ = 'account'
 
-    project = db.Column(db.String(255), comment='项目名')
+    project = db.Column(db.String(255), comment='服务名')
     name = db.Column(db.String(255), comment='账户名')
     account = db.Column(db.String(255), comment='登录账号')
     password = db.Column(db.String(255), comment='登录密码')

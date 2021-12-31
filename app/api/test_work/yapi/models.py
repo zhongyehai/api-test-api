@@ -9,20 +9,20 @@ from app.baseModel import BaseModel, db
 
 
 class YapiProject(BaseModel):
-    """ yapi的项目表 """
+    """ yapi的服务表 """
     __tablename__ = 'yapi_project'
 
-    yapi_group = db.Column(db.Integer(), comment='当前项目归属于yapi平台分组的id')
-    yapi_name = db.Column(db.String(255), comment='当前项目在yapi平台的名字')
-    yapi_id = db.Column(db.Integer(), comment='当前项目在yapi平台的id')
-    yapi_data = db.Column(db.Text, comment='当前项目在yapi平台的数据')
+    yapi_group = db.Column(db.Integer(), comment='当前服务归属于yapi平台分组的id')
+    yapi_name = db.Column(db.String(255), comment='当前服务在yapi平台的名字')
+    yapi_id = db.Column(db.Integer(), comment='当前服务在yapi平台的id')
+    yapi_data = db.Column(db.Text, comment='当前服务在yapi平台的数据')
 
 
 class YapiModule(BaseModel):
     """ yapi的模块表 """
     __tablename__ = 'yapi_module'
 
-    yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的项目id')
+    yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的服务id')
     yapi_name = db.Column(db.String(255), comment='当前模块在yapi平台的名字')
     yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的模块id')
     yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
@@ -31,7 +31,7 @@ class YapiModule(BaseModel):
 class YapiApiMsg(BaseModel):
     """ yapi的接口表 """
     __tablename__ = 'yapi_apis'
-    yapi_project = db.Column(db.Integer(), comment='当前接口在yapi平台对应的项目id')
+    yapi_project = db.Column(db.Integer(), comment='当前接口在yapi平台对应的服务id')
     yapi_module = db.Column(db.Integer(), comment='当前接口在yapi平台对应的模块id')
     yapi_name = db.Column(db.String(255), comment='当前接口在yapi平台的名字')
     yapi_id = db.Column(db.Integer(), comment='当前接口在yapi平台对应的接口id')

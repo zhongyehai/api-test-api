@@ -58,7 +58,7 @@ def run_case_set():
 @api.route('/caseSet/tree', methods=['GET'])
 @login_required
 def case_set_tree():
-    """ 获取当前项目下的用例集树 """
+    """ 获取当前服务下的用例集树 """
     set_list = [
         case_set.to_dict() for case_set in Set.query.filter_by(
             project_id=int(request.args.get('project_id'))).order_by(Set.parent.asc()).all()
@@ -78,7 +78,7 @@ class CaseSetView(BaseMethodView):
     def post(self):
         form = AddCaseSetForm()
         if form.validate():
-            form.num.data = form.new_num()
+            form.num.data = Set.get_insert_num(project_id=form.project_id.data)
             new_set = Set().create(form.data)
             return restful.success(f'名为 {form.name.data} 的用例集创建成功', new_set.to_dict())
         return restful.fail(form.get_error())
@@ -86,8 +86,7 @@ class CaseSetView(BaseMethodView):
     def put(self):
         form = EditCaseSetForm()
         if form.validate():
-            old, set_list, new_num = form.case_set, Set.get_all(project_id=form.project.id), form.new_num()
-            num_sort(new_num, old.num, set_list, old)
+            old, set_list = form.case_set, Set.get_all(project_id=form.project.id)
             old.update(form.data)
             return restful.success(f'用例集 {form.name.data} 修改成功', old.to_dict())
         return restful.fail(form.get_error())

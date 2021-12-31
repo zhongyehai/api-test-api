@@ -5,6 +5,7 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
+import json
 from threading import Thread
 
 import requests
@@ -21,11 +22,25 @@ from ....baseView import BaseMethodView
 from ....baseModel import db
 from .models import Task
 from .forms import RunTaskForm, AddTaskForm, EditTaskForm, HasTaskIdForm, DeleteTaskIdForm, GetTaskListForm
+from ....utils.sendReport import async_send_report
+
+
+def run_task(project_id, report_id, report_name, task, set_id, case_id):
+    runner = RunCase(
+        project_id=project_id,
+        run_name=report_name,
+        case_id=Set.get_case_id(project_id, set_id, case_id),
+        task=task,
+        report_id=report_id
+    )
+    res = runner.run_case()
+    # 多线程发送测试报告
+    async_send_report(content=json.loads(res), **task, report_id=report_id)
 
 
 @api.route('/task/run', methods=['POST'])
 @login_required
-def run_task():
+def run_task_view():
     """ 单次运行定时任务 """
     form = RunTaskForm()
     if form.validate():
@@ -35,13 +50,8 @@ def run_task():
 
         # 新起线程运行任务
         Thread(
-            target=RunCase(
-                project_id=project_id,
-                run_name=report.name,
-                case_id=Set.get_case_id(task.project_id, form.loads(task.set_id), form.loads(task.case_id)),
-                task=task,
-                report_id=report.id
-            ).run_case
+            target=run_task,
+            args=[project_id, report.id, report.name, task.to_dict(), task.loads(task.set_id), task.loads(task.case_id)]
         ).start()
         return restful.success(msg='触发执行成功，请等待执行完毕', data={'report_id': report.id})
     return restful.fail(form.get_error())
@@ -77,7 +87,7 @@ def task_copy():
             new_task.create(old_task.to_dict(), 'set_id', 'case_id')
             new_task.name = old_task.name + '_01'
             new_task.status = '禁用中'
-            new_task.num = Task.get_new_num(old_task.num, project_id=old_task.project_id)
+            new_task.num = Task.get_insert_num(project_id=old_task.project_id)
             db.session.add(new_task)
         return restful.success(msg='复制成功', data=new_task.to_dict())
     return restful.fail(form.get_error())
@@ -95,7 +105,7 @@ class TaskView(BaseMethodView):
     def post(self):
         form = AddTaskForm()
         if form.validate():
-            form.set_attr(num=form.new_num())
+            form.num.data = Task.get_insert_num(project_id=form.project_id.data)
             new_task = Task().create(form.data, 'set_id', 'case_id')
             return restful.success(f'定时任务 {form.name.data} 新建成功', new_task.to_dict())
         return restful.fail(form.get_error())
@@ -103,7 +113,7 @@ class TaskView(BaseMethodView):
     def put(self):
         form = EditTaskForm()
         if form.validate():
-            form.set_attr(num=form.new_num())
+            form.num.data = Task.get_insert_num(project_id=form.project_id.data)
             form.task.update(form.data, 'set_id', 'case_id')
             return restful.success(f'定时任务 {form.name.data} 修改成功', form.task.to_dict())
         return restful.fail(form.get_error())

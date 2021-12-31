@@ -27,7 +27,7 @@ class GetCaseSetForm(BaseForm):
 
 class AddCaseSetForm(BaseForm):
     """ 添加用例集的校验 """
-    project_id = StringField(validators=[DataRequired('请先选择首页项目')])
+    project_id = StringField(validators=[DataRequired('请先选择首页服务')])
     name = StringField(validators=[DataRequired('用例集名称不能为空'), Length(1, 255, message='用例集名长度为1~255位')])
     level = StringField()
     parent = StringField()
@@ -35,10 +35,10 @@ class AddCaseSetForm(BaseForm):
     num = StringField()
 
     def validate_project_id(self, field):
-        """ 项目id合法 """
+        """ 服务id合法 """
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的项目不存在，请先创建')
+            raise ValidationError(f'id为 {field.data} 的服务不存在，请先创建')
         setattr(self, 'project', project)
 
     def validate_name(self, field):
@@ -48,9 +48,6 @@ class AddCaseSetForm(BaseForm):
                          name=field.data,
                          parent=self.parent.data):
             raise ValidationError(f'用例集名字 {field.data} 已存在')
-
-    def new_num(self):
-        return Set.get_new_num(self.num.data, project_id=self.project_id.data)
 
 
 class GetCaseSetEditForm(BaseForm):
@@ -71,7 +68,10 @@ class DeleteCaseSetForm(GetCaseSetEditForm):
         case_set = Set.get_first(id=field.data)
         # 数据权限
         if not self.is_can_delete(case_set.project_id, case_set):
-            raise ValidationError('不能删除别人项目下的用例集')
+            raise ValidationError('不能删除别人服务下的用例集')
+        # 用例集下是否有用例集
+        if Set.get_first(parent=field.data):
+            raise ValidationError('请先删除当前用例集下的用例集')
         # 用例集下是否有用例
         if Case.get_first(set_id=field.data):
             raise ValidationError('请先删除当前用例集下的用例')
@@ -100,10 +100,10 @@ class FindCaseSet(BaseForm):
     pageNum = IntegerField()
     pageSize = IntegerField()
     name = StringField()
-    projectId = IntegerField(validators=[DataRequired('项目id必传')])
+    projectId = IntegerField(validators=[DataRequired('服务id必传')])
 
     def validate_projectId(self, field):
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
+            raise ValidationError(f'id为 {field.data} 的服务不存在')
         setattr(self, 'all_sets', project.sets)

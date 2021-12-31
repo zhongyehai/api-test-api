@@ -30,7 +30,7 @@ def get_module_list():
 @api.route('/module/tree', methods=['GET'])
 @login_required
 def module_tree():
-    """ 获取当前项目下的模块树 """
+    """ 获取当前服务下的模块树 """
     project_id = int(request.args.get('project_id'))
     module_list = [
         module.to_dict() for module in Module.query.filter_by(
@@ -51,7 +51,7 @@ class ModuleView(BaseMethodView):
     def post(self):
         form = AddModelForm()
         if form.validate():
-            form.num.data = form.new_num()
+            form.num.data = Module.get_insert_num(project_id=form.project_id.data)
             new_model = Module().create(form.data)
             setattr(new_model, 'children', [])
             return restful.success(f'名为 {form.name.data} 的模块创建成功', new_model.to_dict())

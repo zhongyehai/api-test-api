@@ -44,7 +44,7 @@ def validate_webhook(we_chat=None, ding_ding=None):
 
 class AddTaskForm(BaseForm):
     """ 添加定时任务的校验 """
-    project_id = IntegerField(validators=[DataRequired('请选择项目')])
+    project_id = IntegerField(validators=[DataRequired('请选择服务')])
     set_id = StringField()
     case_id = StringField()
     choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
@@ -85,10 +85,7 @@ class AddTaskForm(BaseForm):
     def validate_name(self, field):
         """ 校验任务名不重复 """
         if Task.get_first(project_id=self.project_id.data, name=field.data):
-            raise ValidationError(f'当前项目中，任务名 {field.data} 已存在')
-
-    def new_num(self):
-        return Task.get_new_num(self.num.data, project_id=self.project_id.data)
+            raise ValidationError(f'当前服务中，任务名 {field.data} 已存在')
 
 
 class HasTaskIdForm(BaseForm):
@@ -123,19 +120,19 @@ class EditTaskForm(AddTaskForm, HasTaskIdForm):
         """ 校验任务名不重复 """
         old = Task.get_first(project_id=self.project_id.data, name=field.data)
         if old and old.id != self.id.data:
-            raise ValidationError(f'当前项目中，任务名 {field.data} 已存在')
+            raise ValidationError(f'当前服务中，任务名 {field.data} 已存在')
 
 
 class GetTaskListForm(BaseForm):
     """ 获取任务列表 """
-    projectId = IntegerField(validators=[DataRequired('项目id必传')])
+    projectId = IntegerField(validators=[DataRequired('服务id必传')])
     pageNum = IntegerField()
     pageSize = IntegerField()
 
 
 class FindTaskForm(BaseForm):
     """ 查找任务信息 """
-    projectId = IntegerField(validators=[DataRequired('项目id必传')])
+    projectId = IntegerField(validators=[DataRequired('服务id必传')])
     taskName = StringField()
     page = IntegerField()
     sizePage = IntegerField()

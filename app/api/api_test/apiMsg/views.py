@@ -68,7 +68,7 @@ def api_upload():
                     if hasattr(new_api, key):
                         setattr(new_api, key, value)
                 new_api.method = api_data.get('method', 'post').upper()
-                new_api.num = new_api.get_new_num(None)
+                new_api.num = new_api.get_insert_num(module_id=module.id)
                 new_api.project_id = module.project_id
                 new_api.module_id = module.id
                 new_api.create_user = user_id
@@ -123,7 +123,7 @@ class ApiMsgView(BaseMethodView):
     def post(self):
         form = AddApiForm()
         if form.validate():
-            form.num.data = form.new_num()
+            form.num.data = ApiMsg.get_insert_num(module_id=form.module_id.data)
             new_api = ApiMsg().create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
             return restful.success(f'接口 {form.name.data} 新建成功', data=new_api.to_dict())
         return restful.fail(form.get_error())

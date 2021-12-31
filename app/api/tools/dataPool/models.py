@@ -22,7 +22,7 @@ class AutoTestPolyFactoring(BaseModel):
     supplier_org_id = db.Column(db.String(40), nullable=True, default='', comment='债权人公司id')
     supplier_org_name = db.Column(db.String(128), nullable=True, default='', comment='债权人（特定供应商）')
     project_org_id = db.Column(db.String(40), nullable=True, default='', comment='债务人公司id')
-    project_org_name = db.Column(db.String(128), nullable=True, default='', comment='债务人（项目公司）')
+    project_org_name = db.Column(db.String(128), nullable=True, default='', comment='债务人（服务公司）')
     purchaser_org_name = db.Column(db.String(128), nullable=True, default='', comment='核心企业名称')
     purchaser_org_id = db.Column(db.String(40), nullable=True, default='', comment='核心企业公司id')
     finance_money = db.Column(db.String(128), nullable=True, default='', comment='融资金额')

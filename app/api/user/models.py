@@ -8,7 +8,7 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from flask import current_app
 
 from ... import login_manager
@@ -62,13 +62,14 @@ class User(UserMixin, BaseModel):
 
     def generate_reset_token(self, expiration=conf['token_time_out']):
         """ 生成token，默认有效期一个小时 """
-        return Serializer(current_app.config['SECRET_KEY'], expiration).dumps({'id': self.id}).decode('utf-8')
+        return Serializer(current_app.config['SECRET_KEY'], expiration).dumps({'id': self.id, 'name': self.name}).decode('utf-8')
 
     @staticmethod
     def parse_token(token):
         """ 校验token是否过期，或者是否合法 """
         try:
-            return Serializer(current_app.config['SECRET_KEY']).loads(token.encode('utf-8'))
+            data = Serializer(current_app.config['SECRET_KEY']).loads(token.encode('utf-8'))
+            return data
         except:
             return False
 

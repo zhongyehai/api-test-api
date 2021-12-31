@@ -16,7 +16,7 @@ from .models import Module
 
 class AddModelForm(BaseForm):
     """ 添加模块的校验 """
-    project_id = IntegerField(validators=[DataRequired('项目id必传')])
+    project_id = IntegerField(validators=[DataRequired('服务id必传')])
     name = StringField(validators=[DataRequired('模块名必传'), Length(1, 255, message='模块名称为1~255位')])
     level = StringField()
     parent = StringField()
@@ -24,25 +24,24 @@ class AddModelForm(BaseForm):
     num = StringField()
 
     def validate_project_id(self, field):
-        """ 项目id合法 """
+        """ 服务id合法 """
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的项目不存在，请先创建')
+            raise ValidationError(f'id为 {field.data} 的服务不存在，请先创建')
         setattr(self, 'project', project)
 
     def validate_name(self, field):
         """ 模块名不重复 """
-        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data)
+        old_module = Module.get_first(
+            project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data
+        )
         if old_module:
-            raise ValidationError(f'当前项目中已存在名为 {field.data} 的模块')
-
-    def new_num(self):
-        return Module.get_new_num(self.num.data, project_id=self.project_id.data)
+            raise ValidationError(f'当前服务中已存在名为 {field.data} 的模块')
 
 
 class FindModelForm(BaseForm):
     """ 查找模块 """
-    projectId = IntegerField(validators=[DataRequired('项目id必传')])
+    projectId = IntegerField(validators=[DataRequired('服务id必传')])
     name = StringField()
     pageNum = IntegerField()
     pageSize = IntegerField()
@@ -78,7 +77,7 @@ class DeleteModelForm(ModuleIdForm):
         if not module:
             raise ValidationError(f'id为 {field.data} 的模块不存在')
         if not self.is_can_delete(module.project_id, module):
-            raise ValidationError('不能删除别人项目下的模块')
+            raise ValidationError('不能删除别人服务下的模块')
         if module.apis:
             raise ValidationError('请先删除模块下的接口')
         if Module.get_first(parent=module.id):
@@ -98,13 +97,15 @@ class EditModelForm(ModuleIdForm, AddModelForm):
         setattr(self, 'old_module', old_module)
 
     def validate_name(self, field):
-        """ 同一个项目下，模块名不重复 """
-        old_module = Module.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data)
+        """ 同一个服务下，模块名不重复 """
+        old_module = Module.get_first(
+            project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data
+        )
         if old_module and old_module.id != self.id.data:
-            raise ValidationError(f'id为 {self.project_id.data} 的项目下已存在名为 {field.data} 的模块')
+            raise ValidationError(f'id为 {self.project_id.data} 的服务下已存在名为 {field.data} 的模块')
 
 
 class StickModuleForm(BaseForm):
     """ 置顶模块 """
-    project_id = IntegerField(validators=[DataRequired('项目id必传')])
+    project_id = IntegerField(validators=[DataRequired('服务id必传')])
     id = IntegerField(validators=[DataRequired('模块id必传')])

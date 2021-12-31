@@ -60,7 +60,7 @@ class StepMethodView(BaseMethodView):
         """ 新增步骤 """
         form = AddStepForm()
         if form.validate():
-            form.num.data = Step.get_new_num(None, case_id=form.case_id.data)
+            form.num.data = Step.get_insert_num(case_id=form.case_id.data)
             step = Step().create(
                 form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
             return restful.success('步骤新建成功', data=step.to_dict())

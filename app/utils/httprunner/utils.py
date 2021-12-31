@@ -56,7 +56,7 @@ def build_url(base_url, path):
     elif base_url:
         return "{}/{}".format(base_url.rstrip("/"), path.lstrip("/"))
     else:
-        raise ParamsError(f"base url '{base_url}' 错误, 请检查项目信息")
+        raise ParamsError(f"base url '{base_url}' 错误, 请检查服务信息")
 
 
 def query_json(json_content, query, delimiter='.'):

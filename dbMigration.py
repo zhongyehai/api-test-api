@@ -205,7 +205,7 @@ def init_config():
         {'name': 'yapi_account', 'value': '', 'type': '系统配置', 'desc': 'yapi账号'},
         {'name': 'yapi_password', 'value': '', 'type': '系统配置', 'desc': 'yapi密码'},
         {'name': 'ignore_keyword_for_group', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的分组关键字'},
-        {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的项目关键字'},
+        {'name': 'ignore_keyword_for_project', 'value': '[]', 'type': '系统配置', 'desc': '不需要从yapi同步的服务关键字'},
         {'name': 'kym', 'value': json.dumps(kym_keword, ensure_ascii=False, indent=4), 'type': '系统配置',
          'desc': 'KYM分析项'},
         {'name': 'default_diff_message_send_addr', 'value': '', 'type': '系统配置', 'desc': 'yapi接口监控报告默认发送钉钉机器人地址'},

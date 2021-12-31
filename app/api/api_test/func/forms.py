@@ -82,10 +82,10 @@ class DeleteFuncForm(BaseForm):
         if not func:
             raise ValidationError(f'函数文件【{field.data}】不存在')
         else:
-            # 项目引用
+            # 服务引用
             project = Project.query.filter(Project.func_files.like(f'%{field.data}%')).first()
             if project:
-                raise ValidationError(f'项目【{project.name}】已引用此函数文件，请先解除依赖再删除')
+                raise ValidationError(f'服务【{project.name}】已引用此函数文件，请先解除依赖再删除')
             # 用例引用
             case = Case.query.filter(Case.func_files.like(f'%{field.data}%')).first()
             if case:

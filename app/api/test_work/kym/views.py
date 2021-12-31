@@ -23,9 +23,9 @@ from app.utils.required import login_required
 @api.route('/kym/project', methods=['POST'])
 @login_required
 def add_kym_project():
-    """ kym添加项目 """
+    """ kym添加服务 """
     if KYMModule.get_first(project=request.json['project']):
-        return restful.fail(f"项目 {request.json['project']} 已存在")
+        return restful.fail(f"服务 {request.json['project']} 已存在")
     with db.auto_commit():
         kym_data = {"nodeData": {"topic": request.json['project'], "root": True, "children": []}}
         kym_data['nodeData']['children'] = json.loads(Config.get_first(name='kym').value)
@@ -38,7 +38,7 @@ def add_kym_project():
 @api.route('/kym/project/list')
 @login_required
 def get_kym_project_list():
-    """ kym项目列表 """
+    """ kym服务列表 """
     project_list = KYMModule.query.with_entities(KYMModule.project).distinct().all()
     return restful.success('获取成功', data=[{'key': project[0], 'value': project[0]} for project in project_list])
 

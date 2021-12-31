@@ -16,14 +16,14 @@ from .forms import AddProjectForm, EditProjectForm, FindProjectForm, DeleteProje
 @api.route('/project/all', methods=['GET'])
 @login_required
 def project_all():
-    """ 所有项目列表 """
+    """ 所有服务列表 """
     return restful.success(data=[project.to_dict() for project in Project.get_all()])
 
 
 @api.route('/project/list', methods=['GET'])
 @login_required
 def project_list():
-    """ 查找项目列表 """
+    """ 查找服务列表 """
     form = FindProjectForm()
     if form.validate():
         return restful.success(data=Project.make_pagination(form))
@@ -31,37 +31,37 @@ def project_list():
 
 
 class ProjectView(BaseMethodView):
-    """ 项目管理 """
+    """ 服务管理 """
 
     def get(self):
-        """ 获取项目 """
+        """ 获取服务 """
         form = GetProjectByIdForm()
         if form.validate():
             return restful.success(data=form.project.to_dict())
         return restful.fail(form.get_error())
 
     def post(self):
-        """ 新增项目 """
+        """ 新增服务 """
         form = AddProjectForm()
         if form.validate():
             project = Project().create(form.data, 'hosts', 'variables', 'headers', 'func_files')
-            return restful.success(f'项目 {form.name.data} 新建成功', project.to_dict())
+            return restful.success(f'服务 {form.name.data} 新建成功', project.to_dict())
         return restful.fail(msg=form.get_error())
 
     def put(self):
-        """ 修改项目 """
+        """ 修改服务 """
         form = EditProjectForm()
         if form.validate():
             form.project.update(form.data, 'hosts', 'variables', 'headers', 'func_files')
-            return restful.success(f'项目 {form.name.data} 修改成功', form.project.to_dict())
+            return restful.success(f'服务 {form.name.data} 修改成功', form.project.to_dict())
         return restful.fail(msg=form.get_error())
 
     def delete(self):
-        """ 删除项目 """
+        """ 删除服务 """
         form = DeleteProjectForm()
         if form.validate():
             form.pro_data.delete()
-            return restful.success(msg=f'项目 {form.pro_data.name} 删除成功')
+            return restful.success(msg=f'服务 {form.pro_data.name} 删除成功')
         return restful.fail(form.get_error())
 
 

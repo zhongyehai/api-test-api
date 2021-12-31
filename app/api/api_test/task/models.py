@@ -28,7 +28,7 @@ class Task(BaseModel):
     status = db.Column(db.String(10), default=u'禁用中', comment='任务的运行状态，默认是禁用中')
     set_id = db.Column(db.Text(), comment='用例集id')
 
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的项目id')
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的服务id')
     project = db.relationship('Project', backref='tasks')
 
     def to_dict(self, *args, **kwargs):

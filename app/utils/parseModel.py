@@ -57,7 +57,7 @@ class Base(JsonUtil):
     def parse_extracts(self, extracts_list, extract_key_list):
         """ 解析要提取的参数
         extracts_list:
-            [{"key": "project_id", "value": "content.data.id", "remark": "项目id"}]
+            [{"key": "project_id", "value": "content.data.id", "remark": "服务id"}]
         return:
             [{"project_id": "content.data.id"}]
         """
@@ -105,7 +105,7 @@ class Base(JsonUtil):
 
 
 class ProjectFormatModel(Base):
-    """ 格式化项目信息 """
+    """ 格式化服务信息 """
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id')

@@ -34,7 +34,7 @@ class ApiMsg(BaseModel):
                           comment='断言信息')
 
     module_id = db.Column(db.Integer(), db.ForeignKey('module.id'), comment='所属的接口模块id')
-    project_id = db.Column(db.Integer(), nullable=True, comment='所属的项目id')
+    project_id = db.Column(db.Integer(), nullable=True, comment='所属的服务id')
     yapi_id = db.Column(db.Integer(), comment='当前接口在yapi平台的id')
 
     module = db.relationship('Module', backref='apis')

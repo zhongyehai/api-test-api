@@ -12,7 +12,7 @@ class KYMModule(BaseModel):
     """ KYM分析表 """
     __tablename__ = 'kym'
 
-    project = db.Column(db.String(255), comment='项目名')
+    project = db.Column(db.String(255), comment='服务名')
     kym = db.Column(db.Text, default='{}', comment='kym分析')
 
     def to_dict(self, *args, **kwargs):

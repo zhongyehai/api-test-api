@@ -15,7 +15,7 @@ from app.utils.report.report import render_html_report
 from config.config import conf
 
 
-def by_we_chat(content, webhook):
+def by_we_chat(content, webhook, report_id):
     """ 通过企业微信器人发送测试报告 """
     msg = {
         "msgtype": "markdown",
@@ -25,7 +25,7 @@ def by_we_chat(content, webhook):
                        f'>执行用例:<font color="comment"> {content["stat"]["testcases"]["total"]} </font>条\n'
                        f'>成功:<font color="info"> {content["stat"]["testcases"]["success"]} </font>条\n'
                        f'>失败:<font color="warning"> {content["stat"]["testcases"]["fail"]} </font>条\n'
-                       f'详情请登录[测试平台]({conf["report_addr"]})查看'
+                       f'详情请登录[测试平台]({conf["report_addr"] + str(report_id)})查看'
         }
     }
     try:
@@ -34,7 +34,7 @@ def by_we_chat(content, webhook):
         print(f'向企业微信发送测试报告失败，错误信息：\n{error}')
 
 
-def by_ding_ding(content, webhook):
+def by_ding_ding(content, webhook, report_id):
     """ 通过钉钉机器人发送测试报告 """
     msg = {
         "msgtype": "markdown",
@@ -45,7 +45,7 @@ def by_ding_ding(content, webhook):
                     f'#### 执行用例:<font color=#3498DB> {content["stat"]["testcases"]["total"]} </font>条 \n> '
                     f'#### 成功:<font color=#27AE60> {content["stat"]["testcases"]["success"]} </font>条 \n> '
                     f'#### 失败:<font color=#E74C3C> {content["stat"]["testcases"]["fail"]} </font>条 \n> '
-                    f'#### 详情请登录[测试平台]({conf["report_addr"]})查看\n'
+                    f'#### 详情请登录[测试平台]({conf["report_addr"] + str(report_id)})查看\n'
         }
     }
     try:
@@ -70,15 +70,15 @@ def send_report(**kwargs):
     is_send, send_type, content = kwargs.get('is_send'), kwargs.get('send_type'), kwargs.get('content')
     if is_send == '2' or (is_send == '3' and content['success'] is False):
         if send_type == 'we_chat':
-            by_we_chat(content, kwargs.get('we_chat'))
+            by_we_chat(content, kwargs.get('we_chat'), kwargs.get('report_id'))
         elif send_type == 'ding_ding':
-            by_ding_ding(content, kwargs.get('ding_ding'))
+            by_ding_ding(content, kwargs.get('ding_ding'), kwargs.get('report_id'))
         elif send_type == 'email':
             by_email(kwargs.get('email_server'), kwargs.get('email_from'), kwargs.get('email_pwd'),
                      kwargs.get('email_to'), content)
         elif send_type == 'all':
-            by_we_chat(content, kwargs.get('we_chat'))
-            by_ding_ding(content, kwargs.get('ding_ding'))
+            by_we_chat(content, kwargs.get('we_chat'), kwargs.get('report_id'))
+            by_ding_ding(content, kwargs.get('ding_ding'), kwargs.get('report_id'))
             by_email(kwargs.get('email_server'), kwargs.get('email_from'), kwargs.get('email_pwd'),
                      kwargs.get('email_to'), content)
 
@@ -98,10 +98,10 @@ def send_diff_api_message(content, addr):
             "title": "接口监控",
             "text": f'## 接口监控 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} \n> '
                     f'### 任务名：{content["title"]} \n> '
-                    f'#### 对比项目:<font color=#27AE60> {content["project"]["totle"]} </font>个 \n> '
-                    f'##### 新增项目:<font color=#27AE60> {content["project"]["add"]} </font>个 \n> '
-                    f'##### 修改项目:<font color=#3498DB> {content["project"]["modify"]} </font>个 \n> '
-                    f'##### 删除项目:<font color=#E74C3C> {content["project"]["remove"]} </font>个 \n> '
+                    f'#### 对比服务:<font color=#27AE60> {content["project"]["totle"]} </font>个 \n> '
+                    f'##### 新增服务:<font color=#27AE60> {content["project"]["add"]} </font>个 \n> '
+                    f'##### 修改服务:<font color=#3498DB> {content["project"]["modify"]} </font>个 \n> '
+                    f'##### 删除服务:<font color=#E74C3C> {content["project"]["remove"]} </font>个 \n> '
                     f'##### 乱码:<font color=#E74C3C> {content["project"]["errorCode"]} </font>个 \n> '
                     f'##### \n> '
                     f'#### 对比模块:<font color=#27AE60> {content["module"]["totle"]} </font>个 \n> '

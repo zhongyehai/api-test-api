@@ -113,19 +113,13 @@ class BaseModel(db.Model, JsonUtil):
             pass
         with db.auto_commit():
             for key, value in attrs_dict.items():
-                if hasattr(self, key) and key != 'id':
+                if hasattr(self, key) and key not in ['id', 'num']:
                     setattr(self, key, self.dumps(value) if key in args else value)
 
     def delete(self):
         """ 删除单条数据 """
         with db.auto_commit():
             db.session.delete(self)
-
-    @staticmethod
-    def delete_batch(models: list):
-        """ 批量删除并自动提交 """
-        with db.auto_commit():
-            [db.session.delete(model) for model in models]
 
     # def delete(self):
     #     """ 软删除 """
@@ -164,22 +158,15 @@ class BaseModel(db.Model, JsonUtil):
                 case.num = (page_num - 1) * page_size + index
 
     @classmethod
-    def get_new_num(cls, num, **kwargs):
-        """
-        自动返回 model表中**kwargs筛选条件下的已存在编号num的最大值+1，用于插入数据时排序
-        如：用例集表中，某project_id对应的用例集编号
-        num     数据名     project_id
-        1       name        6
-        2       name        2
-        2       name        6
-        返回3
-        """
-        if not num:
-            if not cls.get_all(**kwargs):
-                return 1
-            else:
-                return cls.get_filter_by(**kwargs).order_by(cls.num.desc()).first().num + 1
-        return int(num)
+    def get_max_num(cls, **kwargs):
+        """ 返回 model 表中**kwargs筛选条件下的已存在编号num的最大值 """
+        max_num_data = cls.get_filter_by(**kwargs).order_by(cls.num.desc()).first()
+        return max_num_data.num if max_num_data else 0
+
+    @classmethod
+    def get_insert_num(cls, **kwargs):
+        """ 返回 model 表中**kwargs筛选条件下的已存在编号num的最大值 + 1 """
+        return cls.get_max_num(**kwargs) + 1
 
     def to_dict(self, to_dict: list = [], pop_list: list = []):
         """ 自定义序列化器，把模型的每个字段转为key，方便返回给前端 """

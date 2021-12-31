@@ -60,7 +60,7 @@ class BaseParse:
         }
 
     def get_formated_project(self, project_id):
-        """ 从已解析的项目字典中取指定id的项目，如果没有，则取出来解析后放进去 """
+        """ 从已解析的服务字典中取指定id的服务，如果没有，则取出来解析后放进去 """
         if project_id not in self.parsed_project_dict:
             project = Project.get_first(id=project_id)
             self.parse_functions(json.loads(project.func_files))
@@ -148,7 +148,7 @@ class RunApi(BaseParse):
     def __init__(self, project_id=None, run_name=None, api_ids=None, report_id=None):
         super().__init__(project_id, run_name, report_id)
 
-        # 解析当前项目信息
+        # 解析当前服务信息
         self.project = self.get_formated_project(self.project_id)
 
         # 要执行的接口id列表
@@ -191,12 +191,12 @@ class RunApi(BaseParse):
 class RunCase(BaseParse):
     """ 运行测试用例 """
 
-    def __init__(self, project_id=None, run_name=None, case_id=[], task=None, report_id=None, performer=None,
+    def __init__(self, project_id=None, run_name=None, case_id=[], task={}, report_id=None, performer=None,
                  create_user=None):
         super().__init__(project_id, run_name, report_id, performer=performer, create_user=create_user)
         self.task = task
-        self.environment = task.choice_host if task else None
-        # 接口对应的项目字典，在需要解析项目时，先到这里面查，没有则去数据库取出来解析
+        self.environment = task.get('choice_host') if isinstance(task, dict) else task.choice_host
+        # 接口对应的服务字典，在需要解析服务时，先到这里面查，没有则去数据库取出来解析
         self.projects_dict = {}
 
         # 步骤对应的接口字典，在需要解析字典时，先到这里面查，没有则去数据库取出来解析
@@ -342,7 +342,7 @@ class RunCase(BaseParse):
                     else:
                         case_template['teststeps'].append(self.parse_step(project, case, api, step))
 
-                    # 把项目的自定义变量留下来
+                    # 把服务的自定义变量留下来
                     all_variables.update(project.variables)
 
                 # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
@@ -367,5 +367,5 @@ class RunCase(BaseParse):
             self.after_case_headers = {}
             self.after_case_variables = {}
 
-        # 去除项目级的公共变量，保证用步骤上解析后的公共变量
+        # 去除服务级的公共变量，保证用步骤上解析后的公共变量
         self.DataTemplate['project_mapping']['variables'] = {}

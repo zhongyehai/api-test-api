@@ -5,7 +5,6 @@ from flask import Blueprint, current_app, request
 from flask_login import current_user
 
 from app.utils.log import logger
-from .. import db
 
 api = Blueprint('api', __name__)
 api.logger = logger
@@ -22,6 +21,7 @@ from app.api.api_test.task import views
 from app.api.api_test.report import views
 from app.api.api_test.func import views
 from app.api.test_work.account import views
+from app.api.test_work.dataBase import views
 from app.api.test_work.kym import views
 from app.api.test_work.yapi import views
 from app.api.tools.dataPool import views

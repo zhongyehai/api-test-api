@@ -45,9 +45,9 @@ def aps_test(case_ids, task, user_id=None):
     jump_res = runner.run_case()
 
     # 多线程发送测试报告
-    async_send_report(content=task.loads(jump_res), **task.to_dict())
+    async_send_report(content=task.loads(jump_res), **task.to_dict(), report_id=runner.new_report_id)
 
-    db.session.rollback()  # 把连接放回连接池，不知道为什么定时任务跑完不会自动放回去，导致下次跑的时候，mysql连接超时断开报错
+    db.session.rollback()  # 把连接放回连接池
     return runner.new_report_id
 
 

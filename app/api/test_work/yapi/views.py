@@ -53,41 +53,42 @@ def get_module_data(db_module_dict, cat_id):
 
 
 def update_project(yapi_project, base_path=None):
-    """ yapi 的项目信息更新到测试平台的项目 """
+    """ yapi 的服务信息更新到测试平台的服务 """
 
     with db.auto_commit():
-        # 存项目原始信息
+        # 存服务原始信息
         original_yapi_project = YapiProject.get_first(yapi_id=yapi_project['_id']) or YapiProject()
         original_yapi_project.yapi_group = yapi_project['group_id']
         original_yapi_project.yapi_name = yapi_project['name']
         original_yapi_project.yapi_id = yapi_project['_id']
-        original_yapi_project.yapi_data = json.dumps(yapi_project, ensure_ascii=False, indent=4)  # 把原始项目信息存下来
+        original_yapi_project.yapi_data = json.dumps(yapi_project, ensure_ascii=False, indent=4)  # 把原始服务信息存下来
         if not original_yapi_project.id:
             db.session.add(original_yapi_project)
-        api.logger.info(f'原始yapi项目信息: \n{yapi_project}')
+        api.logger.info(f'原始yapi服务信息: \n{yapi_project}')
 
-        # 存解析后项目数据
+        # 存解析后服务数据
         project = Project.get_first(yapi_id=yapi_project['_id']) or Project()
         project.name = yapi_project['name']
         project.yapi_id = yapi_project['_id']
+        # project.test = project.test or ''
 
-        # 处理项目的basepath，更新到测试环境
-        # 已解析项目的basepath
-        split_data = project.test.split('com')
-        old_base_path = split_data[1] if split_data.__len__() >= 2 else project.test
-        # 新的basepath
-        if base_path:
-            if old_base_path:
-                if base_path != old_base_path and base_path not in old_base_path:
-                    project.test += base_path[1:] if project.test.endswith('/') and base_path.startswith('/') else base_path
-            else:
-                project.test = base_path
-        else:
-            project.test = split_data[0] + 'com' if split_data[0] else split_data[0]
+        # 处理服务的basepath，更新到测试环境
+        # 已解析服务的basepath
+        # split_data = project.test.split('com')
+        # old_base_path = split_data[1] if split_data.__len__() >= 2 else project.test
+        # # 新的basepath
+        # if base_path:
+        #     if old_base_path:
+        #         if base_path != old_base_path and base_path not in old_base_path:
+        #             project.test += base_path[1:] if project.test.endswith('/') and base_path.startswith('/') else base_path
+        #     else:
+        #         project.test = base_path
+        # else:
+        #     project.test = split_data[0] + 'com' if split_data[0] else split_data[0]
 
         if not project.id:
             db.session.add(project)
-    api.logger.info(f'解析yapi后的项目信息：\n{project.to_dict()}')
+    api.logger.info(f'解析yapi后的服务信息：\n{project.to_dict()}')
     return project
 
 
@@ -111,7 +112,7 @@ def update_module(project, yapi_module):
         module.name = yapi_module['name']
         module.yapi_id = yapi_module['_id']
         if not module.id:
-            module.num = module.get_new_num(None, project_id=project.id)
+            module.num = module.get_insert_num(project_id=project.id)
             db.session.add(module)
     api.logger.info(f'解析yapi后的模块信息：\n{module.to_dict()}')
     return module
@@ -145,7 +146,7 @@ def update_api(project, module_and_api):
                 api_msg.module_id = module_id
                 api_msg.project_id = project.id
                 if not api_msg.id:
-                    api_msg.num = api_msg.get_new_num(None, module_id=module_id)
+                    api_msg.num = api_msg.get_insert_num(module_id=module_id)
                     db.session.add(api_msg)
 
 
@@ -185,14 +186,14 @@ def get_group(host, group_id, headers):
 
 
 def get_yapi_project_list(host, group_id, headers, ignore_project):
-    """ 获取指定分组下的项目列表
+    """ 获取指定分组下的服务列表
     yapi接口响应
     {
         "data": {
             "list": [
                 {
                     "_id": 74,
-                    "name": "XXX项目",
+                    "name": "XXX服务",
                     "group_id": 41
                 }
             ]
@@ -203,7 +204,7 @@ def get_yapi_project_list(host, group_id, headers, ignore_project):
         f'{host}/api/project/list?group_id={group_id}&page=1&limit=1000',
         headers=headers,
     ).json()['data']['list']
-    api.logger.info(f'根据分组 {group_id} 获取到的项目：\n{project_list}')
+    api.logger.info(f'根据分组 {group_id} 获取到的服务：\n{project_list}')
     return pop_ignore(project_list, ignore_project, 'name')
 
 
@@ -225,12 +226,12 @@ def get_module_list(host, project_id, headers):
     res = requests.get(
         f'{host}/api/project/get?id={project_id}', headers=headers
     ).json()
-    api.logger.info(f'根据项目id {project_id} 获取到的分类：\n{res.get("data", {}).get("cat", [])}')
+    api.logger.info(f'根据服务id {project_id} 获取到的分类：\n{res.get("data", {}).get("cat", [])}')
     return {"base_path": res.get('basepath', ''), "module_list": res.get('data', {}).get('cat', [])}
 
 
 def get_module_and_api(host, project_id, headers):
-    """ 导出项目下的模块和接口
+    """ 导出服务下的模块和接口
     yapi 接口返回
     [
       {
@@ -268,7 +269,7 @@ def get_module_and_api(host, project_id, headers):
         f'{host}/api/plugin/export?type=json&pid={project_id}&status=all&isWiki=false',
         headers=headers
     ).json()
-    api.logger.info(f'根据项目id {project_id} 获取到的数据：\n{data}')
+    api.logger.info(f'根据服务id {project_id} 获取到的数据：\n{data}')
     return data
 
 
@@ -288,17 +289,17 @@ def get_yapi_config(is_disable_ignore):
 
 
 def get_is_update_project_list(yapi_host, headers, project_id, group, ignore_project):
-    """ 获取要更新的项目列表 """
+    """ 获取要更新的服务列表 """
     project_list = []
 
-    # 传了指定的项目id，则只获取对应项目在yapi的项目信息
+    # 传了指定的服务id，则只获取对应服务在yapi的服务信息
     if project_id:
         yapi_id = Project.get_first(id=project_id).yapi_id
         for project in get_yapi_project_list(yapi_host, group['_id'], headers, ignore_project):
             if project['_id'] == yapi_id:
                 project_list = [project]
                 break
-    else:  # 没有指定项目id，则获取分组下的所有项目
+    else:  # 没有指定服务id，则获取分组下的所有服务
         project_list = get_yapi_project_list(yapi_host, group['_id'], headers, ignore_project)
 
     return project_list
@@ -308,7 +309,7 @@ def get_is_update_project_list(yapi_host, headers, project_id, group, ignore_pro
 @login_required
 def yapi_pull_all():
     """ 拉取yapi的所有数据
-    id: 指定项目在测试平台的id
+    id: 指定服务在测试平台的id
     is_disable_ignore: 是否禁用配置的过滤条件
     """
     # 请求参数
@@ -323,19 +324,19 @@ def yapi_pull_all():
     # 遍历要更新的分组列表
     for group in get_group_list(conf.get('yapi_host'), headers, conf.get('ignore_group')):
 
-        # 获取当前分组下要更新的项目列表
+        # 获取当前分组下要更新的服务列表
         project_list = get_is_update_project_list(
             conf.get('yapi_host'), headers, request_project_id, group, conf.get('ignore_project')
         )
 
-        # 遍历当前分组下要更新的项目列表
+        # 遍历当前分组下要更新的服务列表
         for yapi_project in project_list:
 
-            # 更新项目
-            api.logger.info(f'项目：{yapi_project}')
+            # 更新服务
+            api.logger.info(f'服务：{yapi_project}')
             if assert_coding_format(yapi_project.get('name')):
 
-                # 更新项目
+                # 更新服务
                 api_test_project = update_project(yapi_project, yapi_project.get('basepath'))
 
                 # 更新模块
@@ -354,8 +355,8 @@ def yapi_pull_all():
 @api.route('/yapi/pull/project', methods=['POST'])
 @login_required
 def yapi_pull_project():
-    """ 拉取yapi的项目数据，同步到测试平台
-    id: 指定项目在测试平台的id
+    """ 拉取yapi的服务数据，同步到测试平台
+    id: 指定服务在测试平台的id
     is_disable_ignore: 是否禁用配置的过滤条件
     """
     # 请求参数
@@ -370,16 +371,16 @@ def yapi_pull_project():
     # 遍历要更新的分组列表
     for group in get_group_list(conf.get('yapi_host'), headers, conf.get('ignore_group')):
 
-        # 获取当前分组下要更新的项目列表
+        # 获取当前分组下要更新的服务列表
         project_list = get_is_update_project_list(
             conf.get('yapi_host'), headers, request_project_id, group, conf.get('ignore_project')
         )
 
-        # 遍历当前分组下要更新的项目列表
+        # 遍历当前分组下要更新的服务列表
         for yapi_project in project_list:
 
-            # 更新项目
-            api.logger.info(f'项目：{yapi_project}')
+            # 更新服务
+            api.logger.info(f'服务：{yapi_project}')
             if assert_coding_format(yapi_project.get('name')):
                 update_project(yapi_project, yapi_project.get('basepath'))
 
@@ -418,41 +419,41 @@ def diff_by_yapi():
     # 对比详细记录，做root节点的children
     diff_detail = {"nodeData": {"topic": title, "root": True, "children": []}}
 
-    # 遍历分组，取项目信息
+    # 遍历分组，取服务信息
     for yapi_group in group_list:
         group_str = f'分组【{yapi_group["group_name"]}】'
 
-        # 获取当分组在数据库中存的项目信息，和获取和到的项目对比
+        # 获取当分组在数据库中存的服务信息，和获取和到的服务对比
         group_detail = {"topic": yapi_group["group_name"], "children": []}
-        project_detail_add = {"topic": "新增项目", "children": []}
-        project_detail_change = {"topic": "已修改项目", "children": []}
-        project_detail_remove = {"topic": "已删除项目", "children": []}
+        project_detail_add = {"topic": "新增服务", "children": []}
+        project_detail_change = {"topic": "已修改服务", "children": []}
+        project_detail_remove = {"topic": "已删除服务", "children": []}
         db_project_list = {project.yapi_id: project for project in YapiProject.get_all(yapi_group=yapi_group['_id'])}
         for yapi_project in get_yapi_project_list(conf.get('yapi_host'), yapi_group['_id'], headers, []):
             diff_summary['project']['totle'] += 1
 
-            # 对比项目
+            # 对比服务
             if assert_coding_format(yapi_project["name"]):
                 project = db_project_list.pop(yapi_project['_id'], None)
                 if project:
                     project_data = json.loads(project.yapi_data)
                     project_detail_change_detail = {"topic": f"{project_data.get('name')}", "children": []}
-                    # 对比项目名
+                    # 对比服务名
                     if project_data.get('name') != yapi_project["name"]:
                         diff_is_changed = True
                         diff_summary['project']['modify'] += 1
-                        project_detail_change_detail['children'].append({"topic": f'项目名变更为【{yapi_project["name"]}】'})
+                        project_detail_change_detail['children'].append({"topic": f'服务名变更为【{yapi_project["name"]}】'})
                         if project_detail_change_detail['children']:
                             project_detail_change['children'].append(project_detail_change_detail)
                 else:
                     diff_is_changed = True
                     diff_summary['project']['add'] += 1
-                    project_detail_add['children'].append({"topic": f'{group_str}下，新增项目【{yapi_project["name"]}】'})
+                    project_detail_add['children'].append({"topic": f'{group_str}下，新增服务【{yapi_project["name"]}】'})
             else:
                 diff_summary['project']['errorCode'] += 1
                 continue
 
-            # 获取当项目在数据库中存的模块信息，和获取和到的模块对比
+            # 获取当服务在数据库中存的模块信息，和获取和到的模块对比
             project_detail = {"topic": yapi_project["name"], "children": []}
             module_detail_add = {"topic": "新增模块", "children": []}
             module_detail_change = {"topic": "已修改模块", "children": []}
@@ -495,7 +496,7 @@ def diff_by_yapi():
             if module_detail_remove['children']:
                 project_detail['children'].append(module_detail_remove)
 
-            # 获取当项目在数据库中存的接口信息，和获取和到的接口对比
+            # 获取当服务在数据库中存的接口信息，和获取和到的接口对比
             for module_and_api in get_module_and_api(conf.get('yapi_host'), yapi_project['_id'], headers):
                 module_detail = {"topic": module_and_api["name"], "children": []}
                 api_detail_add = {"topic": "新增接口", "children": []}
@@ -671,21 +672,21 @@ def diff_by_yapi():
                     module_detail['children'].append(api_detail_change)
                 if api_detail_remove['children']:
                     module_detail['children'].append(api_detail_remove)
-                if module_detail['children']:  # 把模块下的接口变化添加到项目中
+                if module_detail['children']:  # 把模块下的接口变化添加到服务中
                     project_detail['children'].append(module_detail)
-            # 把项目下游的变化添加到分组中
+            # 把服务下游的变化添加到分组中
             if project_detail['children']:
                 group_detail['children'].append(project_detail)
         else:
-            # 对比完后，数据库数据中还有项目，则说明该项目在yapi已删除
+            # 对比完后，数据库数据中还有服务，则说明该服务在yapi已删除
             if db_project_list:
                 diff_is_changed = True
                 for project_id, project in db_project_list.items():
                     diff_summary['project']['remove'] += 1
                     project_detail_remove['children'].append({
-                        "topic": f'{group_str}下，项目【{json.loads(project.yapi_data).get("name")}】已删除'
+                        "topic": f'{group_str}下，服务【{json.loads(project.yapi_data).get("name")}】已删除'
                     })
-        # 添加项目变化，有才添加，没有就不添加
+        # 添加服务变化，有才添加，没有就不添加
         if project_detail_add['children']:
             group_detail['children'].append(project_detail_add)
         if project_detail_change['children']:
@@ -748,7 +749,7 @@ def get_diff_record_list():
 
 @api.route('/diffRecord/project')
 def get_diff_record_project():
-    """ 获取有对比结果的项目列表 """
+    """ 获取有对比结果的服务列表 """
     project_list = YapiDiffRecord.query.with_entities(YapiDiffRecord.name).distinct().all()
     return restful.success('获取成功', data=[{'key': project[0], 'value': project[0]} for project in project_list])
 

@@ -38,13 +38,13 @@ class AddApiForm(BaseForm):
     validates = StringField()
     num = StringField()
 
-    project_id = StringField(validators=[DataRequired('项目id必传')])
+    project_id = StringField(validators=[DataRequired('服务id必传')])
     module_id = StringField(validators=[DataRequired('模块id必传')])
 
     def validate_project_id(self, field):
-        """ 校验项目id """
+        """ 校验服务id """
         if not Project.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
+            raise ValidationError(f'id为 {field.data} 的服务不存在')
 
     def validate_module_id(self, field):
         """ 校验模块id """
@@ -106,9 +106,6 @@ class AddApiForm(BaseForm):
                 except Exception as error:
                     raise ValidationError(f'断言，第 {index + 1} 行, 预期结果 【{value}】 错误，请明确类型')
 
-    def new_num(self):
-        return ApiMsg.get_new_num(None, module_id=self.module_id.data)
-
 
 class EditApiForm(AddApiForm):
     """ 修改接口信息 """
@@ -129,13 +126,13 @@ class EditApiForm(AddApiForm):
 
 
 class ValidateProjectId(BaseForm):
-    """ 校验项目id """
-    projectId = IntegerField(validators=[DataRequired('项目id必传')])
+    """ 校验服务id """
+    projectId = IntegerField(validators=[DataRequired('服务id必传')])
 
     def validate_projectId(self, field):
-        """ 校验项目id """
+        """ 校验服务id """
         if not Project.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的项目不存在')
+            raise ValidationError(f'id为 {field.data} 的服务不存在')
 
 
 class RunApiMsgForm(ValidateProjectId):
@@ -185,5 +182,5 @@ class DeleteApiForm(GetApiById):
 
         project_id = Module.get_first(id=api.module_id).project_id
         if not self.is_can_delete(project_id, api):
-            raise ValidationError('不能删除别人项目下的接口')
+            raise ValidationError('不能删除别人服务下的接口')
         setattr(self, 'api', api)

@@ -50,9 +50,9 @@ class AddCaseForm(BaseForm):
                      flags=0) and not self.func_files.data:
             raise ValidationError('参数引用函数后，必须引用函数文件')
 
-        # # 引用了项目公共变量，但是项目公共变量中没有变量
+        # # 引用了服务公共变量，但是服务公共变量中没有变量
         # if variable_list:
-        #     raise ValidationError('参数引用${}在业务变量和项目公用变量均没找到'.format(',$'.join(variable_list)))
+        #     raise ValidationError('参数引用${}在业务变量和服务公用变量均没找到'.format(',$'.join(variable_list)))
 
     def validate_set_id(self, field):
         """ 校验用例集存在 """

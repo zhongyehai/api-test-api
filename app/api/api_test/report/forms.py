@@ -56,6 +56,6 @@ class DeleteReportForm(BaseForm):
 
 class FindReportForm(BaseForm):
     """ 查找报告 """
-    projectId = IntegerField(validators=[DataRequired('请选择项目')])
+    projectId = IntegerField(validators=[DataRequired('请选择服务')])
     pageNum = IntegerField()
     pageSize = IntegerField()

@@ -40,7 +40,7 @@ def count_title():
 @login_required
 def count_project():
     return restful.success(data={
-        'title': '项目',
+        'title': '服务',
         'options': ['总数'],
         'data': [len(Project.get_all())],
     })
