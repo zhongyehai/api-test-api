@@ -116,6 +116,14 @@ class BaseModel(db.Model, JsonUtil):
                 if hasattr(self, key) and key not in ['id', 'num']:
                     setattr(self, key, self.dumps(value) if key in args else value)
 
+    def insert_or_update(self, attrs_dict: dict, *args, **kwargs):
+        """ 创建或更新 """
+        old_data = self.get_first(**kwargs)
+        if old_data:
+            old_data.update(attrs_dict, *args)
+            return old_data
+        return self.create(attrs_dict, *args)
+
     def delete(self):
         """ 删除单条数据 """
         with db.auto_commit():

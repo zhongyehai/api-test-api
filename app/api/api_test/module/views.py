@@ -60,10 +60,8 @@ class ModuleView(BaseMethodView):
     def put(self):
         form = EditModelForm()
         if form.validate():
-            old, module_list, new_num = form.old_module, Module.get_all(project_id=form.project.id), form.new_num()
-            num_sort(new_num, old.num, module_list, old)
-            old.update(form.data)
-            return restful.success(f'模块 {form.name.data} 修改成功', old.to_dict())
+            form.old_module.update(form.data)
+            return restful.success(f'模块 {form.name.data} 修改成功', form.old_module.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

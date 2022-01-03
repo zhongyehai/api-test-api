@@ -86,9 +86,8 @@ class CaseSetView(BaseMethodView):
     def put(self):
         form = EditCaseSetForm()
         if form.validate():
-            old, set_list = form.case_set, Set.get_all(project_id=form.project.id)
-            old.update(form.data)
-            return restful.success(f'用例集 {form.name.data} 修改成功', old.to_dict())
+            form.case_set.update(form.data)
+            return restful.success(f'用例集 {form.name.data} 修改成功', form.case_set.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
