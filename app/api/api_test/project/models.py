@@ -24,6 +24,7 @@ class Project(BaseModel):
     test = db.Column(db.String(255), default='', comment='测试环境域名')
     uat = db.Column(db.String(255), default='', comment='uat环境域名')
     production = db.Column(db.String(255), default='', comment='生产环境域名')
+    swagger = db.Column(db.String(255), default='', comment='服务对应的swagger地址')
     yapi_id = db.Column(db.Integer(), default=None, comment='对应YapiProject表里面的原始数据在yapi平台的id')
 
     def is_not_manager(self):

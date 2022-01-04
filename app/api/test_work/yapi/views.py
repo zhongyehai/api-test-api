@@ -52,7 +52,7 @@ def get_module_data(db_module_dict, cat_id):
     return db_module
 
 
-def update_project(yapi_project, base_path=None):
+def update_project(yapi_project):
     """ yapi 的服务信息更新到测试平台的服务 """
 
     with db.auto_commit():
@@ -70,21 +70,6 @@ def update_project(yapi_project, base_path=None):
         project = Project.get_first(yapi_id=yapi_project['_id']) or Project()
         project.name = yapi_project['name']
         project.yapi_id = yapi_project['_id']
-        # project.test = project.test or ''
-
-        # 处理服务的basepath，更新到测试环境
-        # 已解析服务的basepath
-        # split_data = project.test.split('com')
-        # old_base_path = split_data[1] if split_data.__len__() >= 2 else project.test
-        # # 新的basepath
-        # if base_path:
-        #     if old_base_path:
-        #         if base_path != old_base_path and base_path not in old_base_path:
-        #             project.test += base_path[1:] if project.test.endswith('/') and base_path.startswith('/') else base_path
-        #     else:
-        #         project.test = base_path
-        # else:
-        #     project.test = split_data[0] + 'com' if split_data[0] else split_data[0]
 
         if not project.id:
             db.session.add(project)
@@ -137,11 +122,20 @@ def update_api(project, module_and_api):
 
                 # 更新接口信息
                 module_id = module_id or Module.get_first(yapi_id=yapi_api['catid']).id
-                api_msg = ApiMsg.get_first(addr=yapi_api['path'], yapi_id=yapi_api['_id']) or ApiMsg()
-                api_msg.name = yapi_api['title']
-                api_msg.method = yapi_api['method']
+                api_msg = ApiMsg.get_first(yapi_id=yapi_api['_id']) or ApiMsg()
+
+                # 接口地址处理，接口地址中可能有参数化
                 api_msg.addr = yapi_api['path']
-                api_msg.data_type = yapi_api.get('req_body_type', 'json')
+                if api_msg.id:
+                    if '{' in yapi_api['path']:
+                        split_api_msg_addr = api_msg.addr.split('$')
+                        if split_api_msg_addr.__len__() > 1:
+                            api_msg.addr = yapi_api['path'].split('{')[0] + '$' + split_api_msg_addr[1]
+
+                api_msg.name = yapi_api['title']
+                api_msg.method = yapi_api['method'].upper()
+                data_type = yapi_api.get('req_body_type', 'json')
+                api_msg.data_type = 'json' if data_type in ['row', 'json'] else data_type
                 api_msg.yapi_id = yapi_api['_id']
                 api_msg.module_id = module_id
                 api_msg.project_id = project.id
@@ -227,7 +221,7 @@ def get_module_list(host, project_id, headers):
         f'{host}/api/project/get?id={project_id}', headers=headers
     ).json()
     api.logger.info(f'根据服务id {project_id} 获取到的分类：\n{res.get("data", {}).get("cat", [])}')
-    return {"base_path": res.get('basepath', ''), "module_list": res.get('data', {}).get('cat', [])}
+    return res.get('data', {}).get('cat', [])
 
 
 def get_module_and_api(host, project_id, headers):
@@ -337,10 +331,10 @@ def yapi_pull_all():
             if assert_coding_format(yapi_project.get('name')):
 
                 # 更新服务
-                api_test_project = update_project(yapi_project, yapi_project.get('basepath'))
+                api_test_project = update_project(yapi_project)
 
                 # 更新模块
-                for yapi_module in get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers)['module_list']:
+                for yapi_module in get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers):
                     api.logger.info(f'模块：{yapi_module}')
                     if assert_coding_format(yapi_module['name']):
                         update_module(api_test_project, yapi_module)
@@ -382,7 +376,7 @@ def yapi_pull_project():
             # 更新服务
             api.logger.info(f'服务：{yapi_project}')
             if assert_coding_format(yapi_project.get('name')):
-                update_project(yapi_project, yapi_project.get('basepath'))
+                update_project(yapi_project)
 
     return restful.success('数据更新完成')
 
@@ -459,7 +453,7 @@ def diff_by_yapi():
             module_detail_change = {"topic": "已修改模块", "children": []}
             module_detail_remove = {"topic": "已删除模块", "children": []}
             db_module_list = {module.yapi_id: module for module in YapiModule.get_all(yapi_project=yapi_project['_id'])}
-            for yapi_module in get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers)['module_list']:
+            for yapi_module in get_module_list(conf.get('yapi_host'), yapi_project['_id'], headers):
                 diff_summary['module']['totle'] += 1
                 if assert_coding_format(yapi_module["name"]):
                     db_module = db_module_list.pop(yapi_module['_id'], None)

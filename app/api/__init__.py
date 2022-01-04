@@ -24,6 +24,7 @@ from app.api.test_work.account import views
 from app.api.test_work.dataBase import views
 from app.api.test_work.kym import views
 from app.api.test_work.yapi import views
+from app.api.test_work.swagger import views
 from app.api.tools.dataPool import views
 from app.api.tools import makeUser
 from app.api.tools import examination
