@@ -17,8 +17,8 @@ class Module(BaseModel):
     level = db.Column(db.Integer(), nullable=True, default=2, comment='模块级数')
     parent = db.Column(db.Integer(), nullable=True, default=None, comment='上一级模块id')
     yapi_id = db.Column(db.Integer(), comment='当前模块在yapi平台对应的模块id')
-    yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的服务id')
-    yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
+    # yapi_project = db.Column(db.Integer(), comment='当前模块在yapi平台对应的服务id')
+    # yapi_data = db.Column(db.Text, comment='当前模块在yapi平台的数据')
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='所属的服务id')
 
     project = db.relationship('Project', backref='modules')  # 一对多

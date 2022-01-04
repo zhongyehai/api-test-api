@@ -129,8 +129,10 @@ def update_api(project, module_and_api):
                 if api_msg.id:
                     if '{' in yapi_api['path']:
                         split_api_msg_addr = api_msg.addr.split('$')
-                        if split_api_msg_addr.__len__() > 1:
-                            api_msg.addr = yapi_api['path'].split('{')[0] + '$' + split_api_msg_addr[1]
+                        split_api_msg_addr[0] = yapi_api['path'].split('{')[0]
+                        api_msg.addr = '$'.join(split_api_msg_addr)
+                        # if split_api_msg_addr.__len__() > 1:
+                        #     api_msg.addr = yapi_api['path'].split('{')[0] + '$' + split_api_msg_addr[1]
 
                 api_msg.name = yapi_api['title']
                 api_msg.method = yapi_api['method'].upper()

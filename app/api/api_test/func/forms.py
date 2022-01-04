@@ -62,9 +62,9 @@ class DebuggerFuncForm(HasFuncForm):
     """ 调试函数 """
     debug_data = StringField(validators=[DataRequired('请输入要调试的函数')])
 
-    def validate_debug_data(self, field):
-        if not re.findall(r"\$\{([\w_]+\([\$\w\.\-/_ =,]*\))\}", field.data):
-            raise ValidationError('格式错误，请使用【 ${func(*args)} 】格式')
+    # def validate_debug_data(self, field):
+    #     if not re.findall(r"\$\{([\w_]+\([\$\w\.\-/_ =,]*\))\}", field.data):
+    #         raise ValidationError('格式错误，请使用【 ${func(*args)} 】格式')
 
 
 class DeleteFuncForm(BaseForm):
