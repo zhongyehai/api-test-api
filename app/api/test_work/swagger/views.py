@@ -43,6 +43,131 @@ def get_parsed_module(module_list, project_id, module_name):
     return module
 
 
+def get_request_data_type(content_type):
+    """ 判断请求参数类型 """
+    if 'json' in content_type or 'raw' in content_type or 'text/plain' in content_type:
+        return 'json'
+    elif 'data' in content_type:
+        return 'form'
+    else:
+        return 'xml'
+
+
+def assert_is_update(api_msg):
+    """ 判断参数是否需要更新 """
+    # 判断是否需要更新
+    header_update, params_update, data_json_update, data_form_update = False, False, False, False
+    if not api_msg.headers or not json.loads(api_msg.headers)[0]['key']:
+        header_update = True
+    if not api_msg.params or not json.loads(api_msg.params)[0]['key']:
+        params_update = True
+    if not api_msg.data_json or not json.loads(api_msg.data_json):
+        data_json_update = True
+    if not api_msg.data_form or not json.loads(api_msg.data_form)[0]['key']:
+        data_form_update = True
+    return header_update, params_update, data_json_update, data_form_update
+
+
+def update_obj(obj, field, data, is_update):
+    """ 判断是否需要更新 """
+    if is_update:
+        setattr(obj, field, json.dumps(data, ensure_ascii=False, indent=4))
+
+
+def parse_swagger2_args(api_msg, api_detail):
+    """ 解析 swagger2 的参数 """
+    header_update, params_update, data_json_update, data_form_update = assert_is_update(api_msg)  # 判断是否需要更新
+
+    # 解析参数
+    query = [{"key": None, "value": ''}]
+    header = [{"key": None, "remark": None, "value": None}]
+    form_data = [{"data_type": '', "key": None, "remark": None, "value": None}]
+    json_data = {}
+    for arg in api_detail.get('parameters', []):
+        required = "必填" if arg.get('required') else "非必填"
+        if arg['in'] == 'query' and params_update:  # 查询字符串参数
+            query.insert(0, {
+                "key": arg['name'],
+                "value": f"{arg.get('description', '')} {arg['type']} {required}"
+            })
+        elif arg['in'] == 'header' and header_update:  # 头部参数
+            header.insert(0, {
+                "key": arg['name'],
+                "value": "",
+                "remark": f"{arg.get('description', '')} {arg['type']} {required}"
+            })
+        elif arg['in'] == 'formData' and data_form_update:  # form-data参数
+            form_data.insert(0, {
+                "key": arg['name'],
+                "data_type": f"{arg.get('type')}",
+                "value": "",
+                "remark": f"{arg.get('description', '')} {required}"
+            })
+        elif arg['in'] == 'body' and data_json_update:  # json参数
+            properties = arg.get('schema', {}).get('properties', {})
+            for key, value in properties.items():
+                json_data[key] = f"{value.get('description', '')} {value.get('type', '')}"
+
+    update_obj(api_msg, 'headers', header, header_update)
+    update_obj(api_msg, 'params', query, params_update)
+    update_obj(api_msg, 'data_json', json_data, data_json_update)
+    update_obj(api_msg, 'data_form', form_data, data_form_update)
+
+
+def parse_openapi3_args(api_msg, api_detail, models):
+    """ 解析 openapi3 的参数 """
+    header_update, params_update, data_json_update, data_form_update = assert_is_update(api_msg)  # 判断是否需要更新
+
+    # 解析参数
+    query = [{"key": None, "value": ''}]
+    header = [{"key": None, "remark": None, "value": None}]
+    form_data = [{"data_type": '', "key": None, "remark": None, "value": None}]
+    json_data = {}
+
+    # TODO 头部参数和更多参数
+
+    # 查询字符串参数
+    if params_update:
+        for arg in api_detail.get('parameters', []):
+            required = "必填" if arg.get('required') else "非必填"
+            if arg['in'] == 'query':
+                query.insert(0, {
+                    "key": arg['name'],
+                    "value": f"{arg.get('description', '')} {arg.get('schema', {}).get('type')} {required}"
+                })
+
+    # 请求体
+    request_body_content = api_detail.get('requestBody', {}).get('content', {})
+    for content_type, detail in request_body_content.items():
+        if content_type == 'application/json':  # json 参数
+            if data_json_update:
+                data_model = detail.get('schema', {}).get('$ref', '').split('/')[-1]  # 数据模型
+                model_data = models.get(data_model, {}).get('properties', {})
+                for key, value in model_data.items():
+                    json_data[key] = f"{value.get('description', '')} {value.get('type', '')}"
+
+        elif content_type == 'multipart/form-data':  # form-data 参数
+            required_list = detail.get('schema', {}).get('required', [])  # 必传参数
+            properties = detail.get('schema', {}).get('properties', {})  # 参数
+            for field, items in properties.items():
+                form_data.insert(0, {
+                    "key": field,
+                    "data_type": f"{items.get('type', '')}",
+                    "value": "",
+                    "remark": f"{items.get('description', '')} {'必填' if field in required_list else '非必填'}"
+                })
+        elif content_type == 'application/octet-stream':  # form-data 参数，传文件
+            pass
+
+        else:  # 其他参数
+            print(f'content_type: {content_type}')
+
+    update_obj(api_msg, 'headers', header, header_update)
+    update_obj(api_msg, 'params', query, params_update)
+    update_obj(api_msg, 'data_json', json_data, data_json_update)
+    update_obj(api_msg, 'data_form', form_data, data_form_update)
+
+
 @api.route('/swagger/pull', methods=['POST'])
 @login_required
 def swagger_pull():
@@ -54,51 +179,51 @@ def swagger_pull():
     except Exception as error:
         return restful.error('数据拉取失败，详见日志')
 
-    try:
-        for api_addr, api_data in swagger_data['paths'].items():
-            for api_method, api_detail in api_data.items():
-                module = get_parsed_module(module_list, project.id, api_detail['tags'][0])
+    for api_addr, api_data in swagger_data['paths'].items():
+        for api_method, api_detail in api_data.items():
+            module = get_parsed_module(module_list, project.id, api_detail['tags'][0])
+            api.logger.info(f'解析接口地址：{api_addr}')
+            api.logger.info(f'解析接口数据：{api_detail}')
+            format_data = {
+                'project_id': project.id,
+                'module_id': module.id,
+                'name': api_detail['summary'],
+                'method': api_method.upper(),
+                'addr': api_addr,
+                'data_type': 'json'
+            }
+            content_type = json
 
-                # 请求数据类型
-                if swagger_data.get('swagger'):  # swagger2
-                    content_type = api_detail.get('consumes', ['json'])[0]
-                else:  # swagger3
-                    content_type = api_detail.get('requestBody', {}).get('content', {}).get('content',
-                                                                                            'application/json')
+            # 根据接口地址获取接口对象
+            if '{' in api_addr:  # URL中可能有参数化"/XxXx/xx/{batchNo}"
+                split_swagger_addr = api_addr.split('{')[0]
+                api_msg = ApiMsg.query.filter(
+                    ApiMsg.addr.like('%' + split_swagger_addr + '%'), ApiMsg.module_id == module.id
+                ).first() or ApiMsg()
+                if api_msg.id and '$' in api_msg.addr:  # 已经在测试平台修改过接口地址的参数
+                    api_msg_addr_split = api_msg.addr.split('$')
+                    api_msg_addr_split[0] = split_swagger_addr
+                    format_data['addr'] = '$'.join(api_msg_addr_split)
+            else:
+                api_msg = ApiMsg.get_first(addr=api_addr, module_id=module.id) or ApiMsg()
 
-                format_data = {
-                    'project_id': project.id,
-                    'module_id': module.id,
-                    'name': api_detail['summary'],
-                    'method': api_method.upper(),
-                    'addr': api_addr,
-                    'data_type': 'json' if 'json' in content_type else 'form' if 'data' in content_type else 'xml'
-                }
+            if '2' in swagger_data.get('swagger', ''):  # swagger2
+                content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
+                parse_swagger2_args(api_msg, api_detail)  # 处理参数
+            elif '3' in swagger_data.get('openapi', ''):  # openapi 3
+                # content_type = api_detail.get('requestBody', {}).get('content', {'application/json': ''}).keys()[0]
+                content_types = api_detail.get('requestBody', {}).get('content', {'application/json': ''})
+                print(f'content_types: {content_types}')
+                content_type = list(content_types.keys())[0]
+                models = swagger_data.get('components', {}).get('schemas', {})
+                parse_openapi3_args(api_msg, api_detail, models)  # 处理参数
+            # 处理请求参数类型
+            format_data['data_type'] = get_request_data_type(content_type)
 
-                # URL中可能有参数化"/XxXx/xx/{batchNo}"
-                api_msg = ApiMsg.get_first(addr=api_addr, module_id=module.id)
+            if api_msg.id:  # 更新
+                api_msg.update(format_data)
+            else:  # 新增
+                format_data['num'] = ApiMsg.get_insert_num(module_id=module.id)
+                api_msg.create(format_data)
 
-                # 可能是参数化导致没查到，可能是数据库中本来就没有
-                if not api_msg:
-                    if '{' in api_addr:
-                        split_swagger_addr = api_addr.split('{')[0]
-                        api_msg = ApiMsg.query.filter(
-                            ApiMsg.addr.like('%' + split_swagger_addr + '$%'), ApiMsg.module_id == module.id
-                        ).first()
-                        if api_msg:  # 参数化导致没查到，则更新
-                            api_msg_addr_split = api_msg.addr.split('$')
-                            api_msg_addr_split[0] = split_swagger_addr
-                            format_data['addr'] = '$'.join(api_msg_addr_split)
-                            api_msg.update(format_data)
-                        else:  # 新增
-                            format_data['num'] = ApiMsg.get_insert_num(module_id=module.id)
-                            ApiMsg().create(format_data)
-                    else:  # 新增
-                        format_data['num'] = ApiMsg.get_insert_num(module_id=module.id)
-                        ApiMsg().create(format_data)
-                else:  # 有就更新
-                    api_msg.update(format_data)
-
-        return restful.success('数据拉取并更新完成')
-    except Exception as error:
-        return restful.error('数据更新失败，详见日志')
+    return restful.success('数据拉取并更新完成')

@@ -187,10 +187,6 @@ class ResponseObject(object):
             如果要在teardown_hooks中设置属性，请参考以下示例:
             response.new_attribute = 'new_attribute_value'
             """
-            # err_msg = u"从响应中提取数据失败 ! => {}\n".format(field)
-            # err_msg += u"可用的响应属性: status_code, cookies, elapsed, headers, content, text, json, encoding, ok, reason, url.\n\n"
-            # err_msg += u"如果要在teardown_hooks中设置属性，请参考以下示例:\n"
-            # err_msg += u"response.new_attribute = 'new_attribute_value'\n"
             logger.log_error(err_msg)
             raise exceptions.ParamsError(err_msg)
 

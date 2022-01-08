@@ -52,6 +52,78 @@ def get_module_data(db_module_dict, cat_id):
     return db_module
 
 
+def parse_path(api_msg, yapi_api):
+    """ 接口地址处理，接口地址中可能有参数化 """
+    api_msg.addr = yapi_api['path']
+    if api_msg.id:
+        if '{' in yapi_api['path']:
+            split_api_msg_addr = api_msg.addr.split('$')
+            split_api_msg_addr[0] = yapi_api['path'].split('{')[0]
+            api_msg.addr = '$'.join(split_api_msg_addr)
+    # if split_api_msg_addr.__len__() > 1:
+    #     api_msg.addr = yapi_api['path'].split('{')[0] + '$' + split_api_msg_addr[1]
+
+
+def parse_header(api_msg, yapi_api):
+    """ 处理头部信息 """
+    if api_msg.headers and json.loads(api_msg.headers) and json.loads(api_msg.headers)[0].get('key'):
+        return
+    req_headers = yapi_api.get('req_headers', [])
+    data = [{"key": header.get("name"), "remark": None, "value": header.get("value")} for header in req_headers]
+    data.extend([{"key": None, "remark": None, "value": None}])
+    api_msg.headers = json.dumps(data, ensure_ascii=False, indent=4)
+
+
+def parse_query(api_msg, yapi_api):
+    """ 处理查询字符串参数 """
+    if api_msg.params and json.loads(api_msg.params) and json.loads(api_msg.params)[0].get('key'):
+        return
+    data = [{
+        "key": query["name"],
+        "value": f' {query.get("required", "")} {"必填" if query.get("desc") == "1" else "非必填"}'
+    } for query in yapi_api.get('req_query', [])]
+    data.extend([{"key": None, "value": ''}])
+    api_msg.params = json.dumps(data, ensure_ascii=False, indent=4)
+
+
+def parse_data_type(api_msg, yapi_api):
+    """ 处理请求数据类型 """
+    data_type = yapi_api.get('req_body_type', 'json')
+    api_msg.data_type = 'json' if data_type in ['row', 'json'] else data_type
+
+
+def parse_json(api_msg, yapi_api):
+    """ 处理json参数 """
+    if api_msg.data_json and json.loads(api_msg.data_json):
+        return
+    default = {}
+    if yapi_api['req_body_type'] in ['json', 'raw']:
+        if yapi_api['res_body']:
+            json_data = {}
+            res_body = json.loads(yapi_api.get('req_body_other', '{}'))
+            for key, items in res_body.get('properties', {}).items():
+                json_data.setdefault(key, f'描述：{items.get("description")}, 类型：{items.get("type")}')
+            default.update(json_data)
+    api_msg.data_json = json.dumps(default, ensure_ascii=False, indent=4)
+
+
+def parse_form(api_msg, yapi_api):
+    """ 解析form参数 """
+    if api_msg.data_form and json.loads(api_msg.data_form) and json.loads(api_msg.data_form)[0].get('key'):
+        return
+    default = [{"data_type": '', "key": None, "remark": None, "value": None}]
+    if yapi_api['req_body_type'] == 'form':
+        default = [
+            {
+                "data_type": "file" if form.get("type") and form.get("type") == "file" else "string",
+                "key": form.get("name"),
+                "remark": form.get("desc"),
+                "value": None
+            } for form in yapi_api.get('req_body_form', [])]
+        default.extend([{"data_type": '', "key": None, "remark": None, "value": None}])
+    api_msg.data_form = json.dumps(default, ensure_ascii=False, indent=4)
+
+
 def update_project(yapi_project):
     """ yapi 的服务信息更新到测试平台的服务 """
 
@@ -124,20 +196,15 @@ def update_api(project, module_and_api):
                 module_id = module_id or Module.get_first(yapi_id=yapi_api['catid']).id
                 api_msg = ApiMsg.get_first(yapi_id=yapi_api['_id']) or ApiMsg()
 
-                # 接口地址处理，接口地址中可能有参数化
-                api_msg.addr = yapi_api['path']
-                if api_msg.id:
-                    if '{' in yapi_api['path']:
-                        split_api_msg_addr = api_msg.addr.split('$')
-                        split_api_msg_addr[0] = yapi_api['path'].split('{')[0]
-                        api_msg.addr = '$'.join(split_api_msg_addr)
-                        # if split_api_msg_addr.__len__() > 1:
-                        #     api_msg.addr = yapi_api['path'].split('{')[0] + '$' + split_api_msg_addr[1]
+                parse_path(api_msg, yapi_api)  # 处理接口地址
+                parse_header(api_msg, yapi_api)  # 处理头部信息
+                parse_query(api_msg, yapi_api)  # 处理查询字符串参数
+                parse_data_type(api_msg, yapi_api)  # 处理请求数据类型
+                parse_json(api_msg, yapi_api)  # 处理json参数
+                parse_form(api_msg, yapi_api)  # 处理form参数
 
                 api_msg.name = yapi_api['title']
                 api_msg.method = yapi_api['method'].upper()
-                data_type = yapi_api.get('req_body_type', 'json')
-                api_msg.data_type = 'json' if data_type in ['row', 'json'] else data_type
                 api_msg.yapi_id = yapi_api['_id']
                 api_msg.module_id = module_id
                 api_msg.project_id = project.id

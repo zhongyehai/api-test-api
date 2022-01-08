@@ -229,7 +229,7 @@ class RunCase(BaseParse):
                 temp_case_list.append(case)
 
                 # 更新引用的用例对应的头部信息
-                case.headers.update(getattr(self, f'{position}_case_headers'))
+                # case.headers.update(getattr(self, f'{position}_case_headers'))
                 setattr(self, f'{position}_case_headers', case.headers)
 
                 # 更新引用的用例对应的公共变量
@@ -316,8 +316,8 @@ class RunCase(BaseParse):
             all_variables.update(self.after_case_variables)
 
             # 根据执行顺序逐个解析用例
+            extract_key_list = []  # 步骤中提取的key
             for case in case_list:
-                extract_key_list = []
 
                 # 遍历解析用例对应的步骤list, 根据num排序
                 steps = Step.query.filter_by(case_id=case.id, is_run=True).order_by(Step.num.asc()).all()
@@ -348,12 +348,12 @@ class RunCase(BaseParse):
                 # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
                 all_variables.update(case.variables)
 
-                # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
-                for extract_key in extract_key_list:
-                    if extract_key in all_variables:
-                        del all_variables[extract_key]
+            # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
+            for extract_key in extract_key_list:
+                if extract_key in all_variables:
+                    del all_variables[extract_key]
 
-                case_template['config']['variables'].update(all_variables)  # = all_variables
+            case_template['config']['variables'].update(all_variables)  # = all_variables
 
             # 设置的用例执行多少次就加入多少次
             for i in range(current_case.run_times or 1):
