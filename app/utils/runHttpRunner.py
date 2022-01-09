@@ -250,7 +250,7 @@ class RunCase(BaseParse):
         # 解析头部信息，继承
         headers = {}
         headers.update(project.headers)
-        headers.update(api['request']['headers'])
+        # headers.update(api['request']['headers'])
         headers.update(case.headers)
         headers.update(step.headers)
 

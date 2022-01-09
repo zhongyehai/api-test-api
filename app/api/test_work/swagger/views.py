@@ -211,9 +211,7 @@ def swagger_pull():
                 content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
                 parse_swagger2_args(api_msg, api_detail)  # 处理参数
             elif '3' in swagger_data.get('openapi', ''):  # openapi 3
-                # content_type = api_detail.get('requestBody', {}).get('content', {'application/json': ''}).keys()[0]
                 content_types = api_detail.get('requestBody', {}).get('content', {'application/json': ''})
-                print(f'content_types: {content_types}')
                 content_type = list(content_types.keys())[0]
                 models = swagger_data.get('components', {}).get('schemas', {})
                 parse_openapi3_args(api_msg, api_detail, models)  # 处理参数
