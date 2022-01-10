@@ -90,12 +90,13 @@ def parse_swagger2_args(api_msg, api_detail):
                 "key": arg['name'],
                 "value": f"{arg.get('description', '')} {arg['type']} {required}"
             })
-        elif arg['in'] == 'header' and header_update:  # 头部参数
-            header.insert(0, {
-                "key": arg['name'],
-                "value": "",
-                "remark": f"{arg.get('description', '')} {arg['type']} {required}"
-            })
+        # 若要同步头部信息，则打开此处的注释即可
+        # elif arg['in'] == 'header' and header_update:  # 头部参数
+        #     header.insert(0, {
+        #         "key": arg['name'],
+        #         "value": "",
+        #         "remark": f"{arg.get('description', '')} {arg['type']} {required}"
+        #     })
         elif arg['in'] == 'formData' and data_form_update:  # form-data参数
             form_data.insert(0, {
                 "key": arg['name'],

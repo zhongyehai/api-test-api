@@ -68,10 +68,14 @@ def parse_header(api_msg, yapi_api):
     """ 处理头部信息 """
     if api_msg.headers and json.loads(api_msg.headers) and json.loads(api_msg.headers)[0].get('key'):
         return
-    req_headers = yapi_api.get('req_headers', [])
-    data = [{"key": header.get("name"), "remark": None, "value": header.get("value")} for header in req_headers]
-    data.extend([{"key": None, "remark": None, "value": None}])
-    api_msg.headers = json.dumps(data, ensure_ascii=False, indent=4)
+
+    # 若要同步头部信息，则注释此行代码，打开下面的注释即可
+    api_msg.headers = json.dumps([{"key": None, "remark": None, "value": None}], ensure_ascii=False, indent=4)
+
+    # req_headers = yapi_api.get('req_headers', [])
+    # data = [{"key": header.get("name"), "remark": None, "value": header.get("value")} for header in req_headers]
+    # data.extend([{"key": None, "remark": None, "value": None}])
+    # api_msg.headers = json.dumps(data, ensure_ascii=False, indent=4)
 
 
 def parse_query(api_msg, yapi_api):
