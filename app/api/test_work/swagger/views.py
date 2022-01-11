@@ -6,6 +6,7 @@
 # @File : swagger.py
 # @Software: PyCharm
 import json
+import os.path
 
 import requests
 from flask import request
@@ -15,7 +16,9 @@ from app.api.api_test.project.models import Project
 from app.api.api_test.module.models import Module
 from app.api.api_test.apiMsg.models import ApiMsg
 from app.utils import restful
+from app.utils.globalVariable import SWAGGER_FILE_ADDRESS
 from app.utils.required import login_required
+from app.baseModel import db
 
 
 def get_swagger_data(swagger_addr):
@@ -180,49 +183,63 @@ def swagger_pull():
     except Exception as error:
         return restful.error('数据拉取失败，详见日志')
 
-    for api_addr, api_data in swagger_data['paths'].items():
-        for api_method, api_detail in api_data.items():
-            module = get_parsed_module(module_list, project.id, api_detail['tags'][0])
-            api.logger.info(f'解析接口地址：{api_addr}')
-            api.logger.info(f'解析接口数据：{api_detail}')
-            format_data = {
-                'project_id': project.id,
-                'module_id': module.id,
-                'name': api_detail['summary'],
-                'method': api_method.upper(),
-                'addr': api_addr,
-                'data_type': 'json'
-            }
-            content_type = json
+    with db.auto_commit():
+        add_list = []
+        for api_addr, api_data in swagger_data['paths'].items():
+            for api_method, api_detail in api_data.items():
+                module = get_parsed_module(module_list, project.id, api_detail['tags'][0])
+                api.logger.info(f'解析接口地址：{api_addr}')
+                api.logger.info(f'解析接口数据：{api_detail}')
+                format_data = {
+                    'project_id': project.id,
+                    'module_id': module.id,
+                    'name': api_detail['summary'],
+                    'method': api_method.upper(),
+                    'addr': api_addr,
+                    'data_type': 'json'
+                }
+                content_type = json
 
-            # 根据接口地址获取接口对象
-            if '{' in api_addr:  # URL中可能有参数化"/XxXx/xx/{batchNo}"
-                split_swagger_addr = api_addr.split('{')[0]
-                api_msg = ApiMsg.query.filter(
-                    ApiMsg.addr.like('%' + split_swagger_addr + '%'), ApiMsg.module_id == module.id
-                ).first() or ApiMsg()
-                if api_msg.id and '$' in api_msg.addr:  # 已经在测试平台修改过接口地址的参数
-                    api_msg_addr_split = api_msg.addr.split('$')
-                    api_msg_addr_split[0] = split_swagger_addr
-                    format_data['addr'] = '$'.join(api_msg_addr_split)
-            else:
-                api_msg = ApiMsg.get_first(addr=api_addr, module_id=module.id) or ApiMsg()
+                # 根据接口地址获取接口对象
+                if '{' in api_addr:  # URL中可能有参数化"/XxXx/xx/{batchNo}"
+                    split_swagger_addr = api_addr.split('{')[0]
+                    api_msg = ApiMsg.query.filter(
+                        ApiMsg.addr.like('%' + split_swagger_addr + '%'), ApiMsg.module_id == module.id
+                    ).first() or ApiMsg()
+                    if api_msg.id and '$' in api_msg.addr:  # 已经在测试平台修改过接口地址的参数
+                        api_msg_addr_split = api_msg.addr.split('$')
+                        api_msg_addr_split[0] = split_swagger_addr
+                        format_data['addr'] = '$'.join(api_msg_addr_split)
+                else:
+                    api_msg = ApiMsg.get_first(addr=api_addr, module_id=module.id) or ApiMsg()
 
-            if '2' in swagger_data.get('swagger', ''):  # swagger2
-                content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
-                parse_swagger2_args(api_msg, api_detail)  # 处理参数
-            elif '3' in swagger_data.get('openapi', ''):  # openapi 3
-                content_types = api_detail.get('requestBody', {}).get('content', {'application/json': ''})
-                content_type = list(content_types.keys())[0]
-                models = swagger_data.get('components', {}).get('schemas', {})
-                parse_openapi3_args(api_msg, api_detail, models)  # 处理参数
-            # 处理请求参数类型
-            format_data['data_type'] = get_request_data_type(content_type)
+                if '2' in swagger_data.get('swagger', ''):  # swagger2
+                    content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
+                    parse_swagger2_args(api_msg, api_detail)  # 处理参数
+                elif '3' in swagger_data.get('openapi', ''):  # openapi 3
+                    content_types = api_detail.get('requestBody', {}).get('content', {'application/json': ''})
+                    content_type = list(content_types.keys())[0]
+                    models = swagger_data.get('components', {}).get('schemas', {})
+                    parse_openapi3_args(api_msg, api_detail, models)  # 处理参数
+                # 处理请求参数类型
+                format_data['data_type'] = get_request_data_type(content_type)
 
-            if api_msg.id:  # 更新
-                api_msg.update(format_data)
-            else:  # 新增
-                format_data['num'] = ApiMsg.get_insert_num(module_id=module.id)
-                api_msg.create(format_data)
+                # 赋值
+                for key, value in format_data.items():
+                    if hasattr(api_msg, key):
+                        setattr(api_msg, key, value)
+
+                if api_msg.id is None:  # 没有id，则为新增
+                    api_msg.num = ApiMsg.get_insert_num(module_id=module.id)
+                    add_list.append(api_msg)
+
+        db.session.add_all(add_list)
+
+        # 同步完成后，保存原始数据
+        swagger_file = os.path.join(SWAGGER_FILE_ADDRESS, f'{project.id}.json')
+        if os.path.exists(swagger_file):
+            os.remove(swagger_file)
+        with open(swagger_file, 'w', encoding='utf8') as fp:
+            json.dump(swagger_data, fp, ensure_ascii=False, indent=4)
 
     return restful.success('数据拉取并更新完成')

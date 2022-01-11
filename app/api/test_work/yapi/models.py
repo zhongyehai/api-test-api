@@ -39,7 +39,7 @@ class YapiApiMsg(BaseModel):
 
 
 class YapiDiffRecord(BaseModel):
-    """ 数据比对记录 """
+    """ yapi数据比对记录 """
     __tablename__ = 'yapi_diff_record'
 
     name = db.Column(db.String(255), comment='比对标识，全量比对，或者具体分组的比对')

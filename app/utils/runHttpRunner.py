@@ -328,16 +328,28 @@ class RunCase(BaseParse):
 
                     # 如果有step.data_driver，则说明是数据驱动
                     if step.data_driver:
+                        """
+                        数据驱动格式
+                        [
+                            {
+                                "comment": "用例1描述",
+                                "data": "请求数据，支持参数化"
+                            },
+                            {
+                                "comment": "用例2描述",
+                                "data": "请求数据，支持参数化"
+                            }
+                        ]
+                        """
                         method = api.get('request', {}).get('method', {})
-                        for data in step.data_driver:
+                        for driver_data in step.data_driver:
                             # 数据驱动的 comment 字段，用于做标识
-                            if '_comment' in data:
-                                comment = data.pop('_comment')
-                                step.name += f'_{comment}'
-                            if method == 'GET':
-                                step.params = data
-                            else:
-                                step.data_json = step.data_form = data
+                            step.name += driver_data.get('comment', '')
+                            # if method == 'GET':
+                            #     step.params = data
+                            # else:
+                            #     step.params = step.data_json = step.data_form = data
+                            step.params = step.params = step.data_json = step.data_form = driver_data.get('data', {})
                             case_template['teststeps'].append(self.parse_step(project, case, api, step))
                     else:
                         case_template['teststeps'].append(self.parse_step(project, case, api, step))

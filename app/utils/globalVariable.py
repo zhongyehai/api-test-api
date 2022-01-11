@@ -713,6 +713,7 @@ CALL_BACK_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/call_back/')
 CFCA_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/cfca_files/'))  # CFCA文件存放地址
 TEMP_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/temp_files/'))  # 临时文件存放地址
 GIT_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/git_files/'))  # git文件存放地址
+SWAGGER_FILE_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/swagger_files/'))  # swagger文件存放地址
 DB_BACK_UP_ADDRESS = os.path.abspath(os.path.join(basedir, '..' + r'/db_back_up_files/'))  # 数据库备份地址
 
 
@@ -729,7 +730,7 @@ def _check_file_path(paths):
 
 _check_file_path([
     LOG_ADDRESS, FUNC_ADDRESS, REPORT_ADDRESS, DIFF_RESULT, CASE_FILE_ADDRESS, MOCK_DATA_ADDRESS, CALL_BACK_ADDRESS,
-    CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS, GIT_FILE_ADDRESS, DB_BACK_UP_ADDRESS
+    CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS, GIT_FILE_ADDRESS, DB_BACK_UP_ADDRESS, SWAGGER_FILE_ADDRESS
 ])
 
 if __name__ == '__main__':

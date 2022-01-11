@@ -101,8 +101,8 @@ def parse_json(api_msg, yapi_api):
     if api_msg.data_json and json.loads(api_msg.data_json):
         return
     default = {}
-    if yapi_api['req_body_type'] in ['json', 'raw']:
-        if yapi_api['res_body']:
+    if yapi_api.get('req_body_type', '') in ['json', 'raw']:
+        if yapi_api.get('res_body', {}):
             json_data = {}
             res_body = json.loads(yapi_api.get('req_body_other', '{}'))
             for key, items in res_body.get('properties', {}).items():
@@ -116,7 +116,7 @@ def parse_form(api_msg, yapi_api):
     if api_msg.data_form and json.loads(api_msg.data_form) and json.loads(api_msg.data_form)[0].get('key'):
         return
     default = [{"data_type": '', "key": None, "remark": None, "value": None}]
-    if yapi_api['req_body_type'] == 'form':
+    if yapi_api.get('req_body_type', '') == 'form':
         default = [
             {
                 "data_type": "file" if form.get("type") and form.get("type") == "file" else "string",
