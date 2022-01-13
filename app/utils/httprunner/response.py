@@ -4,6 +4,7 @@ import re
 
 from . import exceptions, logger, utils
 from .compat import OrderedDict, basestring, is_py2
+from .parser import extract_functions, parse_function
 
 text_extractor_regexp_compile = re.compile(r".*\(.*\).*")
 
@@ -213,7 +214,7 @@ class ResponseObject(object):
 
         return value
 
-    def extract_response(self, extractors):
+    def extract_response(self, session_context, extractors):
         """ 从响应信息中提取值，并储存到 OrderedDict对象
         Args:
             extractors (list):
@@ -233,7 +234,27 @@ class ResponseObject(object):
         extracted_variables_mapping = OrderedDict()
         extract_binds_order_dict = utils.ensure_mapping_format(extractors)
         # 提取数据
-        for key, field in extract_binds_order_dict.items():
-            extracted_variables_mapping[key] = self.extract_field(field)
+        for extract_key, expression in extract_binds_order_dict.items():
+
+            functions = extract_functions(expression)
+            if functions:  # 有嵌套自定义函数，先执行提取，再执行自定义函数
+                # 提取自定义函数 {'func_name': 'add', 'args': ['content.data'], 'kwargs': {}}
+                extract_function_data = parse_function(functions[0])
+
+                # 执行数据提取
+                extract_data = []
+                for extract_expression in extract_function_data.get('args', []):
+                    extract_data.append(self.extract_field(extract_expression))
+
+                # 执行自定义函数
+                extract_function_data['args'] = extract_data
+                result = session_context.FUNCTIONS_MAPPING[extract_function_data['func_name']](
+                    *extract_function_data['args'],
+                    **extract_function_data['kwargs']
+                )
+                extracted_variables_mapping[extract_key] = result
+
+            else:  # 没有嵌套自定义函数，则直接提取
+                extracted_variables_mapping[extract_key] = self.extract_field(expression)
 
         return extracted_variables_mapping

@@ -246,7 +246,7 @@ class Runner(object):
 
         # 数据提取
         extractors = test_dict.get("extract", {})
-        extracted_variables_mapping = resp_obj.extract_response(extractors)
+        extracted_variables_mapping = resp_obj.extract_response(self.session_context, extractors)
         self.http_client_session.meta_data['data'][0]['extract_msgs'] = extracted_variables_mapping
         # setattr(resp_obj, 'extractors',extracted_variables_mapping)
         self.session_context.update_session_variables(extracted_variables_mapping)
