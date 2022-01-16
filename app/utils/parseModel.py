@@ -161,8 +161,6 @@ class CaseFormatModel(Base):
         self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.is_run = kwargs.get('is_run')
         self.run_times = kwargs.get('run_times')
-        self.before_case = kwargs.get('before_case', [])
-        self.after_case = kwargs.get('after_case', [])
         self.module_id = kwargs.get('module_id')
         self.create_user = kwargs.get('create_user')
 
@@ -186,6 +184,7 @@ class StepFormatModel(Base):
         self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.data_driver = kwargs.get('data_driver', {})
+        self.quote_case = kwargs.get('quote_case', {})
         self.case_id = kwargs.get('case_id')
         self.api_id = kwargs.get('api_id')
         self.project_id = kwargs.get('project_id')

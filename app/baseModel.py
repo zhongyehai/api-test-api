@@ -161,9 +161,8 @@ class BaseModel(db.Model, JsonUtil):
     def change_sort(cls, id_list, page_num, page_size):
         """ 批量修改排序 """
         with db.auto_commit():
-            for index, case_id in enumerate(id_list):
-                case = cls.get_first(id=case_id)
-                case.num = (page_num - 1) * page_size + index
+            for index, data_id in enumerate(id_list):
+                cls.get_first(id=data_id).num = (page_num - 1) * page_size + index
 
     @classmethod
     def get_max_num(cls, **kwargs):

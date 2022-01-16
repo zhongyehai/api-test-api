@@ -36,15 +36,23 @@ def change_step_status():
     return restful.success(f'步骤已修改为 {"执行" if request.json.get("is_run") else "不执行"}')
 
 
-@api.route('/step/sort', methods=['put'])
+@api.route('/step/sort', methods=['PUT'])
 @login_required
 def change_step_sort():
     """ 更新步骤的排序 """
-    with db.auto_commit():
-        for index, step_id in enumerate(request.json.get('List')):
-            step = Step.get_first(id=step_id)
-            step.num = index
+    Step.change_sort(request.json.get('List'), request.json.get('pageNum', 0), request.json.get('pageSize', 0))
     return restful.success(msg='修改排序成功')
+
+
+@api.route('/step/copy', methods=['POST'])
+@login_required
+def copy_step():
+    """ 复制步骤 """
+    old = Step.get_first(id=request.json.get('id')).to_dict()
+    old['name'] = f"{old['name']}_copy"
+    old['num'] = Step.get_insert_num(case_id=old['case_id'])
+    step = Step().create(old, "headers", "params", "data_form", "data_json", "extracts", "validates", "data_driver")
+    return restful.success(msg='步骤复制成功', data=step.to_dict())
 
 
 class StepMethodView(BaseMethodView):

@@ -21,13 +21,11 @@ class Case(BaseModel):
     func_files = db.Column(db.Text(), comment='用例需要引用的函数list')
     variables = db.Column(db.Text(), comment='用例级的公共参数')
     headers = db.Column(db.Text(), comment='用例级的头部信息')
-    before_case = db.Column(db.Text(), default='[]', comment='当前用例引用的前置用例')
-    after_case = db.Column(db.Text(), default='[]', comment='当前用例引用的后置用例')
 
     set_id = db.Column(db.Integer, db.ForeignKey('sets.id'), comment='所属的用例集id')
 
     def to_dict(self, *args, **kwargs):
-        return super(Case, self).to_dict(to_dict=['func_files', 'variables', 'headers', 'before_case', 'after_case'])
+        return super(Case, self).to_dict(to_dict=['func_files', 'variables', 'headers'])
 
     @classmethod
     def make_pagination(cls, form):

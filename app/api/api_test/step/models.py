@@ -30,23 +30,15 @@ class Step(BaseModel):
                           default='[{"key": null, "remark": null, "validate_type": null, "value": null}]',
                           comment='断言信息')
     data_driver = db.Column(db.Text(), default='[]', comment='数据驱动，若此字段有值，则走数据驱动的解析')
-    # step_type = db.Column(db.Integer(), default=1, comment='步骤类型，1：api，2：用例')
+    quote_case = db.Column(db.String(5), default='', comment='引用用例的id')
 
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), comment='步骤所在的服务的id')
     project = db.relationship('Project', backref='steps')
 
-    case_id = db.Column(db.Integer, db.ForeignKey('case.id'))
+    case_id = db.Column(db.Integer, db.ForeignKey('case.id'), comment='步骤所在的用例的id')
 
-    api_id = db.Column(db.Integer, db.ForeignKey('apis.id'))
+    api_id = db.Column(db.Integer, db.ForeignKey('apis.id'), comment='步骤所引用的接口的id')
     api = db.relationship('ApiMsg', backref='apis')
-
-    @classmethod
-    def sort_num_by_list(cls, step_list):
-        """ 重新排序列表，索引为num值 """
-        with db.auto_commit():
-            for index, step in enumerate(step_list):
-                if step['num'] != index:
-                    cls.get_first(id=step.get('id')).num = index
 
     def to_dict(self, *args, **kwargs):
         return super(Step, self).to_dict(

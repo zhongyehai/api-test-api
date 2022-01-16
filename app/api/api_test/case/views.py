@@ -24,7 +24,6 @@ from ..sets.models import Set
 from .forms import AddCaseForm, EditCaseForm, FindCaseForm, DeleteCaseForm, GetCaseForm, RunCaseForm
 
 
-
 def create_step(index, case_id, step):
     """ 插入步骤 """
     return Step(
@@ -43,6 +42,7 @@ def create_step(index, case_id, step):
         project_id=step['project_id'],
         case_id=case_id,
         api_id=step['api_id'],
+        quote_case=step['quote_case'],
         create_user=current_user.id
     )
 
@@ -125,7 +125,7 @@ def copy_case():
     old_case = Case.get_first(id=request.args.get('id'))
     with db.auto_commit():
         new_case = Case()
-        new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers', 'before_case', 'after_case')
+        new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers')
         new_case.name = old_case.name + '_01'
         new_case.num = Case.get_insert_num(set_id=old_case.set_id)
         db.session.add(new_case)
@@ -152,14 +152,14 @@ class CaseView(BaseMethodView):
         form = AddCaseForm()
         if form.validate():
             form.num.data = Case.get_insert_num(set_id=form.set_id.data)
-            new_case = Case().create(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
+            new_case = Case().create(form.data, 'func_files', 'variables', 'headers')
             return restful.success('用例新建成功', data=new_case.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditCaseForm()
         if form.validate():
-            form.old_data.update(form.data, 'func_files', 'variables', 'headers', 'before_case', 'after_case')
+            form.old_data.update(form.data, 'func_files', 'variables', 'headers')
             return restful.success(msg='修改成功', data=form.old_data.to_dict())
         return restful.fail(form.get_error())
 

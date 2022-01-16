@@ -205,39 +205,9 @@ class RunCase(BaseParse):
         # 要执行的用例id_list
         self.case_id_list = case_id
 
-        # 前置用例
-        self.before_case = []
-        self.before_case_headers = {}
-        self.before_case_variables = {}
-
-        # 后置用例
-        self.after_case = []
-        self.after_case_headers = {}
-        self.after_case_variables = {}
-
+        # 所有测试步骤
+        self.all_case_steps = []
         self.parse_all_case()
-
-    def parse_quote(self, quote_case: list, position: str):
-        """ 解析引用的用例 """
-        quote_case.reverse()
-        for quote in quote_case:
-            case = self.get_formated_case(quote)
-
-            if case:
-                temp_case_list = getattr(self, f'{position}_case')
-                # 记录引用的用例
-                temp_case_list.append(case)
-
-                # 更新引用的用例对应的头部信息
-                # case.headers.update(getattr(self, f'{position}_case_headers'))
-                setattr(self, f'{position}_case_headers', case.headers)
-
-                # 更新引用的用例对应的公共变量
-                case.variables.update(getattr(self, f'{position}_case_variables'))
-                setattr(self, f'{position}_case_variables', case.variables)
-
-                if getattr(case, f'{position}_case'):
-                    self.parse_quote(getattr(case, f'{position}_case'), position)
 
     def parse_step(self, project, case, api, step):
         """ 解析测试步骤
@@ -276,25 +246,23 @@ class RunCase(BaseParse):
             }
         }
 
+    def get_all_steps(self, case_id: int):
+        """ 解析引用的用例 """
+        case = self.get_formated_case(case_id)
+        steps = Step.query.filter_by(case_id=case.id, is_run=True).order_by(Step.num.asc()).all()
+        for step in steps:
+            if step.quote_case:
+                self.get_all_steps(step.quote_case)
+            else:
+                self.all_case_steps.append(step)
+
     def parse_all_case(self):
         """ 解析所有用例 """
 
         # 遍历要运行的用例
         for case_id in self.case_id_list:
 
-            # 递归解析前置引用
-            self.parse_quote([case_id], 'before')
-            self.before_case.reverse()
-            logger.info(f'前置引用用例：{[case.id for case in self.before_case]}')
-
-            # 递归解析后置引用
-            self.parse_quote([case_id], 'after')
-            logger.info(f'后置引用用例：{[case.id for case in self.after_case]}')
-
-            # 当前用例含引用用例的执行顺序
-            current_case = self.after_case.pop(0)  # 前置的最后一个id为当前用例的id，后置的第一个id为当前用例id，去重复
-            case_list = self.before_case + self.after_case
-            logger.info(f'当前用例含引用用例的排列情况: {[case.id for case in case_list]}')
+            current_case = Case.get_first(id=case_id)
 
             # 选择运行环境
             if not self.task:
@@ -310,54 +278,37 @@ class RunCase(BaseParse):
                 'teststeps': []
             }
 
-            # 当前用例的所有公共变量
-            all_variables = {}
-            all_variables.update(self.before_case_variables)
-            all_variables.update(self.after_case_variables)
+            # 递归获取测试步骤（中间有可能某些测试步骤是引用的用例）
+            self.get_all_steps(case_id)
+            print(f'最后解析出的步骤为：{self.all_case_steps}')
 
-            # 根据执行顺序逐个解析用例
+            # 循环解析测试步骤
+            all_variables = {}  # 当前用例的所有公共变量
             extract_key_list = []  # 步骤中提取的key
-            for case in case_list:
+            for step in self.all_case_steps:
+                step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
+                project = self.get_formated_project(step.project_id)
+                case = self.get_formated_case(step.case_id)
+                api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
 
-                # 遍历解析用例对应的步骤list, 根据num排序
-                steps = Step.query.filter_by(case_id=case.id, is_run=True).order_by(Step.num.asc()).all()
-                for step in steps:
-                    step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
-                    project = self.get_formated_project(step.project_id)
-                    api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
-
-                    # 如果有step.data_driver，则说明是数据驱动
-                    if step.data_driver:
-                        """
-                        数据驱动格式
-                        [
-                            {
-                                "comment": "用例1描述",
-                                "data": "请求数据，支持参数化"
-                            },
-                            {
-                                "comment": "用例2描述",
-                                "data": "请求数据，支持参数化"
-                            }
-                        ]
-                        """
-                        method = api.get('request', {}).get('method', {})
-                        for driver_data in step.data_driver:
-                            # 数据驱动的 comment 字段，用于做标识
-                            step.name += driver_data.get('comment', '')
-                            # if method == 'GET':
-                            #     step.params = data
-                            # else:
-                            #     step.params = step.data_json = step.data_form = data
-                            step.params = step.params = step.data_json = step.data_form = driver_data.get('data', {})
-                            case_template['teststeps'].append(self.parse_step(project, case, api, step))
-                    else:
+                if step.data_driver:  # 如果有step.data_driver，则说明是数据驱动
+                    """
+                    数据驱动格式
+                    [
+                        {"comment": "用例1描述", "data": "请求数据，支持参数化"},
+                        {"comment": "用例2描述", "data": "请求数据，支持参数化"}
+                    ]
+                    """
+                    for driver_data in step.data_driver:
+                        # 数据驱动的 comment 字段，用于做标识
+                        step.name += driver_data.get('comment', '')
+                        step.params = step.params = step.data_json = step.data_form = driver_data.get('data', {})
                         case_template['teststeps'].append(self.parse_step(project, case, api, step))
+                else:
+                    case_template['teststeps'].append(self.parse_step(project, case, api, step))
 
-                    # 把服务的自定义变量留下来
-                    all_variables.update(project.variables)
-
-                # 在最后生成的请求数据中，在用例级别使用合并后的公共变量
+                # 把服务和用例的的自定义变量留下来
+                all_variables.update(project.variables)
                 all_variables.update(case.variables)
 
             # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
@@ -371,13 +322,8 @@ class RunCase(BaseParse):
             for i in range(current_case.run_times or 1):
                 self.DataTemplate['testcases'].append(case_template)
 
-            # 完整的解析完一条用例后，去除对应的引用信息
-            self.before_case = []
-            self.before_case_headers = {}
-            self.before_case_variables = {}
-            self.after_case = []
-            self.after_case_headers = {}
-            self.after_case_variables = {}
+            # 完整的解析完一条用例后，去除对应的解析信息
+            self.all_case_steps = []
 
         # 去除服务级的公共变量，保证用步骤上解析后的公共变量
         self.DataTemplate['project_mapping']['variables'] = {}
