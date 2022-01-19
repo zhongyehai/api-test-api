@@ -9,6 +9,12 @@ from .parser import extract_functions, parse_function
 text_extractor_regexp_compile = re.compile(r".*\(.*\).*")
 
 
+def is_extract_expression(expression):
+    """ 判断字符串是否为提取表达式 """
+    return text_extractor_regexp_compile.match(expression) or expression.startswith(
+        ("status_code", "encoding", "ok", "reason", "url", "headers", "elapsed", "cookies", "content", "text", "json"))
+
+
 class ResponseObject(object):
 
     def __init__(self, resp_obj):
@@ -243,8 +249,8 @@ class ResponseObject(object):
 
                 # 执行数据提取
                 extract_data = []
-                for extract_expression in extract_function_data.get('args', []):
-                    extract_data.append(self.extract_field(extract_expression))
+                for arg in extract_function_data.get('args', []):
+                    extract_data.append(self.extract_field(arg) if is_extract_expression(arg) else arg)
 
                 # 执行自定义函数
                 extract_function_data['args'] = extract_data

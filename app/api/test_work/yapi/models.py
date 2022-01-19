@@ -5,6 +5,7 @@
 # @Site : 
 # @File : models.py
 # @Software: PyCharm
+from sqlalchemy.dialects.mysql import LONGTEXT
 from app.baseModel import BaseModel, db
 
 
@@ -35,7 +36,7 @@ class YapiApiMsg(BaseModel):
     yapi_module = db.Column(db.Integer(), comment='当前接口在yapi平台对应的模块id')
     yapi_name = db.Column(db.String(255), comment='当前接口在yapi平台的名字')
     yapi_id = db.Column(db.Integer(), comment='当前接口在yapi平台对应的接口id')
-    yapi_data = db.Column(db.Text, comment='当前接口在yapi平台的数据')
+    yapi_data = db.Column(LONGTEXT, comment='当前接口在yapi平台的数据')
 
 
 class YapiDiffRecord(BaseModel):
