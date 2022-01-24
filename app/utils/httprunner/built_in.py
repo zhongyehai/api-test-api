@@ -54,19 +54,19 @@ def multipart_content_type(multipart_encoder):
 
 def _01equals(check_value, expect_value):
     """ 相等 """
-    assert check_value == expect_value, '断言未通过，断言方式为相等'
+    assert check_value == expect_value, '断言不通过，断言方式为相等'
 
 
 def _02not_equals(check_value, expect_value):
     """ 不相等 """
-    assert check_value != expect_value
+    assert check_value != expect_value, '断言不通过，断言方式为不相等'
 
 
 def _02json_equals(check_value, expect_value):
     """ json相等 """
     if isinstance(expect_value, str):
         expect_value = json.loads(expect_value)
-    assert check_value == expect_value
+    assert check_value == expect_value, '断言不通过，断言方式为json相等'
 
 
 def _03contract_equals(check_value, expect_value):
@@ -81,25 +81,25 @@ def _03contract_equals(check_value, expect_value):
 
 def _03contains(check_value, expect_value):
     """ 包含 """
-    assert isinstance(check_value, (list, tuple, dict, basestring)), '实际结果非list, tuple, dict, basestring'
+    assert isinstance(check_value, (list, tuple, dict, basestring)), '实际结果非list, tuple, dict, str, 不能进行包含相关断言'
     assert expect_value in check_value, '实际结果不包含预期结果'
 
 
 def _04not_contains(check_value, expect_value):
     """ 不包含 """
-    assert isinstance(check_value, (list, tuple, dict, basestring))
+    assert isinstance(check_value, (list, tuple, dict, basestring)), '实际结果非list, tuple, dict, str, 不能进行包含相关断言'
     assert expect_value not in check_value
 
 
 def _05included(check_value, expect_value):
     """ 被包含 """
-    assert isinstance(check_value, (list, tuple, dict, basestring))
+    assert isinstance(check_value, (list, tuple, dict, basestring)), '实际结果非list, tuple, dict, str, 不能进行包含相关断言'
     assert check_value in expect_value
 
 
 def _06not_included(check_value, expect_value):
     """ 不被包含 """
-    assert isinstance(check_value, (list, tuple, dict, basestring))
+    assert isinstance(check_value, (list, tuple, dict, basestring)), '实际结果非list, tuple, dict, str, 不能进行包含相关断言'
     assert check_value not in expect_value
 
 

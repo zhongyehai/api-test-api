@@ -89,7 +89,7 @@ class StepMethodView(BaseMethodView):
         form = GetStepForm()
         if form.validate():
             form.step.delete()
-            return restful.success(f'步骤 {form.step.name} 删除成功')
+            return restful.success(f'步骤【{form.step.name}】删除成功')
         return restful.error(form.get_error())
 
 

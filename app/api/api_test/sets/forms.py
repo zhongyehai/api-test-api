@@ -21,7 +21,7 @@ class GetCaseSetForm(BaseForm):
     def validate_id(self, field):
         set = Set.get_first(id=field.data)
         if not set:
-            raise ValidationError(f'id为 {field.data} 的模块不存在')
+            raise ValidationError(f'id为【{field.data}】的模块不存在')
         setattr(self, 'set', set)
 
 
@@ -38,7 +38,7 @@ class AddCaseSetForm(BaseForm):
         """ 服务id合法 """
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的服务不存在，请先创建')
+            raise ValidationError(f'id为【{field.data}】的服务不存在，请先创建')
         setattr(self, 'project', project)
 
     def validate_name(self, field):
@@ -47,7 +47,7 @@ class AddCaseSetForm(BaseForm):
                          level=self.level.data,
                          name=field.data,
                          parent=self.parent.data):
-            raise ValidationError(f'用例集名字 {field.data} 已存在')
+            raise ValidationError(f'用例集名字【{field.data}】已存在')
 
 
 class GetCaseSetEditForm(BaseForm):
@@ -85,14 +85,14 @@ class EditCaseSetForm(GetCaseSetEditForm, AddCaseSetForm):
         """ 用例集id已存在 """
         case_set = Set.get_first(id=field.data)
         if not case_set:
-            raise ValidationError(f'不存在id为 {field.data} 的用例集')
+            raise ValidationError(f'不存在id为【{field.data}】的用例集')
         setattr(self, 'case_set', case_set)
 
     def validate_name(self, field):
         """ 校验用例集名不重复 """
         old_set = Set.get_first(project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data)
         if old_set and old_set.id != self.id.data:
-            raise ValidationError(f'用例集名字 {field.data} 已存在')
+            raise ValidationError(f'用例集名字【{field.data}】已存在')
 
 
 class FindCaseSet(BaseForm):
@@ -105,5 +105,5 @@ class FindCaseSet(BaseForm):
     def validate_projectId(self, field):
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的服务不存在')
+            raise ValidationError(f'id为【{field.data}】的服务不存在')
         setattr(self, 'all_sets', project.sets)

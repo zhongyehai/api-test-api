@@ -107,7 +107,7 @@ class TaskView(BaseMethodView):
         if form.validate():
             form.num.data = Task.get_insert_num(project_id=form.project_id.data)
             new_task = Task().create(form.data, 'set_id', 'case_id')
-            return restful.success(f'定时任务 {form.name.data} 新建成功', new_task.to_dict())
+            return restful.success(f'定时任务【{form.name.data}】新建成功', new_task.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
@@ -115,14 +115,14 @@ class TaskView(BaseMethodView):
         if form.validate():
             form.num.data = Task.get_insert_num(project_id=form.project_id.data)
             form.task.update(form.data, 'set_id', 'case_id')
-            return restful.success(f'定时任务 {form.name.data} 修改成功', form.task.to_dict())
+            return restful.success(f'定时任务【{form.name.data}】修改成功', form.task.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
         form = DeleteTaskIdForm()
         if form.validate():
             form.task.delete()
-            return restful.success(f'任务 {form.task.name} 删除成功')
+            return restful.success(f'任务【{form.task.name}】删除成功')
         return restful.fail(form.get_error())
 
 
@@ -140,11 +140,11 @@ class TaskStatus(BaseMethodView):
                     json={'userId': current_user.id, 'taskId': task.id}
                 ).json()
                 if res["status"] == 200:
-                    return restful.success(f'定时任务 {form.task.name} 启用成功', data=res)
+                    return restful.success(f'定时任务【{form.task.name}】启用成功', data=res)
                 else:
-                    return restful.fail(f'定时任务 {form.task.name} 启用失败', data=res)
+                    return restful.fail(f'定时任务【{form.task.name}】启用失败', data=res)
             except Exception as error:
-                return restful.fail(f'定时任务 {form.task.name} 启用失败', data=error)
+                return restful.fail(f'定时任务【{form.task.name}】启用失败', data=error)
         return restful.fail(form.get_error())
 
     def delete(self):
@@ -152,18 +152,18 @@ class TaskStatus(BaseMethodView):
         form = HasTaskIdForm()
         if form.validate():
             if form.task.status != '启用中':
-                return restful.fail(f'任务 {form.task.name} 的状态不为启用中')
+                return restful.fail(f'任务【{form.task.name}】的状态不为启用中')
             try:
                 res = requests.delete(
                     url='http://localhost:8025/api/job/status',
                     json={'taskId': form.task.id}
                 ).json()
                 if res["status"] == 200:
-                    return restful.success(f'定时任务 {form.task.name} 禁用成功', data=res)
+                    return restful.success(f'定时任务【{form.task.name}】禁用成功', data=res)
                 else:
-                    return restful.fail(f'定时任务 {form.task.name} 禁用失败', data=res)
+                    return restful.fail(f'定时任务【{form.task.name}】禁用失败', data=res)
             except Exception as error:
-                return restful.fail(f'定时任务 {form.task.name} 禁用失败', data=error)
+                return restful.fail(f'定时任务【{form.task.name}】禁用失败', data=error)
         return restful.fail(form.get_error())
 
 

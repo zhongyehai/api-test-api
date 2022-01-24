@@ -45,7 +45,7 @@ class ProjectView(BaseMethodView):
         form = AddProjectForm()
         if form.validate():
             project = Project().create(form.data, 'hosts', 'variables', 'headers', 'func_files')
-            return restful.success(f'服务 {form.name.data} 新建成功', project.to_dict())
+            return restful.success(f'服务【{form.name.data}】新建成功', project.to_dict())
         return restful.fail(msg=form.get_error())
 
     def put(self):
@@ -53,7 +53,7 @@ class ProjectView(BaseMethodView):
         form = EditProjectForm()
         if form.validate():
             form.project.update(form.data, 'hosts', 'variables', 'headers', 'func_files')
-            return restful.success(f'服务 {form.name.data} 修改成功', form.project.to_dict())
+            return restful.success(f'服务【{form.name.data}】修改成功', form.project.to_dict())
         return restful.fail(msg=form.get_error())
 
     def delete(self):
@@ -61,7 +61,7 @@ class ProjectView(BaseMethodView):
         form = DeleteProjectForm()
         if form.validate():
             form.pro_data.delete()
-            return restful.success(msg=f'服务 {form.pro_data.name} 删除成功')
+            return restful.success(msg=f'服务【{form.pro_data.name}】删除成功')
         return restful.fail(form.get_error())
 
 

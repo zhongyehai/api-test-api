@@ -13,6 +13,7 @@ from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 
 from ..sets.models import Set
+from ..step.models import Step
 from ....utils.parse import extract_variables, convert
 from ....baseForm import BaseForm
 from ..task.models import Task
@@ -55,12 +56,12 @@ class AddCaseForm(BaseForm):
     def validate_set_id(self, field):
         """ 校验用例集存在 """
         if not Set.get_first(id=field.data):
-            raise ValidationError(f'id为 {field.data} 的用例集不存在')
+            raise ValidationError(f'id为【{field.data}】的用例集不存在')
 
     def validate_name(self, field):
         """ 用例名不重复 """
         if Case.get_first(name=field.data, set_id=self.set_id.data):
-            raise ValidationError(f'用例名 {field.data} 已存在')
+            raise ValidationError(f'用例名【{field.data}】已存在')
 
 
 class EditCaseForm(AddCaseForm):
@@ -71,14 +72,14 @@ class EditCaseForm(AddCaseForm):
         """ 校验用例id已存在 """
         old_data = Case.get_first(id=field.data)
         if not old_data:
-            raise ValidationError(f'id为 {field.data} 的用例不存在')
+            raise ValidationError(f'id为【{field.data}】的用例不存在')
         setattr(self, 'old_data', old_data)
 
     def validate_name(self, field):
         """ 同一用例集下用例名不重复 """
         old_data = Case.get_first(name=field.data, set_id=self.set_id.data)
         if old_data and old_data.id != self.id.data:
-            raise ValidationError(f'用例名 {field.data} 已存在')
+            raise ValidationError(f'用例名【{field.data}】已存在')
 
 
 class FindCaseForm(BaseForm):
@@ -110,7 +111,12 @@ class DeleteCaseForm(BaseForm):
         # 校验是否有定时任务已引用此用例
         for task in Task.query.filter(Task.case_id.like(f'%{field.data}%')).all():
             if field.data in json.loads(task.case_id):
-                raise ValidationError(f'定时任务 {task.name} 已引用此用例，请先解除引用')
+                raise ValidationError(f'定时任务【{task.name}】已引用此用例，请先解除引用')
+
+        # 校验是否有其他用例已引用此用例
+        step = Step.get_first(quote_case=field.data)
+        if step:
+            raise ValidationError(f'用例【{Case.get_first(id=step.case_id).name}】已引用此用例，请先解除引用')
 
         setattr(self, 'case', case)
 
@@ -122,7 +128,7 @@ class GetCaseForm(BaseForm):
     def validate_id(self, field):
         case = Case.get_first(id=field.data)
         if not case:
-            raise ValidationError(f'id为 {field.data} 的用例不存在')
+            raise ValidationError(f'id为【{field.data}】的用例不存在')
         setattr(self, 'case', case)
 
 
@@ -134,5 +140,5 @@ class RunCaseForm(BaseForm):
         """ 校验用例id存在 """
         case = Case.get_first(id=field.data)
         if not case:
-            raise ValidationError(f'id为 {field.data} 的用例不存在')
+            raise ValidationError(f'id为【{field.data}】的用例不存在')
         setattr(self, 'case', case)

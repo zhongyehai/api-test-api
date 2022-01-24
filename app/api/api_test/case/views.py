@@ -126,7 +126,7 @@ def copy_case():
     with db.auto_commit():
         new_case = Case()
         new_case.create(old_case.to_dict(), 'func_files', 'variables', 'headers')
-        new_case.name = old_case.name + '_01'
+        new_case.name = old_case.name + '_copy'
         new_case.num = Case.get_insert_num(set_id=old_case.set_id)
         db.session.add(new_case)
 
@@ -174,7 +174,7 @@ class CaseView(BaseMethodView):
                     for step in steps:
                         db.session.delete(step)
             db.session.delete(case)
-            return restful.success(f'用例 {case_name} 删除成功')
+            return restful.success(f'用例【{case_name}】删除成功')
         return restful.fail(form.get_error())
 
 

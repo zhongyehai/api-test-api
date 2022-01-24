@@ -125,21 +125,21 @@ class ApiMsgView(BaseMethodView):
         if form.validate():
             form.num.data = ApiMsg.get_insert_num(module_id=form.module_id.data)
             new_api = ApiMsg().create(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
-            return restful.success(f'接口 {form.name.data} 新建成功', data=new_api.to_dict())
+            return restful.success(f'接口【{form.name.data}】新建成功', data=new_api.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditApiForm()
         if form.validate():
             form.old.update(form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates')
-            return restful.success(f'接口 {form.name.data} 修改成功', form.old.to_dict())
+            return restful.success(f'接口【{form.name.data}】修改成功', form.old.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
         form = DeleteApiForm()
         if form.validate():
             form.api.delete()
-            return restful.success(f'接口 【{form.api.name}】 删除成功')
+            return restful.success(f'接口【{form.api.name}】删除成功')
         return restful.fail(form.get_error())
 
 

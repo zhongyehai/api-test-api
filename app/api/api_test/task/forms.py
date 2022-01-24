@@ -24,13 +24,13 @@ def validate_email(email_server, email_from, email_pwd, email_to):
 
     # 校验发件邮箱
     if email_from and not validators.email(email_from.strip()):
-        raise ValidationError(f'发件人邮箱 {email_from} 格式错误')
+        raise ValidationError(f'发件人邮箱【{email_from}】格式错误')
 
     # 校验收件邮箱
     for mail in email_to.split(';'):
         mail = mail.strip()
         if mail and not validators.email(mail):
-            raise ValidationError(f'收件人邮箱 {mail} 格式错误')
+            raise ValidationError(f'收件人邮箱【{mail}】格式错误')
 
 
 def validate_webhook(we_chat=None, ding_ding=None):
@@ -39,7 +39,7 @@ def validate_webhook(we_chat=None, ding_ding=None):
         raise ValidationError(f'选择了要通过机器人发送报告，则webhook地址必填')
 
     if (we_chat and not we_chat.startswith('https://')) or (ding_ding and not ding_ding.startswith('https://')):
-        raise ValidationError(f'webhook地址错误: {we_chat or ding_ding}')
+        raise ValidationError(f'webhook地址错误:【{we_chat or ding_ding}】')
 
 
 class AddTaskForm(BaseForm):
@@ -80,12 +80,12 @@ class AddTaskForm(BaseForm):
                 field.data += ' *'
             CronTab(field.data)
         except Exception as error:
-            raise ValidationError(f'时间配置 {field.data} 错误，需为cron格式, 请检查')
+            raise ValidationError(f'时间配置【{field.data}】错误，需为cron格式, 请检查')
 
     def validate_name(self, field):
         """ 校验任务名不重复 """
         if Task.get_first(project_id=self.project_id.data, name=field.data):
-            raise ValidationError(f'当前服务中，任务名 {field.data} 已存在')
+            raise ValidationError(f'当前服务中，任务名【{field.data}】已存在')
 
 
 class HasTaskIdForm(BaseForm):
@@ -96,7 +96,7 @@ class HasTaskIdForm(BaseForm):
         """ 校验id存在 """
         task = Task.get_first(id=field.data)
         if not task:
-            raise ValidationError(f'任务id {field.data} 不存在')
+            raise ValidationError(f'任务id【{field.data}】不存在')
         setattr(self, 'task', task)
 
 
@@ -111,16 +111,16 @@ class EditTaskForm(AddTaskForm, HasTaskIdForm):
         """ 校验id存在 """
         task = Task.get_first(id=field.data)
         if not task:
-            raise ValidationError(f'任务id {field.data} 不存在')
+            raise ValidationError(f'任务id【{field.data}】不存在')
         elif task.status != '禁用中':
-            return ValidationError(f'任务 {task.name.data} 的状态不为禁用中，请先禁用再修改')
+            return ValidationError(f'任务【{task.name.data}】的状态不为禁用中，请先禁用再修改')
         setattr(self, 'task', task)
 
     def validate_name(self, field):
         """ 校验任务名不重复 """
         old = Task.get_first(project_id=self.project_id.data, name=field.data)
         if old and old.id != self.id.data:
-            raise ValidationError(f'当前服务中，任务名 {field.data} 已存在')
+            raise ValidationError(f'当前服务中，任务名【{field.data}】已存在')
 
 
 class GetTaskListForm(BaseForm):
@@ -143,7 +143,7 @@ class FindTaskForm(BaseForm):
         if field.data:
             task_select = task_select.filter(Task.name.like('%{}%'.format(field.data)))
             if not task_select:
-                raise ValidationError(f'名为 {field.data} 的任务不存在')
+                raise ValidationError(f'名为【{field.data}】的任务不存在')
         setattr(self, 'task_filter', task_select)
 
 
@@ -154,9 +154,9 @@ class DeleteTaskIdForm(HasTaskIdForm):
         """ 校验id存在 """
         task = Task.get_first(id=field.data)
         if not task:
-            raise ValidationError(f'任务id 【{field.data}】 不存在')
+            raise ValidationError(f'任务id【{field.data}】不存在')
         if task.status != '禁用中':
-            raise ValidationError(f'请先禁用任务 【{task.name}】')
+            raise ValidationError(f'请先禁用任务【{task.name}】')
         if not self.is_can_delete(task.project_id, task):
-            raise ValidationError(f'不能删除别人的数据 【{task.name}】')
+            raise ValidationError(f'不能删除别人的数据【{task.name}】')
         setattr(self, 'task', task)

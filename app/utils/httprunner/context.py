@@ -159,6 +159,7 @@ class SessionContext(object):
             断言方式: {getattr(built_in, comparator).__doc__}\n
             预期结果: {expect_value}({type(expect_value).__name__})\n
             实际结果: {check_value}({type(check_value).__name__})\n
+            描述：{error}
             """
             # 断言结果: {error}  # 断言未通过，断言方式为相等
             validator_dict["check_result"] = "fail"

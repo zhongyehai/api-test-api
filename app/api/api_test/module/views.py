@@ -10,7 +10,6 @@ from flask import request
 
 from ....utils import restful
 from ....utils.required import login_required
-from ....utils.changSort import num_sort
 from ... import api
 from ....baseView import BaseMethodView
 from .models import Module
@@ -54,21 +53,21 @@ class ModuleView(BaseMethodView):
             form.num.data = Module.get_insert_num(project_id=form.project_id.data)
             new_model = Module().create(form.data)
             setattr(new_model, 'children', [])
-            return restful.success(f'名为 {form.name.data} 的模块创建成功', new_model.to_dict())
+            return restful.success(f'名为【{form.name.data}】的模块创建成功', new_model.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditModelForm()
         if form.validate():
             form.old_module.update(form.data)
-            return restful.success(f'模块 {form.name.data} 修改成功', form.old_module.to_dict())
+            return restful.success(f'模块【{form.name.data}】修改成功', form.old_module.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):
         form = DeleteModelForm()
         if form.validate():
             form.module.delete()
-            return restful.success(f'名为 {form.module.name} 的模块删除成功')
+            return restful.success(f'名为【{form.module.name}】的模块删除成功')
         return restful.fail(form.get_error())
 
 

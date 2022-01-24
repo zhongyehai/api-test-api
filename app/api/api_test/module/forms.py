@@ -27,7 +27,7 @@ class AddModelForm(BaseForm):
         """ 服务id合法 """
         project = Project.get_first(id=field.data)
         if not project:
-            raise ValidationError(f'id为 {field.data} 的服务不存在，请先创建')
+            raise ValidationError(f'id为【{field.data}】的服务不存在，请先创建')
         setattr(self, 'project', project)
 
     def validate_name(self, field):
@@ -36,7 +36,7 @@ class AddModelForm(BaseForm):
             project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data
         )
         if old_module:
-            raise ValidationError(f'当前服务中已存在名为 {field.data} 的模块')
+            raise ValidationError(f'当前服务中已存在名为【{field.data}】的模块')
 
 
 class FindModelForm(BaseForm):
@@ -54,7 +54,7 @@ class GetModelForm(BaseForm):
     def validate_id(self, field):
         module = Module.get_first(id=field.data)
         if not module:
-            raise ValidationError(f'id为 {field.data} 的模块不存在')
+            raise ValidationError(f'id为【{field.data}的模块不存在')
         setattr(self, 'module', module)
 
 
@@ -65,7 +65,7 @@ class ModuleIdForm(BaseForm):
     def validate_id(self, field):
         module = Module.get_first(id=field.data)
         if not module:
-            raise ValidationError(f'id为 {field.data} 的模块不存在')
+            raise ValidationError(f'id为【{field.data}】的模块不存在')
         setattr(self, 'module', module)
 
 
@@ -75,7 +75,7 @@ class DeleteModelForm(ModuleIdForm):
     def validate_id(self, field):
         module = Module.get_first(id=field.data)
         if not module:
-            raise ValidationError(f'id为 {field.data} 的模块不存在')
+            raise ValidationError(f'id为【{field.data}】的模块不存在')
         if not self.is_can_delete(module.project_id, module):
             raise ValidationError('不能删除别人服务下的模块')
         if module.apis:
@@ -93,7 +93,7 @@ class EditModelForm(ModuleIdForm, AddModelForm):
         """ 模块必须存在 """
         old_module = Module.get_first(id=field.data)
         if not old_module:
-            raise ValidationError(f'id为 {field.data} 的模块不存在')
+            raise ValidationError(f'id为【{field.data}】的模块不存在')
         setattr(self, 'old_module', old_module)
 
     def validate_name(self, field):
@@ -102,7 +102,7 @@ class EditModelForm(ModuleIdForm, AddModelForm):
             project_id=self.project_id.data, level=self.level.data, name=field.data, parent=self.parent.data
         )
         if old_module and old_module.id != self.id.data:
-            raise ValidationError(f'id为 {self.project_id.data} 的服务下已存在名为 {field.data} 的模块')
+            raise ValidationError(f'id为【{self.project_id.data}】的服务下已存在名为【{field.data}】的模块')
 
 
 class StickModuleForm(BaseForm):

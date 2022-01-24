@@ -14,7 +14,6 @@ from ..case.models import Case
 from ..report.models import Report
 from ....utils import restful
 from ....utils.required import login_required
-from ....utils.changSort import num_sort
 from ....utils.runHttpRunner import RunCase
 from ... import api
 from ....baseView import BaseMethodView
@@ -80,14 +79,14 @@ class CaseSetView(BaseMethodView):
         if form.validate():
             form.num.data = Set.get_insert_num(project_id=form.project_id.data)
             new_set = Set().create(form.data)
-            return restful.success(f'名为 {form.name.data} 的用例集创建成功', new_set.to_dict())
+            return restful.success(f'名为【{form.name.data}】的用例集创建成功', new_set.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditCaseSetForm()
         if form.validate():
             form.case_set.update(form.data)
-            return restful.success(f'用例集 {form.name.data} 修改成功', form.case_set.to_dict())
+            return restful.success(f'用例集【{form.name.data}】修改成功', form.case_set.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

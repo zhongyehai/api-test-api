@@ -5,8 +5,6 @@
 # @Site :
 # @File : forms.py
 # @Software: PyCharm
-import re
-
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 from flask_login import current_user
