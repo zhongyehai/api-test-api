@@ -23,8 +23,7 @@ class SessionContext(object):
         self.validation_results = []
 
     def init_test_variables(self, variables_mapping=None):
-        """ init test variables, called when each test(api) starts.
-            variables_mapping will be evaluated first.
+        """ 初始化测试变量，在每个测试（api）开始时调用。变量映射将首先进行评估。
 
         Args:
             variables_mapping (dict)
@@ -51,12 +50,11 @@ class SessionContext(object):
     def update_test_variables(self, variable_name, variable_value):
         """ update test variables, these variables are only valid in the current test.
         """
-        self.test_variables_mapping[variable_name] = variable_value
+        self.test_variables_mapping.setdefault(variable_name, variable_value)
+        # self.test_variables_mapping[variable_name] = variable_value
 
     def update_session_variables(self, variables_mapping):
-        """ update session with extracted variables mapping.
-            these variables are valid in the whole running session.
-        """
+        """ 使用提取的变量映射更新会话。这些变量在整个运行会话中有效。"""
         variables_mapping = utils.ensure_mapping_format(variables_mapping)
         self.session_variables_mapping.update(variables_mapping)
         self.test_variables_mapping.update(self.session_variables_mapping)

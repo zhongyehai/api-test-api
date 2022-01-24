@@ -312,9 +312,9 @@ class RunCase(BaseParse):
                 all_variables.update(case.variables)
 
             # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
-            for extract_key in extract_key_list:
-                if extract_key in all_variables:
-                    del all_variables[extract_key]
+            # for extract_key in extract_key_list:
+            #     if extract_key in all_variables:
+            #         del all_variables[extract_key]
 
             case_template['config']['variables'].update(all_variables)  # = all_variables
 
