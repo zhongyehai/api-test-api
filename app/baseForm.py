@@ -7,10 +7,12 @@
 # @Software: PyCharm
 from flask import request
 from flask_login import current_user
-from wtforms import Form, IntegerField
+from wtforms import Form, ValidationError
 
+from .api.api_test.func.models import Func
 from .utils.jsonUtil import JsonUtil
 from .api.api_test.project.models import Project
+from .utils.parse import extract_functions, parse_function, extract_variables
 
 
 class BaseForm(Form, JsonUtil):
@@ -48,3 +50,28 @@ class BaseForm(Form, JsonUtil):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 getattr(self, key).data = value
+
+    def validate_func(self, func_container: dict, func_files: list, content: str):
+        if not func_container:
+            func_container = Func.get_func_by_func_file_name(func_files)
+
+        # 使用了自定义函数，但是没有引用函数文件的情况
+        functions = extract_functions(content)
+        if functions and not func_container:
+            raise ValidationError(f'要使用自定义函数则需引用对应的函数文件')
+
+        # 使用了自定义函数，但是引用的函数文件中没有当前函数的情况
+        for function in functions:
+            func_name = parse_function(function)['func_name']
+            if func_name not in func_container:
+                raise ValidationError(f'引用的自定义函数【{func_name}】在引用的函数文件中均未找到')
+
+    def validate_variable(self, variables_container: dict, variables: list, content: str):
+        """ 引用的变量需存在 """
+        if not variables_container:
+            variables_container = {
+                variable.get('key'): variable.get('value') for variable in variables if variable.get('key')
+            }
+        for variable in extract_variables(content):
+            if variable not in variables_container:
+                raise ValidationError(f'引用的变量【{variable}】不存在')

@@ -14,6 +14,7 @@ from datetime import datetime
 from flask.json import JSONEncoder
 
 from .httprunner.api import HttpRunner
+from ..api.api_test.sets.models import Set
 from ..utils.log import logger
 from app.baseModel import db
 from ..api.api_test.apiMsg.models import ApiMsg
@@ -23,7 +24,7 @@ from app.api.api_test.func.models import Func
 from ..api.api_test.project.models import Project
 from ..api.api_test.report.models import Report
 
-from app.utils.globalVariable import REPORT_ADDRESS, FUNC_ADDRESS
+from app.utils.globalVariable import REPORT_ADDRESS
 from app.utils.parse import encode_object
 from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, StepFormatModel
 
@@ -44,7 +45,7 @@ class BaseParse:
         self.parsed_case_dict = {}
         self.parsed_api_dict = {}
 
-        Func.create_func_file(FUNC_ADDRESS)  # 创建所有函数文件
+        Func.create_func_file()  # 创建所有函数文件
         self.func_file_list = Func.get_all()
 
         self.new_report_id = None
@@ -209,7 +210,7 @@ class RunCase(BaseParse):
         self.all_case_steps = []
         self.parse_all_case()
 
-    def parse_step(self, project, case, api, step):
+    def parse_step(self, current_project, project, case, api, step):
         """ 解析测试步骤
         project: 解析后的project
         case: 解析后的case
@@ -219,6 +220,7 @@ class RunCase(BaseParse):
         """
         # 解析头部信息，继承
         headers = {}
+        headers.update(current_project.headers)
         headers.update(project.headers)
         # headers.update(api['request']['headers'])
         headers.update(case.headers)
@@ -234,7 +236,8 @@ class RunCase(BaseParse):
             'times': step.run_times,  # 运行次数
             'extract': step.extracts,  # 接口要提取的信息
             'validate': step.validates,  # 接口断言信息
-            'base_url': getattr(project, self.environment),
+            # 'base_url': getattr(project, self.environment),
+            'base_url': api['base_url'],
             'request': {
                 'method': api['request']['method'],
                 'url': api['request']['url'],
@@ -263,6 +266,7 @@ class RunCase(BaseParse):
         for case_id in self.case_id_list:
 
             current_case = Case.get_first(id=case_id)
+            current_project = self.get_formated_project(Set.get_first(id=current_case.set_id).project_id)
 
             # 选择运行环境
             if not self.task:
@@ -286,10 +290,16 @@ class RunCase(BaseParse):
             all_variables = {}  # 当前用例的所有公共变量
             extract_key_list = []  # 步骤中提取的key
             for step in self.all_case_steps:
+                # step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
+                # project = self.get_formated_project(step.project_id)
+                # case = self.get_formated_case(step.case_id)
+                # api_temp = ApiMsg.get_first(id=step.api_id)
+                # api = self.get_formated_api(self.get_formated_project(api_temp.project_id), api_temp)
                 step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
-                project = self.get_formated_project(step.project_id)
                 case = self.get_formated_case(step.case_id)
-                api = self.get_formated_api(project, ApiMsg.get_first(id=step.api_id))
+                api_temp = ApiMsg.get_first(id=step.api_id)
+                project = self.get_formated_project(api_temp.project_id)
+                api = self.get_formated_api(project, api_temp)
 
                 if step.data_driver:  # 如果有step.data_driver，则说明是数据驱动
                     """
@@ -303,13 +313,14 @@ class RunCase(BaseParse):
                         # 数据驱动的 comment 字段，用于做标识
                         step.name += driver_data.get('comment', '')
                         step.params = step.params = step.data_json = step.data_form = driver_data.get('data', {})
-                        case_template['teststeps'].append(self.parse_step(project, case, api, step))
+                        case_template['teststeps'].append(self.parse_step(current_project, project, case, api, step))
                 else:
-                    case_template['teststeps'].append(self.parse_step(project, case, api, step))
+                    case_template['teststeps'].append(self.parse_step(current_project, project, case, api, step))
 
                 # 把服务和用例的的自定义变量留下来
                 all_variables.update(project.variables)
                 all_variables.update(case.variables)
+            all_variables.update(current_project.variables)  # 保留当前服务的公共变量
 
             # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
             # for extract_key in extract_key_list:

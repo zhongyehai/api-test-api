@@ -5,13 +5,19 @@
 # @Site :
 # @File : forms.py
 # @Software: PyCharm
+import importlib
+import json
+import types
+
 import validators
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, Length, DataRequired
 
+from ..func.models import Func
 from ....baseForm import BaseForm
 from .models import Project
 from ...user.models import User
+from ....utils.parse import extract_functions, parse_function
 
 
 class AddProjectForm(BaseForm):
@@ -26,11 +32,23 @@ class AddProjectForm(BaseForm):
     headers = StringField()
     func_files = StringField()
     swagger = StringField()
+    all_func_name = {}
+    all_variables = {}
 
     def validate_name(self, field):
         """ 校验服务名不重复 """
         if Project.get_first(name=field.data):
             raise ValidationError(f'服务名【{field.data}】已存在')
+
+    def validate_headers(self, field):
+        """ 校验头部信息是否有引用自定义函数 """
+        self.validate_func(self.all_func_name, self.func_files.data, self.dumps(field.data))  # 自定义函数
+        self.validate_variable(self.all_variables, self.variables.data, self.dumps(field.data))  # 公共变量
+
+    def validate_variables(self, field):
+        """ 校验公共变量 """
+        self.validate_func(self.all_func_name, self.func_files.data, self.dumps(field.data))  # 自定义函数
+        self.validate_variable(self.all_variables, field.data, self.dumps(field.data))  # 公共变量
 
     def validate_manager(self, field):
         """ 校验服务负责人是否存在 """

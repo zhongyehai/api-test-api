@@ -5,16 +5,14 @@
 # @Site :
 # @File : forms.py
 # @Software: PyCharm
-
 import json
-import re
 
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 
+from ..project.models import Project
 from ..sets.models import Set
 from ..step.models import Step
-from ....utils.parse import extract_variables, convert
 from ....baseForm import BaseForm
 from ..task.models import Task
 from .models import Case
@@ -33,25 +31,45 @@ class AddCaseForm(BaseForm):
     steps = StringField()
     num = StringField()
 
-    # TODO 校验头部参数，与变量校验方式一致
+    all_func_name = {}
+    all_variables = {}
+    project = None
 
     def validate_variables(self, field):
         """ 公共变量参数的校验
         1.校验是否存在引用了自定义函数但是没有引用自定义函数文件的情况
         2.校验是否存在引用了自定义变量，但是自定义变量未声明的情况
         """
+        if not self.project:
+            self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
 
-        # # 获取待验证的是否有引用的变量
-        # variable_list = extract_variables(convert(field.data))
+        # 自定义函数
+        func_files = self.loads(self.project.func_files)
+        func_files.extend(self.func_files.data)
+        self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
 
-        # 校验是否存在有使用了自定义函数但是没有引用自定义函数文件的情况
-        if re.search('\${(.*?)}', '{}{}'.format(field.data, json.dumps(self.steps.data)),
-                     flags=0) and not self.func_files.data:
-            raise ValidationError('参数引用函数后，必须引用函数文件')
+        # 公共变量
+        variables = self.loads(self.project.variables)
+        variables.extend(field.data)
+        self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 
-        # # 引用了服务公共变量，但是服务公共变量中没有变量
-        # if variable_list:
-        #     raise ValidationError('参数引用${}在业务变量和服务公用变量均没找到'.format(',$'.join(variable_list)))
+    def validate_headers(self, field):
+        """ 头部参数的校验
+        1.校验是否存在引用了自定义函数但是没有引用自定义函数文件的情况
+        2.校验是否存在引用了自定义变量，但是自定义变量未声明的情况
+        """
+        if not self.project:
+            self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
+
+        # 自定义函数
+        func_files = self.loads(self.project.func_files)
+        func_files.extend(self.func_files.data)
+        self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
+
+        # 公共变量
+        variables = self.loads(self.project.variables)
+        variables.extend(self.variables.data)
+        self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 
     def validate_set_id(self, field):
         """ 校验用例集存在 """
