@@ -5,7 +5,6 @@
 # @Site : 
 # @File : forms.py
 # @Software: PyCharm
-
 import re
 
 from wtforms import StringField, IntegerField

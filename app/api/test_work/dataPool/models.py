@@ -5,7 +5,7 @@
 # @Site : 
 # @File : models.py
 # @Software: PyCharm
-from ....baseModel import BaseModel, db
+from app.baseModel import BaseModel, db
 
 
 class AutoTestPolyFactoring(BaseModel):
@@ -50,3 +50,4 @@ class AutoTestUser(BaseModel):
     mobile = db.Column(db.String(11), nullable=True, default='', comment='手机号')
     password = db.Column(db.String(128), nullable=True, default='', comment='密码')
     u_token = db.Column(db.String(128), nullable=True, default='', comment='token')
+    role = db.Column(db.String(128), nullable=True, default='', comment='角色,平台方admin；核心企业core；供应商supplier；资金方capital')

@@ -104,7 +104,7 @@ def parse_json(api_msg, yapi_api):
     if yapi_api.get('req_body_type', '') in ['json', 'raw']:
         if yapi_api.get('res_body', {}):
             json_data = {}
-            res_body = json.loads(yapi_api.get('req_body_other', '{}'))
+            res_body = json.loads(yapi_api.get('req_body_other') or '{}')
             for key, items in res_body.get('properties', {}).items():
                 json_data.setdefault(key, f'描述：{items.get("description")}, 类型：{items.get("type")}')
             default.update(json_data)

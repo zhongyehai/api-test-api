@@ -5,7 +5,6 @@
 # @Site :
 # @File : models.py
 # @Software: PyCharm
-
 from flask_login import current_user
 
 from ....baseModel import BaseModel, db
@@ -47,6 +46,8 @@ class Project(BaseModel):
         filters = []
         if form.name.data:
             filters.append(Project.name.like(f'%{form.name.data}%'))
+        if form.projectId.data:
+            filters.append(Project.id == form.projectId.data)
         if form.manager.data:
             filters.append(Project.manager == form.manager.data)
         if form.create_user.data:

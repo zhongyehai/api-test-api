@@ -6,7 +6,6 @@
 # @File : views.py
 # @Software: PyCharm
 from flask import request
-from flask_login import current_user
 
 from ...utils import restful
 from ...utils.required import login_required
