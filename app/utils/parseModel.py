@@ -54,20 +54,18 @@ class Base(JsonUtil):
         return {param['key']: param['value'].replace('%', '&') for param in params_list if
                 param.get('key') and param.get('value') is not None}
 
-    def parse_extracts(self, extracts_list, extract_key_list):
+    def parse_extracts(self, extracts_list):
         """ 解析要提取的参数
         extracts_list:
             [{"key": "project_id", "value": "content.data.id", "remark": "服务id"}]
         return:
             [{"project_id": "content.data.id"}]
         """
-        # return [{extract['key']: extract['value']} for extract in extracts_list if extract.get('key')]
-        extracts = []
-        for extract in extracts_list:
-            if extract.get('key') and extract.get('value') is not None:
-                extract_key_list.append(extract.get('key'))
-                extracts.append({extract['key']: extract['value']})
-        return extracts
+        return [
+            {
+                extract['key']: extract['value']
+            } for extract in extracts_list if extract.get('key') and extract.get('value')
+        ]
 
     def parse_validates(self, validates_list):
         """ 解析断言
@@ -140,7 +138,7 @@ class ApiFormatModel(Base):
         self.data_json = kwargs.get('data_json') if self.data_type == 'JSON' else {}
         self.data_form = self.parse_form_data(kwargs.get('data_form')) if self.data_type == 'DATA' else {}
         self.data_xml = kwargs.get('data_xml', '')
-        self.extracts = self.parse_extracts(kwargs.get('extracts', {}), extract_key_list=kwargs.get('extract_list', []))
+        self.extracts = self.parse_extracts(kwargs.get('extracts', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.module_id = kwargs.get('module_id')
         self.project_id = kwargs.get('project_id')
@@ -181,7 +179,7 @@ class StepFormatModel(Base):
         self.data_json = kwargs.get('data_json', {})
         self.data_form = self.parse_form_data(kwargs.get('data_form', {}))
         self.data_xml = kwargs.get('data_xml', '')
-        self.extracts = self.parse_extracts(kwargs.get('extracts', {}), kwargs.get('extract_list', []))
+        self.extracts = self.parse_extracts(kwargs.get('extracts', []))
         self.validates = self.parse_validates(kwargs.get('validates', {}))
         self.data_driver = kwargs.get('data_driver', {})
         self.quote_case = kwargs.get('quote_case', {})

@@ -5,19 +5,13 @@
 # @Site :
 # @File : forms.py
 # @Software: PyCharm
-import importlib
-import json
-import types
-
 import validators
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, Length, DataRequired
 
-from ..func.models import Func
 from ....baseForm import BaseForm
 from .models import Project
 from ...user.models import User
-from ....utils.parse import extract_functions, parse_function
 
 
 class AddProjectForm(BaseForm):
@@ -60,12 +54,33 @@ class AddProjectForm(BaseForm):
         if field.data and validators.url(field.data) is not True:
             raise ValidationError(f'swagger地址【{field.data}】不正确')
 
+    def validate_dev(self, field):
+        """ 校验dev地址是否正确 """
+        if field.data and validators.url(field.data) is not True:
+            raise ValidationError(f'开发环境地址【{field.data}】不正确')
+
+    def validate_test(self, field):
+        """ 校验test地址是否正确 """
+        if field.data and validators.url(field.data) is not True:
+            raise ValidationError(f'测试环境地址【{field.data}】不正确')
+
+    def validate_uat(self, field):
+        """ 校验uat地址是否正确 """
+        if field.data and validators.url(field.data) is not True:
+            raise ValidationError(f'uat环境地址【{field.data}】不正确')
+
+    def validate_production(self, field):
+        """ 校验production地址是否正确 """
+        if field.data and validators.url(field.data) is not True:
+            raise ValidationError(f'生产环境地址【{field.data}】不正确')
+
 
 class FindProjectForm(BaseForm):
     """ 查找服务form """
     name = StringField()
-    manager = IntegerField()
-    create_user = IntegerField()
+    manager = StringField()
+    create_user = StringField()
+    projectId = StringField()
     pageNum = IntegerField()
     pageSize = IntegerField()
 

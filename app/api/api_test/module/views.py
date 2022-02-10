@@ -5,7 +5,6 @@
 # @Site :
 # @File : views.py
 # @Software: PyCharm
-
 from flask import request
 
 from ....utils import restful

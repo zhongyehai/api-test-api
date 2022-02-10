@@ -13,7 +13,6 @@ from ....utils.report.report import render_html_report
 from ....utils import restful
 from ....utils.required import login_required
 from ... import api
-from ....baseView import BaseMethodView
 from ....baseModel import db
 from .models import Report
 from .forms import GetReportForm, DownloadReportForm, DeleteReportForm, FindReportForm

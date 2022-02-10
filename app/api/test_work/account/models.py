@@ -27,6 +27,8 @@ class AccountModel(BaseModel):
             filters.append(AccountModel.name.like(f'%{filter.get("name")}%'))
         if filter.get("event"):
             filters.append(AccountModel.event == filter.get("event"))
+        if filter.get("project"):
+            filters.append(AccountModel.project == filter.get("project"))
         return cls.pagination(
             page_num=filter.get("page_num"),
             page_size=filter.get("page_size"),

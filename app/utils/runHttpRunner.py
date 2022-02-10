@@ -288,14 +288,13 @@ class RunCase(BaseParse):
 
             # 循环解析测试步骤
             all_variables = {}  # 当前用例的所有公共变量
-            extract_key_list = []  # 步骤中提取的key
             for step in self.all_case_steps:
                 # step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
                 # project = self.get_formated_project(step.project_id)
                 # case = self.get_formated_case(step.case_id)
                 # api_temp = ApiMsg.get_first(id=step.api_id)
                 # api = self.get_formated_api(self.get_formated_project(api_temp.project_id), api_temp)
-                step = StepFormatModel(**step.to_dict(), extract_list=extract_key_list)
+                step = StepFormatModel(**step.to_dict())
                 case = self.get_formated_case(step.case_id)
                 api_temp = ApiMsg.get_first(id=step.api_id)
                 project = self.get_formated_project(api_temp.project_id)
@@ -321,11 +320,6 @@ class RunCase(BaseParse):
                 all_variables.update(project.variables)
                 all_variables.update(case.variables)
             all_variables.update(current_project.variables)  # 保留当前服务的公共变量
-
-            # 如果要提取的变量key在公共变量中已存在，则从公共变量中去除
-            # for extract_key in extract_key_list:
-            #     if extract_key in all_variables:
-            #         del all_variables[extract_key]
 
             case_template['config']['variables'].update(all_variables)  # = all_variables
 

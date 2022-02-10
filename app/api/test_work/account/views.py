@@ -6,13 +6,20 @@
 # @File : views.py
 # @Software: PyCharm
 from flask import request
-from flask_login import current_user
 
 from app.api import api
-from .models import AccountModel, db
+from .models import AccountModel
 from app.utils import restful
 from app.baseView import BaseMethodView
 from app.utils.required import login_required
+
+
+@api.route('/account/project/list')
+@login_required
+def get_account_project_list():
+    """ 获取账号项目列表 """
+    project_list = AccountModel.query.with_entities(AccountModel.project).distinct().all()
+    return restful.success('获取成功', data=[{'key': project[0], 'value': project[0]} for project in project_list])
 
 
 @api.route('/account/list')
@@ -23,6 +30,7 @@ def get_account_list():
         'page_num': request.args.get('pageNum'),
         'page_size': request.args.get('pageSize'),
         'event': request.args.get('event'),
+        'project': request.args.get('project'),
         'name': request.args.get('name')
     }))
 
