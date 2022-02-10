@@ -12,20 +12,6 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 from app.baseModel import db
-from app.api.api_test.project.models import Project
-from app.api.api_test.module.models import Module
-from app.api.api_test.apiMsg.models import ApiMsg
-from app.api.api_test.sets.models import Set
-from app.api.api_test.case.models import Case
-from app.api.api_test.step.models import Step
-from app.api.api_test.task.models import Task, ApschedulerJobs
-from app.api.api_test.report.models import Report
-from app.api.api_test.func.models import Func
-from app.api.test_work.account.models import AccountModel
-from app.api.test_work.kym.models import KYMModule
-from app.api.test_work.yapi.models import YapiProject, YapiModule, YapiApiMsg, YapiDiffRecord
-from app.api.test_work.frontDiff.models import FrontDiffRecord
-from app.api.tools.dataPool.models import AutoTestPolyFactoring
 from app.api.user.models import User, Permission, Role
 from app.api.config.models import Config, ConfigType
 from main import app
