@@ -10,8 +10,7 @@ import importlib
 import json
 import re
 import types
-from app.utils.httprunner.parser import variable_regexp, function_regexp, function_regexp_compile
-
+from app.utils.regexp import variable_regexp, function_regexp, function_regexp_compile
 
 # variable_regexp = r"\$([\w_]+)"
 # function_regexp = r"\$\{([\w_]+\([\$\w\.\-_ =,]*\))\}"

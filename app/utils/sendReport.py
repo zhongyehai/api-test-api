@@ -125,5 +125,27 @@ def send_diff_api_message(content, addr):
         print(f'向钉钉机器人发送测试报告失败，错误信息：\n{error}')
 
 
+def send_run_time_error_message(content, addr):
+    """ 执行自定义函数时发生了异常的报告 """
+    msg = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": content.get("title"),
+            "text": content.get("detail")
+        }
+    }
+    try:
+        print(f'发送错误通知：{requests.post(addr, json=msg, verify=False).json()}')
+    except Exception as error:
+        print(f'向钉钉机器人发送错误通知失败，错误信息：\n{error}')
+
+
+def async_send_run_time_error_message(**kwargs):
+    """ 多线程发送错误信息 """
+    print('开始多线程发送错误信息')
+    Thread(target=send_run_time_error_message, kwargs=kwargs).start()
+    print('多线程发送错误信息完毕')
+
+
 if __name__ == '__main__':
     pass

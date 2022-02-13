@@ -20,6 +20,7 @@ from app.api.api_test.step import views
 from app.api.api_test.task import views
 from app.api.api_test.report import views
 from app.api.api_test.func import views
+from app.api.api_test.errorRecord import views
 from app.api.test_work.account import views
 from app.api.test_work.dataBase import views
 from app.api.test_work.kym import views
@@ -29,7 +30,7 @@ from .test_work.dataPool import views
 from app.api.tools import makeUser
 from app.api.tools import examination
 from app.api.tools import mockData
-from app.api.tools import fileView
+from .test_work.file import views
 from app.api.home import views
 from app.api.config import views
 
