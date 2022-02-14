@@ -2,13 +2,16 @@
 
 import ast
 import re
+import traceback
+from datetime import datetime
 
 from . import exceptions, utils
 from .compat import basestring, builtin_str, numeric_types, str
 
-variable_regexp = r"\$([\w_]+)"
-function_regexp = r"\$\{([\w_]+\([\$\w\.\-/_ =,]*\))\}"  # 自定义函数
-function_regexp_compile = re.compile(r"^([\w_]+)\(([\$\w\.\-/_ =,]*)\)$")
+from app.api.api_test.errorRecord.models import ErrorRecord
+from app.utils.sendReport import async_send_run_time_error_message
+from app.utils.regexp import variable_regexp, function_regexp, function_regexp_compile
+from ...api.config.models import Config
 
 
 def parse_string_value(str_value):
@@ -400,7 +403,26 @@ def parse_string_functions(content, variables_mapping, functions_mapping):
             eval_value = utils.get_os_environ(args[0])
         else:
             func = get_mapping_function(func_name, functions_mapping)
-            eval_value = func(*args, **kwargs)
+            # eval_value = func(*args, **kwargs)
+            # 执行自定义函数，有可能会报错
+            try:
+                eval_value = func(*args, **kwargs)
+            except Exception as error:
+                # 记录错误信息
+                ErrorRecord().create({
+                    'name': '执行自定义函数错误',
+                    'detail': f'执行自定义函数【{func_name}】报错了 \n  args参数: {args} \n  kwargs参数: {kwargs} \n\n  '
+                              f'错误信息: \n{traceback.format_exc()}'
+                })
+
+                # 发送自定义函数执行错误的信息
+                async_send_run_time_error_message(content={
+                    "title": "执行自定义函数错误",
+                    "detail": f'### {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} \n> '
+                              f'### 执行自定义函数【{func_name}】报错了 \n  args参数: {args} \n  kwargs参数: {kwargs} \n  '
+                              f'### 错误信息: {traceback.format_exc()} \n> '
+                }, addr=Config.get_first(name='run_time_error_message_send_addr').value)
+                raise
 
         func_content = "${" + func_content + "}"
         if func_content == content:

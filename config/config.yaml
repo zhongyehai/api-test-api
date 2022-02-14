@@ -19,9 +19,10 @@ page:
 # 企业群消息机器人地址，用于接收报告
 webhook: ''
 
-# 测试报告前端地址
-report_addr: 'http://xx.xx.xx.xx/#/apiTest/reportShow?id='
-diff_addr: 'http://xx.xx.xx.xx/#/testManage/diffRecord'
+# 即时通讯消息里面映射的前端地址
+report_addr: 'http://xx.xx.xx.xx/#/apiTest/reportShow?id='  # 展示测试报告页面的前端地址
+diff_addr: 'http://xx.xx.xx.xx/#/testManage/diffRecordShow?id='  # 展示监控报告页面的前端地址
+error_addr: 'http://xx.xx.xx.xx/#/apiTest/errorRecord'  # 展示自定义函数错误记录的前端地址
 
 # 即时达推送 的 系统错误通道
 error_push:

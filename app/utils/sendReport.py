@@ -90,7 +90,7 @@ def async_send_report(**kwargs):
     print('多线程发送测试报告完毕')
 
 
-def send_diff_api_message(content, addr):
+def send_diff_api_message(content, report_id, addr):
     """ 发送接口对比报告 """
     msg = {
         "msgtype": "markdown",
@@ -116,13 +116,35 @@ def send_diff_api_message(content, addr):
                     f'##### 删除接口:<font color=#E74C3C> {content["api"]["remove"]} </font>个 \n> '
                     f'##### 乱码:<font color=#E74C3C> {content["api"]["errorCode"]} </font>个 \n> '
                     f'##### \n> '
-                    f'#### 请登录[测试平台]({conf["diff_addr"]})查看详情，并确认是否更新\n'
+                    f'#### 请登录[测试平台]({conf["diff_addr"]}{str(report_id)})查看详情，并确认是否更新\n'
         }
     }
     try:
         print(f'测试结果通过钉钉机器人发送：{requests.post(addr, json=msg, verify=False).json()}')
     except Exception as error:
         print(f'向钉钉机器人发送测试报告失败，错误信息：\n{error}')
+
+
+def send_run_time_error_message(content, addr):
+    """ 执行自定义函数时发生了异常的报告 """
+    msg = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": content.get("title"),
+            "text": content.get("detail") + f'#### 详情请登录[测试平台]({conf["error_addr"]})查看\n'
+        }
+    }
+    try:
+        print(f'发送错误通知：{requests.post(addr, json=msg, verify=False).json()}')
+    except Exception as error:
+        print(f'向钉钉机器人发送错误通知失败，错误信息：\n{error}')
+
+
+def async_send_run_time_error_message(**kwargs):
+    """ 多线程发送错误信息 """
+    print('开始多线程发送错误信息')
+    Thread(target=send_run_time_error_message, kwargs=kwargs).start()
+    print('多线程发送错误信息完毕')
 
 
 if __name__ == '__main__':

@@ -777,7 +777,9 @@ def diff_by_yapi():
     # 有改动则发送报告
     if diff_is_changed:
         send_diff_api_message(
-            diff_summary, request.json.get('addr') or Config.get_first(name='default_diff_message_send_addr').value
+            content=diff_summary,
+            report_id=yapi_diff_record.id,
+            addr=request.json.get('addr') or Config.get_first(name='default_diff_message_send_addr').value
         )
     return restful.success('对比完成', data=yapi_diff_record.to_dict())
 
@@ -821,16 +823,26 @@ def get_diff_record_project():
     return restful.success('获取成功', data=[{'key': project[0], 'value': project[0]} for project in project_list])
 
 
-class DiffRecordView(BaseMethodView):
-    """ 接口对比结果 """
+@api.route('/diffRecord/show')
+def show_diff_record():
+    """ 展示对比结果详情 """
+    data_id = request.args.get("id")
+    if not data_id:
+        return restful.fail('比对id必传')
+    with open(os.path.join(DIFF_RESULT, f'{data_id}.json'), 'r', encoding='utf-8') as fp:
+        data = json.load(fp)
+    return restful.success('获取成功', data=data)
 
-    def get(self):
-        data_id = request.args.get("id")
-        if not data_id:
-            return restful.fail('比对id必传')
-        with open(os.path.join(DIFF_RESULT, f'{data_id}.json'), 'r', encoding='utf-8') as fp:
-            data = json.load(fp)
-        return restful.success('获取成功', data=data)
-
-
-api.add_url_rule('/diffRecord', view_func=DiffRecordView.as_view('diffRecord'))
+# class DiffRecordView(BaseMethodView):
+#     """ 接口对比结果 """
+#
+#     def get(self):
+#         data_id = request.args.get("id")
+#         if not data_id:
+#             return restful.fail('比对id必传')
+#         with open(os.path.join(DIFF_RESULT, f'{data_id}.json'), 'r', encoding='utf-8') as fp:
+#             data = json.load(fp)
+#         return restful.success('获取成功', data=data)
+#
+#
+# api.add_url_rule('/diffRecord', view_func=DiffRecordView.as_view('diffRecord'))

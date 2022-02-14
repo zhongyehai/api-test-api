@@ -11,11 +11,11 @@ import time
 from flask import request, send_from_directory
 
 from config.config import conf
-from .. import api
-from ...utils import restful
-from ...utils.globalVariable import CASE_FILE_ADDRESS, CALL_BACK_ADDRESS, CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
-from ...baseView import BaseMethodView
-from ...utils.required import login_required
+from app.api import api
+from app.utils import restful
+from app.utils.globalVariable import CASE_FILE_ADDRESS, CALL_BACK_ADDRESS, CFCA_FILE_ADDRESS, TEMP_FILE_ADDRESS
+from app.baseView import BaseMethodView
+from app.utils.required import login_required
 
 folders = {
     'case': CASE_FILE_ADDRESS,
