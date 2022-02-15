@@ -27,9 +27,7 @@ class Base(JsonUtil):
         :return
             {"x-auth-token": "aaa"}
         """
-        return {
-            header['key']: header['value'].replace('%', '&') for header in headers_list if header.get('key')
-        }
+        return {header['key']: header['value'] for header in headers_list if header.get('key')}
 
     def parse_variables(self, variables_list):
         """ 解析公用变量
@@ -41,8 +39,7 @@ class Base(JsonUtil):
         :return
             {"auto_test_token": "eyJhbGciOiJIUzI1NiJ9", "rating_amount": "500000"}
         """
-        return {variable['key']: variable['value'] for variable in variables_list if
-                variable.get('key') and variable.get('value') is not None}
+        return {v['key']: v['value'] for v in variables_list if v.get('key') and v.get('value') is not None}
 
     def parse_params(self, params_list):
         """ 解析查询字符串参数
@@ -51,8 +48,7 @@ class Base(JsonUtil):
         :return
             {"name": "aaa"}
         """
-        return {param['key']: param['value'].replace('%', '&') for param in params_list if
-                param.get('key') and param.get('value') is not None}
+        return {p['key']: p['value'] for p in params_list if p.get('key') and p.get('value') is not None}
 
     def parse_extracts(self, extracts_list):
         """ 解析要提取的参数
@@ -61,11 +57,7 @@ class Base(JsonUtil):
         return:
             [{"project_id": "content.data.id"}]
         """
-        return [
-            {
-                extract['key']: extract['value']
-            } for extract in extracts_list if extract.get('key') and extract.get('value')
-        ]
+        return [{e['key']: e['value']} for e in extracts_list if e.get('key') and e.get('value')]
 
     def parse_validates(self, validates_list):
         """ 解析断言
