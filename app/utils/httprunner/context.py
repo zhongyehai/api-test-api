@@ -149,7 +149,7 @@ class SessionContext(object):
             try:
                 if isinstance(expect_value, str):
                     expect_value = json.loads(expect_value)
-            except Exception as error:
+            except Exception as json_loads_error:
                 pass
 
             error_msg = f"""

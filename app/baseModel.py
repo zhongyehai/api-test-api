@@ -92,29 +92,30 @@ class BaseModel(db.Model, JsonUtil):
     def create(self, attrs_dict: dict, *args):
         """ 插入数据，若指定了字段，则把该字段的值转为json """
         with db.auto_commit():
+            for key, value in attrs_dict.items():
+                if hasattr(self, key) and key != 'id':
+                    setattr(self, key, self.dumps(value) if key in args else value)
+
             # 如果是执行初始化脚本，获取不到current_user，try一下
             try:
                 setattr(self, 'create_user', current_user.id)
                 setattr(self, 'update_user', current_user.id)
             except Exception as error:
                 pass
-            for key, value in attrs_dict.items():
-                if hasattr(self, key) and key != 'id':
-                    setattr(self, key, self.dumps(value) if key in args else value)
             db.session.add(self)
         return self
 
     def update(self, attrs_dict: dict, *args):
         """ 修改数据，若指定了字段，则把该字段的值转为json """
         # 如果是执行初始化脚本，获取不到current_user，try一下
-        try:
-            setattr(self, 'update_user', current_user.id)
-        except Exception as error:
-            pass
         with db.auto_commit():
             for key, value in attrs_dict.items():
                 if hasattr(self, key) and key not in ['id', 'num']:
                     setattr(self, key, self.dumps(value) if key in args else value)
+            try:
+                setattr(self, 'update_user', current_user.id)
+            except Exception as error:
+                pass
 
     def insert_or_update(self, attrs_dict: dict, *args, **kwargs):
         """ 创建或更新 """

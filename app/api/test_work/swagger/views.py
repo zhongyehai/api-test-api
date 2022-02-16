@@ -193,7 +193,7 @@ def swagger_pull():
                 format_data = {
                     'project_id': project.id,
                     'module_id': module.id,
-                    'name': api_detail['summary'],
+                    'name': api_detail.get('summary', '接口未命名'),
                     'method': api_method.upper(),
                     'addr': api_addr,
                     'data_type': 'json'

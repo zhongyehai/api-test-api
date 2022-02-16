@@ -97,17 +97,33 @@ def parse_data_type(api_msg, yapi_api):
 
 
 def parse_json(api_msg, yapi_api):
-    """ 处理json参数 """
-    if api_msg.data_json and json.loads(api_msg.data_json):
-        return
+    """ 处理json参数, 继承已有的json参数 """
     default = {}
+
+    if api_msg.data_json and json.loads(api_msg.data_json):
+        default = json.loads(api_msg.data_json)
+
     if yapi_api.get('req_body_type', '') in ['json', 'raw']:
-        if yapi_api.get('res_body', {}):
-            json_data = {}
-            res_body = json.loads(yapi_api.get('req_body_other') or '{}')
-            for key, items in res_body.get('properties', {}).items():
-                json_data.setdefault(key, f'描述：{items.get("description")}, 类型：{items.get("type")}')
-            default.update(json_data)
+        req_body_other = yapi_api.get('req_body_other', '{}')
+        if req_body_other:
+            body_obj = json.loads(req_body_other)
+            if body_obj.get('type') == 'object':  # 请求体为json
+                json_data = {}
+                for key, items in body_obj.get('properties', {}).items():
+                    json_data.setdefault(key, f'描述：{items.get("description")}, 类型：{items.get("type")}')
+                json_data.update(default)
+                api_msg.data_json = json.dumps(json_data, ensure_ascii=False, indent=4)
+                return
+
+            elif body_obj.get('type') == 'array':  # 请求体为数组
+                json_data = {}
+                for key, items in body_obj.get('items', {}).get('properties', {}).items():
+                    json_data.setdefault(key, f'描述：{items.get("description")}, 类型：{items.get("type")}')
+                if isinstance(default, list):
+                    json_data.update(default[0])
+                api_msg.data_json = json.dumps([json_data], ensure_ascii=False, indent=4)
+                return
+
     api_msg.data_json = json.dumps(default, ensure_ascii=False, indent=4)
 
 
