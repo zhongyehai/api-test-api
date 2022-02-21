@@ -5,9 +5,6 @@
 # @Site : 
 # @File : forms.py
 # @Software: PyCharm
-import ast
-import re
-
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired, Length
 
@@ -40,18 +37,12 @@ class GetStepForm(BaseForm):
         setattr(self, 'step', step)
 
 
-can = '可用属性：' \
-      'http状态码=>status_code、' \
-      'http响应耗时(秒)=>elapsed.total_seconds、' \
-      'url=>url、' \
-      'cookie=>cookies、' \
-      '头部信息=>headers、' \
-      '响应体=>content、text、json  ' \
-      '或者正确的正则表达式'
-
-
 class AddStepForm(BaseForm):
     """ 添加步骤校验 """
+    project_id = IntegerField()
+    case_id = IntegerField(validators=[DataRequired('用例id必传')])
+    api_id = IntegerField()
+    quote_case = IntegerField()
 
     name = StringField(validators=[DataRequired('步骤名称不能为空'), Length(1, 255, message='步骤名长度为1~255位')])
     up_func = StringField()
@@ -67,66 +58,21 @@ class AddStepForm(BaseForm):
     validates = StringField()
     data_driver = StringField()
     num = StringField()
-    quote_case = IntegerField()
-
-    project_id = IntegerField()
-    case_id = IntegerField(validators=[DataRequired('用例id必传')])
-    api_id = IntegerField()
-
-    def validate_extracts(self, field):
-        """ 校验数据提取信息 """
-        if not self.quote_case.data:
-            for extract_index, extract in enumerate(field.data):
-                key, value = extract.get('key'), extract.get('value')
-
-                # 变量名和表达式需同时存在
-                if (key and not value) or (not key and value):
-                    raise ValidationError(f'数据提取第【{extract_index + 1}】行错误，变量名和表达式需同时存在')
-
-                if value:
-                    if not value.startswith(
-                            ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url')) and \
-                            not re.compile(r".*\(.*\).*").match(value):
-                        raise ValidationError(f'数据提取第【{extract_index + 1}】行表达式【{value}】错误，【{can}】')
-
-    def validate_validates(self, field):
-        """ 校验断言信息 """
-        if not self.quote_case.data:
-            for validate_index, validate in enumerate(field.data):
-                key, validate_type, value = validate.get('key'), validate.get('validate_type'), validate.get('value')
-
-                # 变量名和表达式需同时存在
-                if (key and not value) or (not key and value):
-                    raise ValidationError(f'断言第【{validate_index + 1}】行错误，预期结果和实际结果表达式需同时存在')
-
-                # 实际结果
-                if key:
-                    if not key.startswith(
-                            ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', '$')) and \
-                            not re.compile(r".*\(.*\).*").match(key):
-                        raise ValidationError(f'断言第【{validate_index + 1}】行表达式【{key}】错误，【{can}】')
-
-                # 断言类型
-                if key and not validate_type:
-                    raise ValidationError(f'断言第【{validate_index + 1}】行错误，请选择断言类型')
-
-                # 预期结果
-                if value:
-                    try:
-                        ast.literal_eval(value)
-                    except Exception as error:
-                        raise ValidationError(f'断言第【{validate_index + 1}】行, 预期结果【{value}】错误，请明确数据类型')
 
     def validate_project_id(self, field):
         """ 校验服务id """
         if not self.quote_case.data:
-            if not Project.get_first(id=field.data):
+            project = Project.get_first(id=field.data)
+            if not project:
                 raise ValidationError(f'id为【{field.data}】的服务不存在')
+            setattr(self, 'project', project)
 
     def validate_case_id(self, field):
         """ 校验用例存在 """
-        if not Case.get_first(id=field.data):
+        case = Case.get_first(id=field.data)
+        if not case:
             raise ValidationError(f'id为【{field.data}】的用例不存在')
+        setattr(self, 'case', case)
 
     def validate_api_id(self, field):
         """ 校验接口存在 """
@@ -138,6 +84,18 @@ class AddStepForm(BaseForm):
         """ 不能自己引用自己 """
         if field.data and field.data == self.case_id:
             raise ValidationError(f'不能自己引用自己')
+
+    def validate_extracts(self, field):
+        """ 校验数据提取信息 """
+        if not self.quote_case.data:
+            self.validate_base_extracts(field.data)
+
+    def validate_validates(self, field):
+        """ 校验断言信息 """
+        if not self.quote_case.data:
+            project_func_files = self.loads(self.project.func_files)
+            project_func_files.extend(self.loads(self.case.func_files))
+            self.validate_base_validates(field.data, {}, project_func_files)
 
 
 class EditStepForm(AddStepForm):

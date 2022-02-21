@@ -5,8 +5,6 @@
 # @Site : 
 # @File : forms.py
 # @Software: PyCharm
-import re
-
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, Length, DataRequired
 
@@ -20,6 +18,9 @@ from ..project.models import Project
 
 class AddApiForm(BaseForm):
     """ 添加接口信息的校验 """
+    project_id = StringField(validators=[DataRequired('服务id必传')])
+    module_id = StringField(validators=[DataRequired('模块id必传')])
+
     name = StringField(validators=[DataRequired('接口名必传'), Length(1, 255, '接口名长度为1~255位')])
     desc = StringField()
     up_func = StringField()  # 前置条件
@@ -37,13 +38,12 @@ class AddApiForm(BaseForm):
     validates = StringField()
     num = StringField()
 
-    project_id = StringField(validators=[DataRequired('服务id必传')])
-    module_id = StringField(validators=[DataRequired('模块id必传')])
-
     def validate_project_id(self, field):
         """ 校验服务id """
-        if not Project.get_first(id=field.data):
+        project = Project.get_first(id=field.data)
+        if not project:
             raise ValidationError(f'id为【{field.data}】的服务不存在')
+        setattr(self, 'project', project)
 
     def validate_module_id(self, field):
         """ 校验模块id """
@@ -62,48 +62,12 @@ class AddApiForm(BaseForm):
 
     def validate_extracts(self, field):
         """ 校验提取数据表达式 """
-        can = '可用属性：' \
-              'http状态码=>status_code、' \
-              'http响应耗时=>elapsed、' \
-              'url=>url、' \
-              'cookie=>cookies、' \
-              '头部信息=>headers、' \
-              '响应体=>content、text、json  ' \
-              '或者正确的正则表达式'
-        for index, extract in enumerate(field.data):
-            key, value = extract.get('key'), extract.get('value')
-            # 变量名和表达式需同时存在
-            if (key and not value) or (not key and value):
-                raise ValidationError(f'数据提取，第【{index + 1}】行错误，变量名和表达式需同时存在')
-            if value:
-                if not value.startswith(
-                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url')) and \
-                        not re.compile(r".*\(.*\).*").match(value):
-                    raise ValidationError(f'数据提取，第【{index + 1}】行表达式【{value}】错误，【{can}】')
+        self.validate_base_extracts(field.data)
 
     def validate_validates(self, field):
         """ 校验断言表达式 """
-        can = '可用属性：http状态码=>status_code、url=>url、cookie=>cookies、头部信息=>headers、响应体=>content、text、json  或者正确的正则表达式'
-        for index, validate in enumerate(field.data):
-            key, validate_type, value = validate.get('key'), validate.get('validate_type'), validate.get('value')
-            # 变量名和表达式需同时存在
-            if (key and not value) or (not key and value):
-                raise ValidationError(f'断言，第【{index + 1}】行错误，预期结果和实际结果表达式需同时存在')
-            # 实际结果
-            if key:
-                if not key.startswith(
-                        ('elapsed', 'status_code', 'cookies', 'headers', 'content', 'text', 'json', 'url', '$')) and \
-                        not re.compile(r".*\(.*\).*").match(key):
-                    raise ValidationError(f'断言，第【{index + 1}】行表达式【{key}】错误，【{can}】')
-            # 断言类型
-            if key and not validate_type:
-                raise ValidationError(f'断言，第【{index + 1}】行错误，请选择断言类型')
-            # 预期结果
-            if value:
-                try:
-                    eval(value)
-                except Exception as error:
-                    raise ValidationError(f'断言，第【{index + 1}】行, 预期结果【{value}】错误，请明确类型')
+        func_container, func_files = {}, self.loads(self.project.func_files)
+        self.validate_base_validates(field.data, func_container, func_files, )
 
 
 class EditApiForm(AddApiForm):

@@ -5,19 +5,18 @@
 # @Site :
 # @File : parseModel.py
 # @Software: PyCharm
-import ast
 import os
 
 from .globalVariable import CASE_FILE_ADDRESS, CONTENT_TYPE
 from .jsonUtil import JsonUtil
 from config.config import assert_mapping
+from .parse import extract_functions, parse_function, extract_variables
 
 
 class Base(JsonUtil):
 
     def build_file_path(self, filename):
         """ 拼装要上传文件的路径 """
-        # print(f'文件路径：{os.path.join(CASE_FILE_ADDRESS, filename)}')
         return os.path.join(CASE_FILE_ADDRESS, filename)
 
     def parse_headers(self, headers_list):
@@ -57,7 +56,11 @@ class Base(JsonUtil):
         return:
             [{"project_id": "content.data.id"}]
         """
-        return [{e['key']: e['value']} for e in extracts_list if e.get('key') and e.get('value')]
+        return [
+            {
+                extract['key']: self.build_extract_expression(extract.get('data_source'), extract['value'])
+            } for extract in extracts_list if extract.get('key')
+        ]
 
     def parse_validates(self, validates_list):
         """ 解析断言
@@ -66,11 +69,75 @@ class Base(JsonUtil):
         return:
             [{"equals": ["1", "content.message"]}]
         """
-        return [
-            {
-                assert_mapping[validate['validate_type']]: [validate['key'], ast.literal_eval(validate['value'])]
-            } for validate in validates_list if validate.get('key') and validate.get('value') is not None
-        ]
+        parsed_validate = []
+        for validate in validates_list:
+            data_source, key = validate.get('data_source'), validate.get('key')
+            validate_type = validate.get('validate_type')
+            data_type, value = validate.get('data_type'), validate.get('value')
+            if data_source and data_type:
+                parsed_validate.append({
+                    assert_mapping[validate_type]: [
+                        self.build_actual_result(data_source, key),  # 实际结果
+                        self.build_expect_result(data_type, value)  # 预期结果
+                    ]
+                })
+        return parsed_validate
+
+    def build_expect_result(self, data_type, value):
+        """ 生成预期结果 """
+        if data_type in ["variable", "func"]:
+            return value
+        elif data_type == 'json':
+            return self.dumps(self.loads(value))
+        else:  # python数据类型
+            return eval(f'{data_type}({value})')
+
+    def build_actual_result(self, data_source, key):
+        """ 生成实际结果表达式 """
+        if data_source == 'regexp':  # 正则表达式
+            return key
+        elif not key:  # 整个指定的响应对象
+            return data_source
+        else:
+            return f'{data_source}.{key}'
+
+    def build_extract_expression(self, data_source, key):
+        """ 生成数据提取表达式 """
+
+        # 自定义函数
+        ext_func = extract_functions(key)
+        if ext_func:  # 自定义函数
+            return self.build_func_expression(ext_func, data_source)
+        elif data_source == 'regexp':  # 正则表达式
+            return key
+        elif not key:  # 整个指定的响应对象
+            return data_source
+        else:  # 自定义函数
+            return f'{data_source}.{key}'
+
+    def build_func_expression(self, ext_func, data_source):
+        """ 解析自定义函数的提取表达式，并生成新的表达式 """
+        func = parse_function(ext_func[0])
+        func_name, args, kwargs = func['func_name'], func['args'], func['kwargs']
+
+        args_and_kwargs = []
+        # 处理args参数
+        for arg in args:
+            # 如果是自定义变量则不改变, 如果不是，则把数据源加上
+            if extract_variables(arg).__len__() >= 1:
+                args_and_kwargs.append(arg)
+            else:
+                args_and_kwargs.append(f'{data_source}.{arg}')
+
+        # 处理kwargs参数
+        for kw_key, kw_value in kwargs.items():
+            # 如果是自定义变量则不改变, 如果不是，则把数据源加上
+            if extract_variables(kw_value).__len__() >= 1:
+                args_and_kwargs.append(f'{kw_key}={kw_value}')
+            else:
+                args_and_kwargs.append(f'{kw_key}={data_source}.{kw_value}')
+
+        return '${' + f'{func_name}({",".join(args_and_kwargs)})' + '}'
 
     def parse_form_data(self, form_data_list):
         """ 解析form参数 """

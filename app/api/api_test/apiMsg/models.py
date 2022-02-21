@@ -28,10 +28,15 @@ class ApiMsg(BaseModel):
                           comment='form-data参数')
     data_json = db.Column(db.Text(), default='{}', comment='json参数')
     data_xml = db.Column(db.Text(), default='', comment='xml参数')
-    extracts = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='提取信息')
-    validates = db.Column(db.Text(),
-                          default='[{"key": null, "remark": null, "validate_type": null, "value": null}]',
-                          comment='断言信息')
+    extracts = db.Column(
+        db.Text(),
+        default='[{"key": null, "data_source": null, "value": null, "remark": null}]',
+        comment='提取信息'
+    )
+    validates = db.Column(
+        db.Text(),
+        default='[{"data_source": null, "key": null, "validate_type": null, "data_type": null, "value": null, "remark": null}]',
+        comment='断言信息')
 
     module_id = db.Column(db.Integer(), db.ForeignKey('module.id'), comment='所属的接口模块id')
     project_id = db.Column(db.Integer(), nullable=True, comment='所属的服务id')

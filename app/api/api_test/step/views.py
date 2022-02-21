@@ -71,7 +71,7 @@ class StepMethodView(BaseMethodView):
             form.num.data = Step.get_insert_num(case_id=form.case_id.data)
             step = Step().create(
                 form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver')
-            return restful.success('步骤新建成功', data=step.to_dict())
+            return restful.success(f'步骤【{step.name}】新建成功', data=step.to_dict())
         return restful.error(form.get_error())
 
     def put(self):
@@ -81,7 +81,7 @@ class StepMethodView(BaseMethodView):
             form.step.update(
                 form.data, 'headers', 'params', 'data_form', 'data_json', 'extracts', 'validates', 'data_driver'
             )
-            return restful.success(msg='修改成功', data=form.step.to_dict())
+            return restful.success(msg=f'步骤【{form.step.name}】修改成功', data=form.step.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

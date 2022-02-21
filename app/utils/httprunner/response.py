@@ -248,12 +248,16 @@ class ResponseObject(object):
                 extract_function_data = parse_function(functions[0])
 
                 # 执行数据提取
-                extract_data = []
+                extract_arg_data = []  # arg
                 for arg in extract_function_data.get('args', []):
-                    extract_data.append(self.extract_field(arg) if is_extract_expression(arg) else arg)
+                    extract_arg_data.append(self.extract_field(arg) if is_extract_expression(arg) else arg)
+
+                extract_kwarg_data = {}  # kwarg
+                for key, value in extract_function_data.get('kwargs', {}).items():
+                    extract_kwarg_data[key] = self.extract_field(value) if is_extract_expression(value) else value
 
                 # 执行自定义函数
-                extract_function_data['args'] = extract_data
+                extract_function_data['args'], extract_function_data['kwargs'] = extract_arg_data, extract_kwarg_data
                 result = session_context.FUNCTIONS_MAPPING[extract_function_data['func_name']](
                     *extract_function_data['args'],
                     **extract_function_data['kwargs']

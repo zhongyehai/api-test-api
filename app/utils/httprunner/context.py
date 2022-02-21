@@ -134,8 +134,8 @@ class SessionContext(object):
         check_value = validator_dict["check_value"]
         expect_value = validator_dict["expect"]
 
-        if (check_value is None or expect_value is None) and comparator not in ["is", "eq", "equals", "=="]:
-            raise exceptions.ParamsError("Null value can only be compared with comparator: eq/equals/==")
+        # if (check_value is None or expect_value is None) and comparator not in ["is", "eq", "equals", "=="]:
+        #     raise exceptions.ParamsError("Null value can only be compared with comparator: eq/equals/==")
         try:
             validator_dict["check_result"] = "pass"
             validate_func(check_value, expect_value)

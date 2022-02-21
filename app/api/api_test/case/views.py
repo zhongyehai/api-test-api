@@ -153,14 +153,14 @@ class CaseView(BaseMethodView):
         if form.validate():
             form.num.data = Case.get_insert_num(set_id=form.set_id.data)
             new_case = Case().create(form.data, 'func_files', 'variables', 'headers')
-            return restful.success('用例新建成功', data=new_case.to_dict())
+            return restful.success(f'用例【{new_case.name}】新建成功', data=new_case.to_dict())
         return restful.fail(form.get_error())
 
     def put(self):
         form = EditCaseForm()
         if form.validate():
             form.old_data.update(form.data, 'func_files', 'variables', 'headers')
-            return restful.success(msg='修改成功', data=form.old_data.to_dict())
+            return restful.success(msg=f'用例【{form.old_data.name}】修改成功', data=form.old_data.to_dict())
         return restful.fail(form.get_error())
 
     def delete(self):

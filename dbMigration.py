@@ -124,6 +124,26 @@ kym_keword = [
     }
 ]
 
+# 响应数据源
+response_data_source_mapping = [
+    {"label": "响应体", "value": "content"},
+    {"label": "响应头部信息", "value": "headers"},
+    {"label": "响应cookies", "value": "cookies"},
+    {"label": "正则表达式（从响应体提取）", "value": "regexp"}
+]
+
+# python数据类型
+data_type_mapping = [
+    {"label": "普通字符串", "value": "str"},
+    {"label": "json字符串", "value": "json"},
+    {"label": "整数", "value": "int"},
+    {"label": "小数", "value": "float"},
+    {"label": "列表", "value": "list"},
+    {"label": "字典", "value": "dict"},
+    {"label": "自定义函数", "value": "func"},
+    {"label": "自定义变量", "value": "variable"},
+]
+
 
 @manager.command
 def init_role():
@@ -187,6 +207,10 @@ def init_config():
         {'name': 'http_methods', 'value': 'GET,POST,PUT,DELETE', 'type': '系统配置', 'desc': 'http请求方式，以英文的 "," 隔开'},
         {'name': 'make_user_info_mapping', 'value': json.dumps(make_user_info_mapping, ensure_ascii=False),
          'type': '系统配置', 'desc': '生成用户信息的可选项，映射faker的模块（不了解faker模块勿改）'},
+        {'name': 'response_data_source_mapping', 'value': json.dumps(response_data_source_mapping, ensure_ascii=False),
+         'type': '系统配置', 'desc': '响应对象数据源映射'},
+        {'name': 'data_type_mapping', 'value': json.dumps(data_type_mapping, ensure_ascii=False),
+         'type': '系统配置', 'desc': 'python数据类型映射'},
         {'name': 'yapi_host', 'value': '', 'type': '系统配置', 'desc': 'yapi域名'},
         {'name': 'yapi_account', 'value': '', 'type': '系统配置', 'desc': 'yapi账号'},
         {'name': 'yapi_password', 'value': '', 'type': '系统配置', 'desc': 'yapi密码'},

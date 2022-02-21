@@ -25,10 +25,15 @@ class Step(BaseModel):
                           comment='form-data参数')
     data_json = db.Column(db.Text(), default='{}', comment='json参数')
     data_xml = db.Column(db.Text(), default='', comment='xml参数')
-    extracts = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='提取信息')
-    validates = db.Column(db.Text(),
-                          default='[{"key": null, "remark": null, "validate_type": null, "value": null}]',
-                          comment='断言信息')
+    extracts = db.Column(
+        db.Text(),
+        default='[{"key": null, "data_source": null, "value": null, "remark": null}]',
+        comment='提取信息'
+    )
+    validates = db.Column(
+        db.Text(),
+        default='[{"data_source": null, "key": null, "validate_type": null, "data_type": null, "value": null, "remark": null}]',
+        comment='断言信息')
     data_driver = db.Column(db.Text(), default='[]', comment='数据驱动，若此字段有值，则走数据驱动的解析')
     quote_case = db.Column(db.String(5), default='', comment='引用用例的id')
 
