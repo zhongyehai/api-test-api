@@ -85,7 +85,7 @@ class Base(JsonUtil):
 
     def build_expect_result(self, data_type, value):
         """ 生成预期结果 """
-        if data_type in ["variable", "func"]:
+        if data_type in ["variable", "func", 'str']:
             return value
         elif data_type == 'json':
             return self.dumps(self.loads(value))

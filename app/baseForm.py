@@ -105,7 +105,10 @@ class BaseForm(Form, JsonUtil):
 
                 if not value:  # 要进行断言，则预期结果必须有值
                     raise ValidationError(f'{row}预期结果需填写')
-                if data_type == "variable":  # 预期结果为自定义变量，能解析出变量即可
+
+                if data_type == "str":  # 普通字符串，无需解析，填的是什么就用什么
+                    pass
+                elif data_type == "variable":  # 预期结果为自定义变量，能解析出变量即可
                     if extract_variables(value).__len__() < 1:
                         raise ValidationError(f'{row}引用的变量表达式【{value}】错误')
                 elif data_type == "func":  # 预期结果为自定义函数，校验校验预期结果表达式、实际结果表达式

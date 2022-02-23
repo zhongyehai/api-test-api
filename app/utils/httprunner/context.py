@@ -133,9 +133,8 @@ class SessionContext(object):
         check_item = validator_dict["check"]
         check_value = validator_dict["check_value"]
         expect_value = validator_dict["expect"]
+        check_value_type, expect_value_type = type(check_value).__name__, type(expect_value).__name__
 
-        # if (check_value is None or expect_value is None) and comparator not in ["is", "eq", "equals", "=="]:
-        #     raise exceptions.ParamsError("Null value can only be compared with comparator: eq/equals/==")
         try:
             validator_dict["check_result"] = "pass"
             validate_func(check_value, expect_value)
@@ -155,8 +154,8 @@ class SessionContext(object):
             error_msg = f"""
             断言不通过\n
             断言方式: {getattr(built_in, comparator).__doc__}\n
-            预期结果: {expect_value}({type(expect_value).__name__})\n
-            实际结果: {check_value}({type(check_value).__name__})\n
+            预期结果: {expect_value}({expect_value_type})\n
+            实际结果: {check_value}({check_value_type})\n
             描述：{error}
             """
             # 断言结果: {error}  # 断言未通过，断言方式为相等
