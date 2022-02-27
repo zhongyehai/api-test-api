@@ -319,8 +319,12 @@ class RunCase(BaseParse):
                 # 把服务和用例的的自定义变量留下来
                 all_variables.update(project.variables)
                 all_variables.update(case.variables)
-            all_variables.update(current_project.variables)  # 保留当前服务的公共变量
 
+            # 更新当前服务+当前用例的自定义变量，最后以当前用例设置的自定义变量为准
+            # current_project_variables = current_project.variables
+            # current_project_variables.update(all_variables)
+            all_variables.update(current_project.variables)
+            all_variables.update(self.get_formated_case(current_case.id).variables)
             case_template['config']['variables'].update(all_variables)  # = all_variables
 
             # 设置的用例执行多少次就加入多少次

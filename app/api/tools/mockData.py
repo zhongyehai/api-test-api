@@ -144,3 +144,15 @@ def call_back():
         "status": 200,
         "message": "请求成功",
         "data": name})
+
+
+@api.route('/mock', methods=['GET', 'POST'])
+def mock_api():
+    """ mock_api， 收到什么就返回什么 """
+    params, json_data, form_data = request.args.to_dict(), request.get_json(silent=True), request.form.to_dict()
+    return jsonify({
+        "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
+        "status": 200,
+        "message": "请求成功",
+        "data": json_data or form_data or params
+    })

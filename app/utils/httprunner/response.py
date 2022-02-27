@@ -4,7 +4,8 @@ import re
 
 from . import exceptions, logger, utils
 from .compat import OrderedDict, basestring, is_py2
-from .parser import extract_functions, parse_function
+from .parser import extract_functions, parse_function, get_mapping_variable
+from ..parse import extract_variables
 
 text_extractor_regexp_compile = re.compile(r".*\(.*\).*")
 
@@ -238,6 +239,7 @@ class ResponseObject(object):
 
         logger.log_debug("开始从响应信息中提取数据")
         extracted_variables_mapping = OrderedDict()
+        session_context_variables_mapping = session_context.test_variables_mapping
         extract_binds_order_dict = utils.ensure_mapping_format(extractors)
         # 提取数据
         for extract_key, expression in extract_binds_order_dict.items():
@@ -250,11 +252,21 @@ class ResponseObject(object):
                 # 执行数据提取
                 extract_arg_data = []  # arg
                 for arg in extract_function_data.get('args', []):
-                    extract_arg_data.append(self.extract_field(arg) if is_extract_expression(arg) else arg)
+                    # 判断是常量还是自定义变量，如果是自定义变量，则替换
+                    variable = extract_variables(arg)
+                    if variable:
+                        extract_arg_data.append(get_mapping_variable(variable[0], session_context_variables_mapping))
+                    else:
+                        extract_arg_data.append(self.extract_field(arg) if is_extract_expression(arg) else arg)
 
                 extract_kwarg_data = {}  # kwarg
                 for key, value in extract_function_data.get('kwargs', {}).items():
-                    extract_kwarg_data[key] = self.extract_field(value) if is_extract_expression(value) else value
+                    # 判断是常量还是自定义变量，如果是自定义变量，则替换
+                    variable = extract_variables(value)
+                    if variable:
+                        extract_kwarg_data[key] = get_mapping_variable(variable[0], session_context_variables_mapping)
+                    else:
+                        extract_kwarg_data[key] = self.extract_field(value) if is_extract_expression(value) else value
 
                 # 执行自定义函数
                 extract_function_data['args'], extract_function_data['kwargs'] = extract_arg_data, extract_kwarg_data
