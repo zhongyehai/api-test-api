@@ -85,7 +85,7 @@ def task_copy():
         with db.auto_commit():
             new_task = Task()
             new_task.create(old_task.to_dict(), 'set_id', 'case_id')
-            new_task.name = old_task.name + '_01'
+            new_task.name = old_task.name + '_copy'
             new_task.status = '禁用中'
             new_task.num = Task.get_insert_num(project_id=old_task.project_id)
             db.session.add(new_task)

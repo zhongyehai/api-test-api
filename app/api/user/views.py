@@ -77,7 +77,7 @@ def user_status():
         user = form.user
         with db.auto_commit():
             user.status = 0 if user.status == 1 else 1
-        return restful.success(f'{"冻结" if user.status == 0 else "恢复"}成功')
+        return restful.success(f'{"禁用" if user.status == 0 else "启用"}成功')
     return restful.fail(form.get_error())
 
 
