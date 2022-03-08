@@ -45,7 +45,10 @@ class AccountView(BaseMethodView):
     def post(self):
         """ 新增账号 """
 
-        if AccountModel.get_first(event=request.json['event'], account=request.json['account']):
+        if AccountModel.get_first(
+                project=request.json['project'],
+                event=request.json['event'],
+                account=request.json['account']):
             return restful.fail(f"当前环境下 {request.json['account']} 账号已存在，直接修改即可")
         account = AccountModel().create(request.json)
         return restful.success('新增成功', data=account.to_dict())
@@ -53,7 +56,10 @@ class AccountView(BaseMethodView):
     def put(self):
         """ 修改账号 """
         # 账号不重复
-        account = AccountModel.get_first(event=request.json['event'], account=request.json.get('account'))
+        account = AccountModel.get_first(
+            project=request.json['project'],
+            event=request.json['event'],
+            account=request.json['account'])
         if account and account.id != request.json.get('id'):
             return restful.fail(f'当前环境下账号 {account.account} 已存在', data=account.to_dict())
 

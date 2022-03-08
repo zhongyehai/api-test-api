@@ -168,14 +168,12 @@ class ProjectFormatModel(Base):
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.manager = kwargs.get('manager')
-        self.dev = kwargs.get('dev')
-        self.test = kwargs.get('test')
-        self.uat = kwargs.get('uat')
-        self.production = kwargs.get('production')
-        self.headers = self.parse_headers(kwargs.get('headers', {}))
-        self.variables = self.parse_variables(kwargs.get('variables', {}))
         self.func_files = kwargs.get('func_files')
         self.create_user = kwargs.get('create_user')
+        self.test = kwargs.get('test')
+        self.host = kwargs.get('host')
+        self.headers = self.parse_headers(kwargs.get('headers', {}))
+        self.variables = self.parse_variables(kwargs.get('variables', {}))
 
 
 class ApiFormatModel(Base):

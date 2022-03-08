@@ -179,7 +179,6 @@ class BaseModel(db.Model, JsonUtil):
     def to_dict(self, to_dict: list = [], pop_list: list = []):
         """ 自定义序列化器，把模型的每个字段转为key，方便返回给前端 """
         dict_data = {}
-        # pop_list.extend(['created_time', 'update_time'])
         for column in self.__table__.columns:
             if column.name not in pop_list:
                 if column.name == 'created_time':
@@ -188,8 +187,8 @@ class BaseModel(db.Model, JsonUtil):
                     dict_data['update_time'] = self.str_update_time
                 else:
                     data = getattr(self, column.name)
-                    dict_data[column.name] = data if column.name not in to_dict else self.loads(data)
-        # dict_data.update({'created_time': self.str_created_time, 'update_time': self.str_update_time})
+                    # 字段在要转json的列表里面，且字段有值，就转为json
+                    dict_data[column.name] = data if column.name not in to_dict or not data else self.loads(data)
         return dict_data
 
     @classmethod

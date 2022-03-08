@@ -12,10 +12,48 @@ import re
 import types
 from app.utils.regexp import variable_regexp, function_regexp, function_regexp_compile
 
+
 # variable_regexp = r"\$([\w_]+)"
 # function_regexp = r"\$\{([\w_]+\([\$\w\.\-_ =,]*\))\}"
 # function_regexp_compile = re.compile(r"^([\w_]+)\(([\$\w\.\-/_ =,]*)\)$")
 # function_regexp_compile = re.compile(r"^([\w_]+)\(([\$\w\W\.\-/_ =,]*)\)$")
+
+def parse_list_to_dict(data_list: list):
+    result = {}
+    for data in data_list:
+        if data['key']:
+            result[data['key']] = {
+                'key': data['key'],
+                'value': data['value'],
+                'remark': data['remark']
+            }
+    return result
+
+
+def parse_dict_to_list(data_dict: dict):
+    """
+    {
+        'a': {
+            'key': 'a',
+            'value': 123,
+            'remark': '测试'
+        }
+    }
+    """
+    result = []
+    for key, value in data_dict.items():
+        result.append({
+            'key': value['key'],
+            'value': value['value'],
+            'remark': value['remark'],
+        })
+    result.append({
+        'key': None,
+        'value': None,
+        'remark': None,
+    })
+    return result
+
 
 def extract_functions(content):
     """ 从字符串内容中提取所有自定义函数，格式为${fun()}

@@ -16,13 +16,7 @@ class Project(BaseModel):
 
     name = db.Column(db.String(255), nullable=True, comment='服务名称')
     manager = db.Column(db.Integer(), nullable=True, default=1, comment='服务管理员id，默认为admin')
-    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共变量')
-    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共头部信息')
-    func_files = db.Column(db.Text(), nullable=True, default='[]', comment='引用的函数文件')
-    dev = db.Column(db.String(255), default='', comment='开发环境域名')
     test = db.Column(db.String(255), default='', comment='测试环境域名')
-    uat = db.Column(db.String(255), default='', comment='uat环境域名')
-    production = db.Column(db.String(255), default='', comment='生产环境域名')
     swagger = db.Column(db.String(255), default='', comment='服务对应的swagger地址')
     yapi_id = db.Column(db.Integer(), default=None, comment='对应YapiProject表里面的原始数据在yapi平台的id')
 
@@ -58,6 +52,24 @@ class Project(BaseModel):
             filters=filters,
             order_by=cls.created_time.desc())
 
+    def create_env(self, env_list=None):
+        if env_list is None:
+            env_list = ['dev', 'test', 'uat', 'production']
+        for env in env_list:
+            ProjectEnv().create({"env": env, "project_id": self.id})
+
+
+class ProjectEnv(BaseModel):
+    """ 服务环境表 """
+    __tablename__ = 'project_env'
+
+    env = db.Column(db.String(10), nullable=True, comment='所属环境')
+    host = db.Column(db.String(255), default='', comment='域名')
+    func_files = db.Column(db.Text(), nullable=True, default='[]', comment='引用的函数文件')
+    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共变量')
+    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共头部信息')
+    project_id = db.Column(db.Integer(), nullable=True, comment='所属的服务id')
+
     def to_dict(self, *args, **kwargs):
         """ 自定义序列化器，把模型的每个字段转为字典，方便返回给前端 """
-        return super(Project, self).to_dict(to_dict=["hosts", "variables", "headers", "func_files"])
+        return super(ProjectEnv, self).to_dict(to_dict=["variables", "headers", "func_files"])

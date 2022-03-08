@@ -21,7 +21,7 @@ from ..api.api_test.apiMsg.models import ApiMsg
 from ..api.api_test.case.models import Case
 from ..api.api_test.step.models import Step
 from app.api.api_test.func.models import Func
-from ..api.api_test.project.models import Project
+from ..api.api_test.project.models import Project, ProjectEnv
 from ..api.api_test.report.models import Report
 
 from app.utils.globalVariable import REPORT_ADDRESS
@@ -52,7 +52,7 @@ class BaseParse:
 
         # httpRunner需要的数据格式
         self.DataTemplate = {
-            'project': self.run_name or self.get_formated_project(self.project_id).name,
+            'project': self.run_name,  # or self.get_formated_project(self.project_id).name,
             'project_mapping': {
                 'functions': {},
                 'variables': {}
@@ -63,9 +63,18 @@ class BaseParse:
     def get_formated_project(self, project_id):
         """ 从已解析的服务字典中取指定id的服务，如果没有，则取出来解析后放进去 """
         if project_id not in self.parsed_project_dict:
-            project = Project.get_first(id=project_id)
-            self.parse_functions(json.loads(project.func_files))
-            self.parsed_project_dict.update({project_id: ProjectFormatModel(**project.to_dict())})
+
+            project = Project.get_first(id=project_id).to_dict()
+            env = ProjectEnv.get_first(env=self.environment, project_id=project['id']).to_dict()
+            self.parse_functions(env['func_files'])
+            env.update(project)
+
+            # project = Project.get_first(id=project_id)
+            # self.parse_functions(json.loads(project.func_files))
+            # env = ProjectEnv.get_first(env=self.environment, project_id=project.id).to_dict()
+            # env.update(project.to_dict())
+
+            self.parsed_project_dict.update({project_id: ProjectFormatModel(**env)})
         return self.parsed_project_dict[project_id]
 
     def get_formated_case(self, case_id):
@@ -106,7 +115,7 @@ class BaseParse:
             'times': 1,  # 运行次数
             'extract': api.extracts,  # 接口要提取的信息
             'validate': api.validates,  # 接口断言信息
-            'base_url': getattr(project, self.environment),
+            'base_url': project.host,  # getattr(project, self.environment),
             'data_type': api.data_type,
             'request': {
                 'method': api.method,
@@ -149,11 +158,13 @@ class RunApi(BaseParse):
     def __init__(self, project_id=None, run_name=None, api_ids=None, report_id=None):
         super().__init__(project_id, run_name, report_id)
 
+        # 要执行的接口id
+        self.api_ids = api_ids
+        self.api_obj = ApiMsg.get_first(id=self.api_ids)
+        self.environment = self.api_obj.choice_host
+
         # 解析当前服务信息
         self.project = self.get_formated_project(self.project_id)
-
-        # 要执行的接口id列表
-        self.api_ids = api_ids
 
         # 解析api
         self.format_data_for_template()
@@ -171,9 +182,8 @@ class RunApi(BaseParse):
         }
 
         # 解析api
-        api_obj = ApiMsg.get_first(id=self.api_ids)
-        self.environment = api_obj.choice_host
-        api = self.get_formated_api(self.project, api_obj)
+
+        api = self.get_formated_api(self.project, self.api_obj)
 
         # 合并头部信息
         headers = {}
@@ -196,7 +206,10 @@ class RunCase(BaseParse):
                  create_user=None):
         super().__init__(project_id, run_name, report_id, performer=performer, create_user=create_user)
         self.task = task
-        self.environment = task.get('choice_host') if isinstance(task, dict) else task.choice_host
+        if self.task:
+            self.environment = task.get('choice_host') if isinstance(task, dict) else task.choice_host
+        else:
+            self.environment = Case.get_first(id=case_id[0]).choice_host
         # 接口对应的服务字典，在需要解析服务时，先到这里面查，没有则去数据库取出来解析
         self.projects_dict = {}
 

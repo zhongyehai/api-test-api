@@ -10,7 +10,7 @@ import json
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 
-from ..project.models import Project
+from ..project.models import Project, ProjectEnv
 from ..sets.models import Set
 from ..step.models import Step
 from ....baseForm import BaseForm
@@ -43,13 +43,16 @@ class AddCaseForm(BaseForm):
         if not self.project:
             self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
 
+        env = ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).to_dict()
+        setattr(self, 'project_env', env)
+
         # 自定义函数
-        func_files = self.loads(self.project.func_files)
+        func_files = env['func_files']
         func_files.extend(self.func_files.data)
         self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
 
         # 公共变量
-        variables = self.loads(self.project.variables)
+        variables = env['variables']
         variables.extend(field.data)
         self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 
@@ -62,12 +65,12 @@ class AddCaseForm(BaseForm):
             self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
 
         # 自定义函数
-        func_files = self.loads(self.project.func_files)
+        func_files = self.project_env['func_files']
         func_files.extend(self.func_files.data)
         self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
 
         # 公共变量
-        variables = self.loads(self.project.variables)
+        variables = self.project_env['variables']
         variables.extend(self.variables.data)
         self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 

@@ -11,7 +11,7 @@ from wtforms.validators import ValidationError, DataRequired, Length
 from ..apiMsg.models import ApiMsg
 from ..case.models import Case
 from ....baseForm import BaseForm
-from ..project.models import Project
+from ..project.models import Project, ProjectEnv
 from .models import Step
 
 
@@ -93,7 +93,8 @@ class AddStepForm(BaseForm):
     def validate_validates(self, field):
         """ 校验断言信息 """
         if not self.quote_case.data:
-            project_func_files = self.loads(self.project.func_files)
+            env = ProjectEnv.get_first(project_id=self.project.id, env=self.case.choice_host)
+            project_func_files = self.loads(env.func_files)
             project_func_files.extend(self.loads(self.case.func_files))
             self.validate_base_validates(field.data, {}, project_func_files)
 

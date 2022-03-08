@@ -13,7 +13,7 @@ from ..case.models import Case
 from ..step.models import Step
 from ..apiMsg.models import ApiMsg
 from ..module.models import Module
-from ..project.models import Project
+from ..project.models import Project, ProjectEnv
 
 
 class AddApiForm(BaseForm):
@@ -66,7 +66,8 @@ class AddApiForm(BaseForm):
 
     def validate_validates(self, field):
         """ 校验断言表达式 """
-        func_container, func_files = {}, self.loads(self.project.func_files)
+        func_files = {}
+        func_container = self.loads(ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).func_files)
         self.validate_base_validates(field.data, func_container, func_files, )
 
 

@@ -162,9 +162,12 @@ def update_project(yapi_project):
         project = Project.get_first(yapi_id=yapi_project['_id']) or Project()
         project.name = yapi_project['name']
         project.yapi_id = yapi_project['_id']
-
+        data_type = None  # 标识数据是新增还是修改
         if not project.id:
+            data_type = 'add'
             db.session.add(project)
+    if data_type == 'add':
+        project.create_env()  # 创建环境
     api.logger.info(f'解析yapi后的服务信息：\n{project.to_dict()}')
     return project
 

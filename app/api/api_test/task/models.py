@@ -48,6 +48,18 @@ class Task(BaseModel):
         )
 
 
+# class TaskDetail(BaseModel):
+#     """ 测试任务详情表 """
+#     __tablename__ = 'tasks_detail'
+#     relation_id = db.Column(db.Integer(), comment='用例集、用例id')
+#     data_type = db.Column(db.Integer(), default=1, comment='1、用例集，2、用例')
+#     name = db.Column(db.Text(), comment='用例集、用例名字')
+#     task_id = db.Column(db.String(10), comment='任务id')
+#
+#     def to_dict(self, *args, **kwargs):
+#         return super(TaskDetail, self).to_dict(to_dict=['set_detail', 'case_detail'])
+
+
 class ApschedulerJobs(BaseModel):
     """ apscheduler任务表，防止执行数据库迁移的时候，把定时任务删除了 """
     __tablename__ = 'apscheduler_jobs'

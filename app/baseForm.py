@@ -103,7 +103,7 @@ class BaseForm(Form, JsonUtil):
                 if not validate_type:  # 没有选择断言类型
                     raise ValidationError(f'{row}请选择断言类型')
 
-                if not value:  # 要进行断言，则预期结果必须有值
+                if value is None:  # 要进行断言，则预期结果必须有值
                     raise ValidationError(f'{row}预期结果需填写')
 
                 if data_type == "str":  # 普通字符串，无需解析，填的是什么就用什么
