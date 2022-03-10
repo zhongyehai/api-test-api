@@ -66,8 +66,8 @@ class ProjectEnv(BaseModel):
     env = db.Column(db.String(10), nullable=True, comment='所属环境')
     host = db.Column(db.String(255), default='', comment='域名')
     func_files = db.Column(db.Text(), nullable=True, default='[]', comment='引用的函数文件')
-    variables = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共变量')
-    headers = db.Column(db.Text(), default='[{"key": null, "value": null, "remark": null}]', comment='服务的公共头部信息')
+    variables = db.Column(db.Text(), default='[{"key": "", "value": "", "remark": ""}]', comment='服务的公共变量')
+    headers = db.Column(db.Text(), default='[{"key": "", "value": "", "remark": ""}]', comment='服务的公共头部信息')
     project_id = db.Column(db.Integer(), nullable=True, comment='所属的服务id')
 
     def to_dict(self, *args, **kwargs):

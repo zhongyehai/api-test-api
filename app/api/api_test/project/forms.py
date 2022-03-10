@@ -5,6 +5,8 @@
 # @Site :
 # @File : forms.py
 # @Software: PyCharm
+import json
+
 import validators
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, Length, DataRequired
@@ -106,11 +108,13 @@ class AddEnv(BaseForm):
 
     def validate_headers(self, field):
         """ 校验头部信息是否有引用自定义函数 """
+        self.validate_variable_and_header(field.data, '头部信息设置，第【', '】行，要设置头部信息，则key和value都需设置')
         self.validate_func(self.all_func_name, self.func_files.data, self.dumps(field.data))  # 自定义函数
         self.validate_variable(self.all_variables, self.variables.data, self.dumps(field.data))  # 公共变量
 
     def validate_variables(self, field):
         """ 校验公共变量 """
+        self.validate_variable_and_header(field.data, '自定义变量设置，，第【', '】行，要设置自定义变量，则key和value都需设置')
         self.validate_func(self.all_func_name, self.func_files.data, self.dumps(field.data))  # 自定义函数
         self.validate_variable(self.all_variables, field.data, self.dumps(field.data))  # 公共变量
 

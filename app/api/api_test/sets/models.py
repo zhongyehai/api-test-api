@@ -36,9 +36,15 @@ class Set(BaseModel):
         elif len(set_id) != 0:
             set_ids = set_id
         else:
-            set_ids = [set.id for set in cls.query.filter_by(project_id=project_id).order_by(Set.num.asc()).all()]
-        case_ids = [case.id for set_id in set_ids for case in Case.query.filter_by(
-            set_id=set_id).order_by(Case.num.asc()).all() if case.is_run]
+            set_ids = [
+                set.id for set in cls.query.filter_by(project_id=project_id).order_by(Set.num.asc()).all()
+            ]
+        case_ids = [
+            case.id for set_id in set_ids for case in Case.query.filter_by(
+                set_id=set_id,
+                is_run=1
+            ).order_by(Case.num.asc()).all() if case and case.is_run
+        ]
         return case_ids
 
     @classmethod

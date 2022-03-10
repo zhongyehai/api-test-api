@@ -54,6 +54,7 @@ class AddCaseForm(BaseForm):
         # 公共变量
         variables = env['variables']
         variables.extend(field.data)
+        self.validate_variable_and_header(field.data, '自定义变量设置，，第【', '】行，要设置自定义变量，则key和value都需设置')
         self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 
     def validate_headers(self, field):
@@ -72,6 +73,7 @@ class AddCaseForm(BaseForm):
         # 公共变量
         variables = self.project_env['variables']
         variables.extend(self.variables.data)
+        self.validate_variable_and_header(field.data, '头部信息设置，第【', '】行，要设置头部信息，则key和value都需设置')
         self.validate_variable(self.all_variables, variables, self.dumps(field.data))
 
     def validate_set_id(self, field):

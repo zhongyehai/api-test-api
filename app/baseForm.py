@@ -82,6 +82,12 @@ class BaseForm(Form, JsonUtil):
             if variable not in variables_container:
                 raise ValidationError(f'{message}引用的变量【{variable}】不存在')
 
+    def validate_variable_and_header(self, content: list, message1='', message2=''):
+        """ 自定义变量格式校验 """
+        for index, data in enumerate(content):
+            if (data['key'] and not data['value']) or (not data['key'] and data['value']):
+                raise ValidationError(f'{message1}{index + 1}{message2}')
+
     def validate_base_validates(self, data, func_container, func_files):
         """ 校验断言信息 """
         for index, validate in enumerate(data):
