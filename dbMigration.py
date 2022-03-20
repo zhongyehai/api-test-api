@@ -220,6 +220,7 @@ def init_config():
          'desc': 'KYM分析项'},
         {'name': 'default_diff_message_send_addr', 'value': '', 'type': '系统配置', 'desc': 'yapi接口监控报告默认发送钉钉机器人地址'},
         {'name': 'run_time_error_message_send_addr', 'value': '', 'type': '系统配置', 'desc': '运行测试用例时，有错误信息实时通知地址'},
+        {'name': 'run_time_out', 'value': '45', 'type': '系统配置', 'desc': '前端运行测试时，等待的超时时间，秒'}
     ]
     for data in conf_list:
         if Config.get_first(name=data["name"]) is None:
