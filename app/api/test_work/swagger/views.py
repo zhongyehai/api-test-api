@@ -23,7 +23,7 @@ from app.baseModel import db
 
 def get_swagger_data(swagger_addr):
     """ 获取swagger数据 """
-    return requests.get(swagger_addr).json()
+    return requests.get(swagger_addr, verify=False).json()
 
 
 def get_parsed_module(module_list, project_id, module_name):
@@ -181,6 +181,7 @@ def swagger_pull():
     try:
         swagger_data = get_swagger_data(project.swagger)  # swagger数据
     except Exception as error:
+        api.logger.error(error)
         return restful.error('数据拉取失败，详见日志')
 
     with db.auto_commit():
