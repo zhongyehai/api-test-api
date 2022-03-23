@@ -196,10 +196,11 @@ def swagger_pull():
                 module = get_parsed_module(module_list, project.id, tags)
                 api.logger.info(f'解析接口地址：{api_addr}')
                 api.logger.info(f'解析接口数据：{api_detail}')
+                api_name = api_detail.get('summary', '接口未命名')
                 format_data = {
                     'project_id': project.id,
                     'module_id': module.id,
-                    'name': api_detail.get('summary', '接口未命名'),
+                    'name': api_name,
                     'method': api_method.upper(),
                     'addr': api_addr,
                     'data_type': 'json'
@@ -210,14 +211,16 @@ def swagger_pull():
                 if '{' in api_addr:  # URL中可能有参数化"/XxXx/xx/{batchNo}"
                     split_swagger_addr = api_addr.split('{')[0]
                     api_msg = ApiMsg.query.filter(
-                        ApiMsg.addr.like('%' + split_swagger_addr + '%'), ApiMsg.module_id == module.id
+                        ApiMsg.addr.like('%' + split_swagger_addr + '%'),
+                        ApiMsg.name == api_name,
+                        ApiMsg.module_id == module.id
                     ).first() or ApiMsg()
                     if api_msg.id and '$' in api_msg.addr:  # 已经在测试平台修改过接口地址的参数
                         api_msg_addr_split = api_msg.addr.split('$')
                         api_msg_addr_split[0] = split_swagger_addr
                         format_data['addr'] = '$'.join(api_msg_addr_split)
                 else:
-                    api_msg = ApiMsg.get_first(addr=api_addr, module_id=module.id) or ApiMsg()
+                    api_msg = ApiMsg.get_first(addr=api_addr, name=api_name, module_id=module.id) or ApiMsg()
 
                 if '2' in swagger_data.get('swagger', ''):  # swagger2
                     content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
