@@ -77,7 +77,7 @@ def update_obj(obj, field, data, is_update):
         setattr(obj, field, json.dumps(data, ensure_ascii=False, indent=4))
 
 
-def parse_swagger2_args(api_msg, api_detail):
+def parse_swagger2_args(api_msg, api_detail, swagger_data):
     """ 解析 swagger2 的参数 """
     header_update, params_update, data_json_update, data_form_update = assert_is_update(api_msg)  # 判断是否需要更新
 
@@ -108,7 +108,11 @@ def parse_swagger2_args(api_msg, api_detail):
                 "remark": f"{arg.get('description', '')} {required}"
             })
         elif arg['in'] == 'body' and data_json_update:  # json参数
-            properties = arg.get('schema', {}).get('properties', {})
+            # properties = arg.get('schema', {}).get('properties', {})
+            # for key, value in properties.items():
+            #     json_data[key] = f"{value.get('description', '')} {value.get('type', '')}"
+            ref = arg.get('schema', {}).get('$ref', '').split('/')[-1]
+            properties = swagger_data.get('definitions', {}).get(ref, {}).get('properties', {})
             for key, value in properties.items():
                 json_data[key] = f"{value.get('description', '')} {value.get('type', '')}"
 
@@ -217,7 +221,7 @@ def swagger_pull():
 
                 if '2' in swagger_data.get('swagger', ''):  # swagger2
                     content_type = api_detail.get('consumes', ['json'])[0]  # 请求数据类型
-                    parse_swagger2_args(api_msg, api_detail)  # 处理参数
+                    parse_swagger2_args(api_msg, api_detail, swagger_data)  # 处理参数
                 elif '3' in swagger_data.get('openapi', ''):  # openapi 3
                     content_types = api_detail.get('requestBody', {}).get('content', {'application/json': ''})
                     content_type = list(content_types.keys())[0]
