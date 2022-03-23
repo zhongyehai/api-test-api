@@ -188,7 +188,8 @@ def swagger_pull():
         add_list = []
         for api_addr, api_data in swagger_data['paths'].items():
             for api_method, api_detail in api_data.items():
-                module = get_parsed_module(module_list, project.id, api_detail['tags'][0])
+                tags = api_detail.get('tags')[0] if api_detail.get('tags') else '默认分组'
+                module = get_parsed_module(module_list, project.id, tags)
                 api.logger.info(f'解析接口地址：{api_addr}')
                 api.logger.info(f'解析接口数据：{api_detail}')
                 format_data = {
