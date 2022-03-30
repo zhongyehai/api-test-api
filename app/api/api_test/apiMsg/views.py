@@ -11,6 +11,7 @@ from flask import request, send_from_directory
 from flask_login import current_user
 
 from ..module.models import Module
+from ..project.models import Project
 from ..report.models import Report
 from ....utils import restful
 from ....utils.globalVariable import TEMPLATE_ADDRESS
@@ -22,7 +23,7 @@ from ....baseView import BaseMethodView
 from ....baseModel import db
 from ..apiMsg.models import ApiMsg
 from ...config.models import Config
-from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById
+from .forms import AddApiForm, EditApiForm, RunApiMsgForm, DeleteApiForm, ApiListForm, GetApiById, ApiBelongToForm
 from config.config import assert_mapping_list
 
 
@@ -50,6 +51,19 @@ def get_api_list():
     form = ApiListForm()
     if form.validate():
         return restful.success(data=ApiMsg.make_pagination(form))
+
+
+@api.route('/apiMsg/belongTo', methods=['GET'])
+@login_required
+def get_api_belong_to():
+    """ 根据接口地址获取接口的归属信息 """
+    form = ApiBelongToForm()
+    if form.validate():
+        api_msg = form.api
+        project = Project.get_first(id=api_msg.project_id)
+        module = Module.get_first(id=api_msg.module_id)
+        return restful.success(msg=f'此接口归属于：{project.name}_{module.name}_{api_msg.name}')
+    return restful.fail(form.get_error())
 
 
 @api.route('/apiMsg/upload', methods=['POST'])

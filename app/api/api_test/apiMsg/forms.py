@@ -67,7 +67,8 @@ class AddApiForm(BaseForm):
     def validate_validates(self, field):
         """ 校验断言表达式 """
         func_files = {}
-        func_container = self.loads(ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).func_files)
+        func_container = self.loads(
+            ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).func_files)
         self.validate_base_validates(field.data, func_container, func_files, )
 
 
@@ -127,6 +128,17 @@ class GetApiById(BaseForm):
         api = ApiMsg.get_first(id=field.data)
         if not api:
             raise ValidationError(f'id为【{field.data}】的接口不存在')
+        setattr(self, 'api', api)
+
+
+class ApiBelongToForm(BaseForm):
+    """ 查询api归属 """
+    addr = StringField(validators=[DataRequired('接口地址必传')])
+
+    def validate_addr(self, field):
+        api = ApiMsg.get_first(addr=field.data)
+        if not api:
+            raise ValidationError(f'地址为【{field.data}】的接口不存在')
         setattr(self, 'api', api)
 
 
