@@ -51,3 +51,6 @@ class AutoTestUser(BaseModel):
     password = db.Column(db.String(128), nullable=True, default='', comment='密码')
     u_token = db.Column(db.String(128), nullable=True, default='', comment='token')
     role = db.Column(db.String(128), nullable=True, default='', comment='角色,平台方admin；核心企业core；供应商supplier；资金方capital')
+    company_id = db.Column(db.String(128), nullable=True, default='', comment='公司id')
+    company_name = db.Column(db.String(128), nullable=True, default='', comment='公司名')
+    comment = db.Column(db.String(256), nullable=True, default='', comment='备注')
