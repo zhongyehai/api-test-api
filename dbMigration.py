@@ -12,8 +12,8 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 from app.baseModel import db
-from app.api.user.models import User, Permission, Role
-from app.api.config.models import Config, ConfigType
+from app.ucenter.user.models import User, Permission, Role
+from app.config.models import Config, ConfigType
 from main import app
 
 manager = Manager(app)

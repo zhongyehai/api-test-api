@@ -6,12 +6,28 @@
 # @File : required.py
 # @Software: PyCharm
 from functools import wraps
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-from flask import request
+from flask import current_app, request
 from flask_login import current_user
 
-from app.api.user.models import User
 from app.utils import restful
+from config.config import conf
+
+
+def generate_reset_token(user, expiration=conf['token_time_out']):
+    """ 生成token，默认有效期一个小时 """
+    return Serializer(current_app.config['SECRET_KEY'], expiration).dumps(
+        {'id': user.id, 'name': user.name}).decode('utf-8')
+
+
+def parse_token(token):
+    """ 校验token是否过期，或者是否合法 """
+    try:
+        data = Serializer(current_app.config['SECRET_KEY']).loads(token.encode('utf-8'))
+        return data
+    except:
+        return False
 
 
 def login_required(func):
@@ -20,7 +36,7 @@ def login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         # 前端拦截器检测到响应为 '登录超时,请重新登录' ，自动跳转到登录页
-        return func(*args, **kwargs) if User.parse_token(request.headers.get('X-Token')) else restful.fail('登录超时,请重新登录')
+        return func(*args, **kwargs) if parse_token(request.headers.get('X-Token')) else restful.fail('登录超时,请重新登录')
 
     return decorated_view
 

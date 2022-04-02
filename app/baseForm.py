@@ -11,9 +11,9 @@ from flask import request
 from flask_login import current_user
 from wtforms import Form, ValidationError
 
-from .api.api_test.func.models import Func
+from app.api_test.func.models import Func
 from .utils.jsonUtil import JsonUtil
-from .api.api_test.project.models import Project
+from app.api_test.project.models import Project
 from .utils.parse import extract_functions, parse_function, extract_variables
 
 

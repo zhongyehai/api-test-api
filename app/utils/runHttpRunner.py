@@ -14,16 +14,15 @@ from datetime import datetime
 from flask.json import JSONEncoder
 
 from .httprunner.api import HttpRunner
-from ..api.api_test.sets.models import Set
+from app.api_test.sets.models import Set
 from ..utils.log import logger
 from app.baseModel import db
-from ..api.api_test.apiMsg.models import ApiMsg
-from ..api.api_test.case.models import Case
-from ..api.api_test.step.models import Step
-from app.api.api_test.func.models import Func
-from ..api.api_test.project.models import Project, ProjectEnv
-from ..api.api_test.report.models import Report
-
+from app.api_test.apiMsg.models import ApiMsg
+from app.api_test.case.models import Case
+from app.api_test.step.models import Step
+from app.api_test.func.models import Func
+from app.api_test.project.models import Project, ProjectEnv
+from app.api_test.report.models import Report
 from app.utils.globalVariable import REPORT_ADDRESS
 from app.utils.parse import encode_object
 from .parseModel import ProjectFormatModel, ApiFormatModel, CaseFormatModel, StepFormatModel

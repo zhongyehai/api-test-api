@@ -16,9 +16,9 @@ from flask_apscheduler import APScheduler
 from app.utils import restful
 from app.utils.sendReport import async_send_report
 from app.utils.parseCron import parse_cron
-from app.api.api_test.sets.models import Set, db
-from app.api.api_test.task.models import Task
-from app.api.user.models import User
+from app.api_test.sets.models import Set, db
+from app.api_test.task.models import Task
+from app.ucenter.user.models import User
 from app import create_app
 from app.utils.runHttpRunner import RunCase
 

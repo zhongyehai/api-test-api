@@ -8,10 +8,10 @@ from datetime import datetime
 from . import exceptions, utils
 from .compat import basestring, builtin_str, numeric_types, str
 
-from app.api.api_test.errorRecord.models import ErrorRecord
+from app.api_test.errorRecord.models import ErrorRecord
 from app.utils.sendReport import async_send_run_time_error_message
 from app.utils.regexp import variable_regexp, function_regexp, function_regexp_compile
-from ...api.config.models import Config
+from app.config.models import Config
 
 
 def parse_string_value(str_value):

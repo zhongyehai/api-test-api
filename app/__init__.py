@@ -31,7 +31,17 @@ def create_app():
     db.create_all()
     login_manager.init_app(app)
 
-    from app.api import api as api_blueprint
-    app.register_blueprint(api_blueprint, url_prefix='/api')
+    from app.api_test import api_test as api_test_blueprint
+    from app.ui_test import ui_test as ui_test_blueprint
+    from app.ucenter import ucenter as ucenter_blueprint
+    from app.test_work import test_work as test_work_blueprint
+    from app.config import config as config_blueprint
+    from app.tools import tool as tool_blueprint
+    app.register_blueprint(api_test_blueprint, url_prefix='/api/apiTest')
+    app.register_blueprint(ui_test_blueprint, url_prefix='/api/uiTest')
+    app.register_blueprint(ucenter_blueprint, url_prefix='/api/ucenter')
+    app.register_blueprint(config_blueprint, url_prefix='/api/config')
+    app.register_blueprint(test_work_blueprint, url_prefix='/api/testWork')
+    app.register_blueprint(tool_blueprint, url_prefix='/api/tool')
 
     return app
