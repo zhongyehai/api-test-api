@@ -11,9 +11,9 @@ from flask import request
 from flask_login import current_user
 from wtforms import Form, ValidationError
 
-from app.api_test.func.models import Func
 from .utils.jsonUtil import JsonUtil
-from app.api_test.project.models import Project
+# from app.api_test.project.models import Project
+# from app.api_test.func.models import Func
 from .utils.parse import extract_functions, parse_function, extract_variables
 
 
@@ -37,7 +37,7 @@ class BaseForm(Form, JsonUtil):
         """ 角色不为2，非管理员 """
         return not self.is_admin()
 
-    def is_can_delete(self, project_id, obj):
+    def is_can_delete(self, is_manager, obj):
         """
         判断是否有权限删除，
         可删除条件（或）：
@@ -45,7 +45,7 @@ class BaseForm(Form, JsonUtil):
         2.当前用户为当前数据的创建者
         3.当前用户为当前要删除服务的负责人
         """
-        return Project.is_manager_id(project_id) or self.is_admin() or obj.is_create_user(current_user.id)
+        return is_manager or self.is_admin() or obj.is_create_user(current_user.id)
 
     def set_attr(self, **kwargs):
         """ 根据键值对 对form对应字段的值赋值 """
@@ -54,8 +54,8 @@ class BaseForm(Form, JsonUtil):
                 getattr(self, key).data = value
 
     def validate_func(self, func_container: dict, func_files: list, content: str, message=''):
-        if not func_container:
-            func_container = Func.get_func_by_func_file_name(func_files)
+        # if not func_container:
+        #     func_container = Func.get_func_by_func_file_name(func_files)
 
         # 使用了自定义函数，但是没有引用函数文件的情况
         functions = extract_functions(content)

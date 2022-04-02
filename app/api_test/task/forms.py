@@ -12,6 +12,7 @@ from crontab import CronTab
 
 from app.baseForm import BaseForm
 from .models import Task
+from ..project.models import Project
 
 
 def validate_email(email_server, email_from, email_pwd, email_to):
@@ -157,6 +158,6 @@ class DeleteTaskIdForm(HasTaskIdForm):
             raise ValidationError(f'任务id【{field.data}】不存在')
         if task.status != '禁用中':
             raise ValidationError(f'请先禁用任务【{task.name}】')
-        if not self.is_can_delete(task.project_id, task):
+        if not Project.is_can_delete(Project.is_manager_id(task.project_id), task):
             raise ValidationError(f'不能删除别人的数据【{task.name}】')
         setattr(self, 'task', task)
