@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+import copy
 from unittest.case import SkipTest
 
 from . import exceptions, logger, response, utils
@@ -239,6 +239,7 @@ class Runner(object):
             method,
             url,
             name=(group_name or test_name),
+            variables_mapping=copy.deepcopy(self.session_context.test_variables_mapping),
             **parsed_test_request
         )
 

@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 import time
 
 import requests
@@ -120,12 +119,16 @@ class HttpSession(requests.Session):
 
         return req_resp_dict
 
-    def request(self, method, url, name=None, **kwargs):
+    def request(self, method, url, name=None, variables_mapping={}, **kwargs):
         """ 重写 requests.Session.request 方法，加一个参数 name，用作记录请求的标识"""
         self.init_meta_data()
 
         # 记录测试名
         self.meta_data["name"] = name
+
+        # 记录发起此次请求时内存中的自定义变量
+        variables_mapping.pop('request')
+        self.meta_data["variables_mapping"] = variables_mapping
 
         # 记录原始的请求信息
         self.meta_data["data"][0]["request"]["method"] = method
