@@ -127,7 +127,6 @@ class HttpSession(requests.Session):
         self.meta_data["name"] = name
 
         # 记录发起此次请求时内存中的自定义变量
-        variables_mapping.pop('request')
         self.meta_data["variables_mapping"] = variables_mapping
 
         # 记录原始的请求信息

@@ -234,12 +234,17 @@ class Runner(object):
         logger.log_info(f"{method} {url}")
         logger.log_debug("request kwargs(raw): {kwargs}".format(kwargs=parsed_test_request))
 
+        # 深拷贝除 request 的其他数据，请求数据有可能是io，io不能深拷贝，所以先移出再深拷贝，再移入
+        request = self.session_context.test_variables_mapping.pop('request')
+        variables_mapping = copy.deepcopy(self.session_context.test_variables_mapping)
+        self.session_context.test_variables_mapping['request'] = request
+
         # 发送请求
         resp = self.http_client_session.request(
             method,
             url,
             name=(group_name or test_name),
-            variables_mapping=copy.deepcopy(self.session_context.test_variables_mapping),
+            variables_mapping=copy.deepcopy(variables_mapping),
             **parsed_test_request
         )
 
