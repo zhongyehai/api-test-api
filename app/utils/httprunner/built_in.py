@@ -108,77 +108,83 @@ def _09string_equals(check_value, expect_value):
     assert builtin_str(check_value) == builtin_str(expect_value)
 
 
-def _10startswith(check_value, expect_value):
+def _10string_included(check_value, expect_value):
+    """ 转为字符串以后包含 """
+    assert isinstance(expect_value, str), '预期结果只能为字符串'
+    assert expect_value in builtin_str(check_value), '实际结果不包含预期结果'
+
+
+def _11startswith(check_value, expect_value):
     """ 字符串的开头 """
     assert builtin_str(check_value).startswith(builtin_str(expect_value))
 
 
-def _11endswith(check_value, expect_value):
+def _12endswith(check_value, expect_value):
     """ 字符串的结尾 """
     assert builtin_str(check_value).endswith(builtin_str(expect_value))
 
 
-def _12is_true(check_value, expect_value=None):
+def _13is_true(check_value, expect_value=None):
     """ 值为真 """
     assert check_value
 
 
-def _13is_not_true(check_value, expect_value=None):
+def _14is_not_true(check_value, expect_value=None):
     """ 值为假 """
     assert not check_value
 
 
-def _14less_than(check_value, expect_value):
+def _15less_than(check_value, expect_value):
     """ 值小于 """
     assert check_value < expect_value
 
 
-def _15less_than_or_equals(check_value, expect_value):
+def _16less_than_or_equals(check_value, expect_value):
     """ 值小于等于 """
     assert check_value <= expect_value
 
 
-def _16greater_than(check_value, expect_value):
+def _17greater_than(check_value, expect_value):
     """ 值大于 """
     assert check_value > expect_value
 
 
-def _17greater_than_or_equals(check_value, expect_value):
+def _18greater_than_or_equals(check_value, expect_value):
     """ 值大于等于 """
     assert check_value >= expect_value
 
 
-def _18length_equals(check_value, expect_value):
+def _19length_equals(check_value, expect_value):
     """ 长度等于 """
     assert isinstance(expect_value, integer_types)
     assert len(check_value) == expect_value
 
 
-def _19length_greater_than(check_value, expect_value):
+def _20length_greater_than(check_value, expect_value):
     """ 长度大于 """
     assert isinstance(expect_value, integer_types)
     assert len(check_value) > expect_value
 
 
-def _20length_greater_than_or_equals(check_value, expect_value):
+def _21length_greater_than_or_equals(check_value, expect_value):
     """ 长度大于等于 """
     assert isinstance(expect_value, integer_types)
     assert len(check_value) >= expect_value
 
 
-def _21length_less_than(check_value, expect_value):
+def _22length_less_than(check_value, expect_value):
     """ 长度小于 """
     assert isinstance(expect_value, integer_types)
     assert len(check_value) < expect_value
 
 
-def _22length_less_than_or_equals(check_value, expect_value):
+def _23length_less_than_or_equals(check_value, expect_value):
     """ 长度小于等于 """
     assert isinstance(expect_value, integer_types)
     assert len(check_value) <= expect_value
 
 
-def _23type_match(check_value, expect_value):
+def _24type_match(check_value, expect_value):
     """ 断言数据类型 """
 
     def get_type(name):
@@ -195,7 +201,7 @@ def _23type_match(check_value, expect_value):
     assert isinstance(check_value, get_type(expect_value))
 
 
-def _24regex_match(check_value, expect_value):
+def _25regex_match(check_value, expect_value):
     """ 正则匹配 """
     assert isinstance(expect_value, basestring)
     assert isinstance(check_value, basestring)

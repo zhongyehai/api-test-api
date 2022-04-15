@@ -47,8 +47,6 @@ class BaseParse:
         Func.create_func_file()  # 创建所有函数文件
         self.func_file_list = Func.get_all()
 
-        self.new_report_id = None
-
         # httpRunner需要的数据格式
         self.DataTemplate = {
             'project': self.run_name,  # or self.get_formated_project(self.project_id).name,

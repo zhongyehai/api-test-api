@@ -45,10 +45,10 @@ def aps_test(case_ids, task, user_id=None):
     jump_res = runner.run_case()
 
     # 多线程发送测试报告
-    async_send_report(content=task.loads(jump_res), **task.to_dict(), report_id=runner.new_report_id)
+    async_send_report(content=task.loads(jump_res), **task.to_dict(), report_id=runner.report_id)
 
     db.session.rollback()  # 把连接放回连接池
-    return runner.new_report_id
+    return runner.report_id
 
 
 def async_aps_test(*args):

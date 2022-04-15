@@ -10,7 +10,7 @@ ui_test = Blueprint('uiTest', __name__)
 ui_test.logger = logger
 
 from . import (errors)
-from app.ui_test.project import views
+# from app.ui_test.project import views
 
 
 @ui_test.before_request
