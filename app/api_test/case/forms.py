@@ -10,6 +10,7 @@ import json
 from wtforms import StringField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 
+from ..func.models import Func
 from ..project.models import Project, ProjectEnv
 from ..sets.models import Set
 from ..step.models import Step
@@ -20,66 +21,68 @@ from .models import Case
 
 class AddCaseForm(BaseForm):
     """ 添加用例的校验 """
+    set_id = IntegerField(validators=[DataRequired('请选择用例集')])
     name = StringField(validators=[DataRequired('用例名称不能为空')])
-    desc = StringField()
     choice_host = StringField(validators=[DataRequired('请选择要运行的环境')])
     func_files = StringField()
     variables = StringField()
     headers = StringField()
     run_times = IntegerField()
-    set_id = IntegerField(validators=[DataRequired('请选择用例集')])
     steps = StringField()
     num = StringField()
+    desc = StringField()
 
     all_func_name = {}
     all_variables = {}
     project = None
+    project_env = None
+
+    def validate_set_id(self, field):
+        """ 校验用例集存在 """
+        if not Set.get_first(id=field.data):
+            raise ValidationError(f'id为【{field.data}】的用例集不存在')
+        self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
+        self.project_env = ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).to_dict()
+
+    def validate_func_files(self, field):
+        """ 合并项目选择的自定义函数和用例选择的自定义函数文件 """
+        func_files = self.project_env['func_files']
+        func_files.extend(field.data)
+        self.all_func_name = Func.get_func_by_func_file_name(func_files)
 
     def validate_variables(self, field):
         """ 公共变量参数的校验
         1.校验是否存在引用了自定义函数但是没有引用自定义函数文件的情况
         2.校验是否存在引用了自定义变量，但是自定义变量未声明的情况
         """
-        if not self.project:
-            self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
+        # 校验格式
+        self.validate_variable_and_header_format(field.data, '自定义变量设置，，第【', '】行，要设置自定义变量，则key和value都需设置')
 
-        env = ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).to_dict()
-        setattr(self, 'project_env', env)
+        # 校验引用的自定义函数
+        self.validate_func(self.all_func_name, content=self.dumps(field.data))
 
-        # 自定义函数
-        func_files = env['func_files']
-        func_files.extend(self.func_files.data)
-        self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
-
-        # 公共变量
-        variables = env['variables']
+        # 公共变量引用项目设置的变量
+        variables = self.project_env['variables']
         variables.extend(field.data)
-        self.validate_variable_and_header(field.data, '自定义变量设置，，第【', '】行，要设置自定义变量，则key和value都需设置')
-        self.validate_variable(self.all_variables, variables, self.dumps(field.data))
+        self.all_variables = {
+            variable.get('key'): variable.get('value') for variable in variables if variable.get('key')
+        }
+        # 校验变量
+        self.validate_variable(self.all_variables, self.dumps(field.data))
 
     def validate_headers(self, field):
         """ 头部参数的校验
         1.校验是否存在引用了自定义函数但是没有引用自定义函数文件的情况
         2.校验是否存在引用了自定义变量，但是自定义变量未声明的情况
         """
-        if not self.project:
-            self.project = Project.get_first(id=Set.get_first(id=self.set_id.data).project_id)
+        # 校验格式
+        self.validate_variable_and_header_format(field.data, '自定义变量设置，，第【', '】行，要设置自定义变量，则key和value都需设置')
 
-        # 自定义函数
-        func_files = self.project_env['func_files']
-        func_files.extend(self.func_files.data)
-        self.validate_func(self.all_func_name, func_files, self.dumps(field.data))
+        # 校验引用的自定义函数
+        self.validate_func(self.all_func_name, content=self.dumps(field.data))
 
-        # 公共变量
-        variables = self.project_env['variables']
-        variables.extend(self.variables.data)
-        self.validate_variable_and_header(field.data, '头部信息设置，第【', '】行，要设置头部信息，则key和value都需设置')
-        self.validate_variable(self.all_variables, variables, self.dumps(field.data))
-
-    def validate_set_id(self, field):
-        """ 校验用例集存在 """
-        if not Set.get_first(id=field.data):
-            raise ValidationError(f'id为【{field.data}】的用例集不存在')
+        # 校验引用的变量
+        self.validate_variable(self.all_variables, self.dumps(field.data))
 
     def validate_name(self, field):
         """ 用例名不重复 """

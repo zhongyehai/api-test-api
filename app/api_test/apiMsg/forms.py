@@ -10,6 +10,7 @@ from wtforms.validators import ValidationError, Length, DataRequired
 
 from app.baseForm import BaseForm
 from ..case.models import Case
+from ..func.models import Func
 from ..step.models import Step
 from ..apiMsg.models import ApiMsg
 from ..module.models import Module
@@ -66,10 +67,10 @@ class AddApiForm(BaseForm):
 
     def validate_validates(self, field):
         """ 校验断言表达式 """
-        func_files = {}
-        func_container = self.loads(
+        func_files = self.loads(
             ProjectEnv.get_first(project_id=self.project.id, env=self.choice_host.data).func_files)
-        self.validate_base_validates(field.data, func_container, func_files, )
+        func_container = Func.get_func_by_func_file_name(func_files)
+        self.validate_base_validates(field.data, func_container)
 
 
 class EditApiForm(AddApiForm):

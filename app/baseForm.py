@@ -12,8 +12,6 @@ from flask_login import current_user
 from wtforms import Form, ValidationError
 
 from .utils.jsonUtil import JsonUtil
-# from app.api_test.project.models import Project
-# from app.api_test.func.models import Func
 from .utils.parse import extract_functions, parse_function, extract_variables
 
 
@@ -53,9 +51,8 @@ class BaseForm(Form, JsonUtil):
             if hasattr(self, key):
                 getattr(self, key).data = value
 
-    def validate_func(self, func_container: dict, func_files: list, content: str, message=''):
-        # if not func_container:
-        #     func_container = Func.get_func_by_func_file_name(func_files)
+    # def validate_func(self, func_container: dict, func_files: list, content: str, message=''):
+    def validate_func(self, func_container: dict, content: str, message=''):
 
         # 使用了自定义函数，但是没有引用函数文件的情况
         functions = extract_functions(content)
@@ -72,23 +69,20 @@ class BaseForm(Form, JsonUtil):
         """ 校验字符串是否为正则表达式 """
         return re.compile(r".*\(.*\).*").match(regexp)
 
-    def validate_variable(self, variables_container: dict, variables: list, content: str, message=''):
+    def validate_variable(self, variables_container: dict, content: str, message=''):
         """ 引用的变量需存在 """
-        if not variables_container:
-            variables_container = {
-                variable.get('key'): variable.get('value') for variable in variables if variable.get('key')
-            }
         for variable in extract_variables(content):
             if variable not in variables_container:
                 raise ValidationError(f'{message}引用的变量【{variable}】不存在')
+        print(111111)
 
-    def validate_variable_and_header(self, content: list, message1='', message2=''):
-        """ 自定义变量格式校验 """
+    def validate_variable_and_header_format(self, content: list, message1='', message2=''):
+        """ 自定义变量、头部信息，格式校验 """
         for index, data in enumerate(content):
             if (data['key'] and not data['value']) or (not data['key'] and data['value']):
                 raise ValidationError(f'{message1}{index + 1}{message2}')
 
-    def validate_base_validates(self, data, func_container, func_files):
+    def validate_base_validates(self, data, func_container):
         """ 校验断言信息 """
         for index, validate in enumerate(data):
             row = f'断言，第【{index + 1}】行，'
@@ -118,7 +112,7 @@ class BaseForm(Form, JsonUtil):
                     if extract_variables(value).__len__() < 1:
                         raise ValidationError(f'{row}引用的变量表达式【{value}】错误')
                 elif data_type == "func":  # 预期结果为自定义函数，校验校验预期结果表达式、实际结果表达式
-                    self.validate_func(func_container, func_files, value, message=row)  # 实际结果表达式是否引用自定义函数
+                    self.validate_func(func_container, value, message=row)  # 实际结果表达式是否引用自定义函数
                 elif data_type == 'json':  # 预期结果为json
                     try:
                         self.dumps(self.loads(value))
