@@ -53,7 +53,7 @@ class GetModelForm(BaseForm):
     def validate_id(self, field):
         module = Module.get_first(id=field.data)
         if not module:
-            raise ValidationError(f'id为【{field.data}的模块不存在')
+            raise ValidationError(f'id为【{field.data}】的模块不存在')
         setattr(self, 'module', module)
 
 
@@ -75,7 +75,7 @@ class DeleteModelForm(ModuleIdForm):
         module = Module.get_first(id=field.data)
         if not module:
             raise ValidationError(f'id为【{field.data}】的模块不存在')
-        if not Project.is_can_delete(Project.is_manager_id(module.project_id), module):
+        if not Project.is_can_delete(module.project_id, module):
             raise ValidationError('不能删除别人服务下的模块')
         if module.apis:
             raise ValidationError('请先删除模块下的接口')

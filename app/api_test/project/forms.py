@@ -67,7 +67,7 @@ class DeleteProjectForm(GetProjectByIdForm):
         if not project:
             raise ValidationError(f'id为【{field.data}】的服务不存在')
         else:
-            if not Project.is_can_delete(Project.is_manager_id(project.id), project):
+            if not Project.is_can_delete(project.id, project):
                 raise ValidationError(f'不能删除别人负责的服务')
             if project.modules:
                 raise ValidationError('请先去 接口管理 删除服务下的接口模块')

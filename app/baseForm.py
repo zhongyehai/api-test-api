@@ -51,7 +51,6 @@ class BaseForm(Form, JsonUtil):
             if hasattr(self, key):
                 getattr(self, key).data = value
 
-    # def validate_func(self, func_container: dict, func_files: list, content: str, message=''):
     def validate_func(self, func_container: dict, content: str, message=''):
 
         # 使用了自定义函数，但是没有引用函数文件的情况
@@ -74,7 +73,6 @@ class BaseForm(Form, JsonUtil):
         for variable in extract_variables(content):
             if variable not in variables_container:
                 raise ValidationError(f'{message}引用的变量【{variable}】不存在')
-        print(111111)
 
     def validate_variable_and_header_format(self, content: list, message1='', message2=''):
         """ 自定义变量、头部信息，格式校验 """

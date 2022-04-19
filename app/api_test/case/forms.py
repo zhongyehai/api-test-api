@@ -131,7 +131,7 @@ class DeleteCaseForm(BaseForm):
         if not case:
             raise ValidationError(f'没有该用例')
 
-        if not Project.is_can_delete(Project.is_manager_id(Set.get_first(id=case.set_id).project_id), case):
+        if not Project.is_can_delete(Set.get_first(id=case.set_id).project_id, case):
             raise ValidationError(f'不能删除别人的用例')
 
         # 校验是否有定时任务已引用此用例

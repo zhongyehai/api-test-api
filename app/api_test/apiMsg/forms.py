@@ -158,6 +158,6 @@ class DeleteApiForm(GetApiById):
             raise ValidationError(f'用例【{case.name}】已引用此接口，请先解除引用')
 
         project_id = Module.get_first(id=api.module_id).project_id
-        if not Project.is_can_delete(Project.is_manager_id(project_id), api):
+        if not Project.is_can_delete(project_id, api):
             raise ValidationError('不能删除别人服务下的接口')
         setattr(self, 'api', api)

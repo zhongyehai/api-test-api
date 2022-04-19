@@ -67,7 +67,7 @@ class DeleteCaseSetForm(GetCaseSetEditForm):
     def validate_id(self, field):
         case_set = Set.get_first(id=field.data)
         # 数据权限
-        if not Project.is_can_delete(Project.is_manager_id(case_set.project_id), case_set):
+        if not Project.is_can_delete(case_set.project_id, case_set):
             raise ValidationError('不能删除别人服务下的用例集')
         # 用例集下是否有用例集
         if Set.get_first(parent=field.data):

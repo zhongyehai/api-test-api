@@ -35,6 +35,27 @@ class Project(BaseModel):
         return cls.get_first(id=project_id).manager == current_user.id
 
     @classmethod
+    def is_admin(cls):
+        """ 角色为2，为管理员 """
+        return current_user.role_id == 2
+
+    @classmethod
+    def is_not_admin(cls):
+        """ 角色不为2，非管理员 """
+        return not cls.is_admin()
+
+    @classmethod
+    def is_can_delete(cls, project_id, obj):
+        """
+        判断是否有权限删除，
+        可删除条件（或）：
+        1.当前用户为系统管理员
+        2.当前用户为当前数据的创建者
+        3.当前用户为当前要删除服务的负责人
+        """
+        return Project.is_manager_id(project_id) or cls.is_admin() or obj.is_create_user(current_user.id)
+
+    @classmethod
     def make_pagination(cls, form):
         """ 解析分页条件 """
         filters = []
