@@ -120,7 +120,7 @@ class BaseParse:
                 'headers': api.headers,  # 接口头部信息
                 'params': api.params,  # 接口查询字符串参数
                 'json': api.data_json,
-                'data': api.data_form['string'] if api.data_type.upper() == 'DATA' else api.data_xml,
+                'data': api.data_form['string'] if api.data_type.upper() in ('DATA', 'FORM') else api.data_xml,
                 'files': api.data_form['files'] if api.data_form else {},
             }
         }
