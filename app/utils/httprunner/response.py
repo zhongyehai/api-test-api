@@ -275,8 +275,10 @@ class ResponseObject(object):
                     **extract_function_data['kwargs']
                 )
                 extracted_variables_mapping[extract_key] = result
+                session_context_variables_mapping[extract_key] = result
 
             else:  # 没有嵌套自定义函数，则直接提取
                 extracted_variables_mapping[extract_key] = self.extract_field(expression)
+                session_context_variables_mapping[extract_key] = self.extract_field(expression)
 
         return extracted_variables_mapping
