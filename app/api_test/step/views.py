@@ -36,6 +36,19 @@ def change_step_status():
     return restful.success(f'步骤已修改为 {"执行" if request.json.get("is_run") else "不执行"}')
 
 
+@api_test.route('/step/changeHost', methods=['PUT'])
+@login_required
+def change_step_host():
+    """ 修改步骤引用的host """
+    step = Step.get_first(id=request.json.get('id'))
+    with db.auto_commit():
+        step.replace_host = request.json.get('replace_host')
+    return restful.success(
+        f'步骤已修改为 {"使用【用例】所在服务的host" if request.json.get("replace_host") else "使用【接口】所在服务的host"}',
+        data=step.to_dict()
+    )
+
+
 @api_test.route('/step/sort', methods=['PUT'])
 @login_required
 def change_step_sort():

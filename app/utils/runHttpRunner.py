@@ -112,7 +112,7 @@ class BaseParse:
             'times': 1,  # 运行次数
             'extract': api.extracts,  # 接口要提取的信息
             'validate': api.validates,  # 接口断言信息
-            'base_url': project.host,  # getattr(project, self.environment),
+            'base_url': project.host,
             'data_type': api.data_type,
             'request': {
                 'method': api.method,
@@ -120,7 +120,7 @@ class BaseParse:
                 'headers': api.headers,  # 接口头部信息
                 'params': api.params,  # 接口查询字符串参数
                 'json': api.data_json,
-                'data': api.data_form['string'] if api.data_type.upper() in ('DATA', 'FORM') else api.data_xml,
+                'data': api.data_form['string'] if api.data_type.upper() == 'DATA' else api.data_xml,
                 'files': api.data_form['files'] if api.data_form else {},
             }
         }
@@ -222,7 +222,8 @@ class RunCase(BaseParse):
 
     def parse_step(self, current_project, project, case, api, step):
         """ 解析测试步骤
-        project: 解析后的project
+        current_project: 当前用例所在的服务(解析后的)
+        project: 当前步骤对应接口所在的服务(解析后的)
         case: 解析后的case
         api: 解析后的api
         step: 原始step
@@ -246,15 +247,14 @@ class RunCase(BaseParse):
             'times': step.run_times,  # 运行次数
             'extract': step.extracts,  # 接口要提取的信息
             'validate': step.validates,  # 接口断言信息
-            # 'base_url': getattr(project, self.environment),
-            'base_url': api['base_url'],
+            'base_url': project.host if step.replace_host else current_project.host,
             'request': {
                 'method': api['request']['method'],
                 'url': api['request']['url'],
                 'headers': headers,  # 接口头部信息
                 'params': step.params,  # 接口查询字符串参数
                 'json': step.data_json,
-                'data': step.data_form.get('string', {}) if api['data_type'] == 'DATA' else step.data_xml,
+                'data': step.data_form.get('string', {}) if api['data_type'] in ('DATA', 'FORM') else step.data_xml,
                 'files': step.data_form.get('files', {}),
             }
         }

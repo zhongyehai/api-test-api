@@ -231,6 +231,7 @@ class StepFormatModel(Base):
         self.up_func = kwargs.get('up_func')
         self.down_func = kwargs.get('down_func')
         self.is_run = kwargs.get('is_run')
+        self.replace_host = kwargs.get('replace_host')
         self.headers = self.parse_headers(kwargs.get('headers', {}))
         self.params = self.parse_params(kwargs.get('params', {}))
         self.data_json = kwargs.get('data_json', {})

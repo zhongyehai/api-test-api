@@ -14,6 +14,7 @@ class Step(BaseModel):
     num = db.Column(db.Integer(), nullable=True, comment='步骤序号，执行顺序按序号来')
     is_run = db.Column(db.Boolean(), default=True, comment='是否执行此步骤，True执行，False不执行，默认执行')
     run_times = db.Column(db.Integer(), default=1, comment='执行次数，默认执行1次')
+    replace_host = db.Column(db.Boolean(), default=False, comment='是否使用用例所在项目的域名，True使用用例所在服务的域名，False使用步骤对应接口所在服务的域名')
 
     name = db.Column(db.String(255), comment='步骤名称')
     up_func = db.Column(db.Text(), default='', comment='步骤执行前的函数')
