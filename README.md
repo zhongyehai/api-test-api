@@ -1,3 +1,5 @@
+# 注：此版本只支持接口自动化，后面不再维护，新版本请移步[测试平台](https://github.com/zhongyehai/test-platform-api)
+
 # 基于python-flask生态 + HttpRunner 开发的rest风格的测试平台后端
 
 ## 线上预览：http://139.196.100.202/#/login  账号：tester、密码：123456
